@@ -23,72 +23,131 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { format } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
+// Função para validar formato da data (DD/MM/YYYY)
+const isValidDateString = (dateString: string) => {
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return false;
+  const parsedDate = parse(dateString, "dd/MM/yyyy", new Date());
+  return isValid(parsedDate);
+};
+
+// Schema com validações para as datas
 const formSchema = z.object({
   quadro: z.string().min(1, { message: "Selecione o quadro de pertencimento" }),
   posto: z.string().min(1, { message: "Selecione o posto/graduação" }),
   nomeCompleto: z.string().min(3, { message: "Nome completo deve ter no mínimo 3 caracteres" }),
   nomeGuerra: z.string().min(2, { message: "Nome de guerra deve ter no mínimo 2 caracteres" }),
-  dataNascimento: z.date({
-    required_error: "Data de nascimento é obrigatória",
+  dataNascimento: z.string().refine(isValidDateString, {
+    message: "Data inválida. Use o formato DD/MM/AAAA",
   }),
-  dataInclusao: z.date({
-    required_error: "Data de inclusão é obrigatória",
+  dataInclusao: z.string().refine(isValidDateString, {
+    message: "Data inválida. Use o formato DD/MM/AAAA",
   }),
-  dataUltimaPromocao: z.date({
-    required_error: "Data da última promoção é obrigatória",
+  dataUltimaPromocao: z.string().refine(isValidDateString, {
+    message: "Data inválida. Use o formato DD/MM/AAAA",
   }),
   situacao: z.enum(["ativo", "inativo"]),
   email: z.string().email({ message: "Email inválido" })
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 const CadastroMilitar = () => {
   const navigate = useNavigate();
   const [selectedQuadro, setSelectedQuadro] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       quadro: "",
       posto: "",
       nomeCompleto: "",
       nomeGuerra: "",
+      dataNascimento: "",
+      dataInclusao: "",
+      dataUltimaPromocao: "",
       situacao: "ativo",
       email: ""
     }
   });
   
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Em uma aplicação real, aqui enviaríamos os dados para o backend
-    console.log("Formulário enviado:", values);
-    
-    toast({
-      title: "Militar cadastrado com sucesso!",
-      description: `${values.nomeCompleto} foi adicionado ao quadro ${values.quadro}`,
-    });
-    
-    // Determinar para qual página navegar com base no quadro
-    let redirectPath = "/";
-    
-    if (values.quadro === "QOEM" || values.quadro === "QOE") {
-      redirectPath = `/oficiais/${values.quadro === "QOEM" ? "estado-maior" : "especialistas"}`;
-    } else if (values.quadro === "QORR") {
-      redirectPath = "/oficiais/reserva";
-    } else if (values.quadro === "QPBM") {
-      redirectPath = "/pracas/ativos";
-    } else if (values.quadro === "QPRR") {
-      redirectPath = "/pracas/reserva";
+  const onSubmit = async (values: FormValues) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Converter strings de data para objetos Date
+      const dataNascimento = parse(values.dataNascimento, "dd/MM/yyyy", new Date());
+      const dataInclusao = parse(values.dataInclusao, "dd/MM/yyyy", new Date());
+      const dataUltimaPromocao = parse(values.dataUltimaPromocao, "dd/MM/yyyy", new Date());
+      
+      // Determinando o quadro correto com base na situação
+      let quadroFinal = values.quadro;
+      if (values.situacao === "inativo") {
+        // Se for inativo, mover para o quadro de reserva correspondente
+        if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
+          quadroFinal = "QORR"; // Quadro de Oficiais da Reserva Remunerada
+        } else if (quadroFinal === "QPBM") {
+          quadroFinal = "QPRR"; // Quadro de Praças da Reserva Remunerada
+        }
+      }
+      
+      // Em uma aplicação real, aqui enviaríamos os dados para o backend
+      const { data, error } = await supabase
+        .from('militares')
+        .insert([
+          {
+            quadro: quadroFinal,
+            posto: values.posto,
+            nomeCompleto: values.nomeCompleto,
+            nomeGuerra: values.nomeGuerra,
+            dataNascimento: dataNascimento.toISOString(),
+            dataInclusao: dataInclusao.toISOString(),
+            dataUltimaPromocao: dataUltimaPromocao.toISOString(),
+            situacao: values.situacao,
+            email: values.email
+          }
+        ])
+        .select();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Militar cadastrado com sucesso!",
+        description: `${values.nomeCompleto} foi adicionado ao quadro ${quadroFinal}`,
+      });
+      
+      // Determinar para qual página navegar com base no quadro
+      let redirectPath = "/";
+      
+      if (quadroFinal === "QOEM") {
+        redirectPath = "/oficiais/estado-maior";
+      } else if (quadroFinal === "QOE") {
+        redirectPath = "/oficiais/especialistas";
+      } else if (quadroFinal === "QORR") {
+        redirectPath = "/oficiais/reserva";
+      } else if (quadroFinal === "QPBM") {
+        redirectPath = "/pracas/ativos";
+      } else if (quadroFinal === "QPRR") {
+        redirectPath = "/pracas/reserva";
+      }
+      
+      navigate(redirectPath);
+    } catch (error: any) {
+      console.error("Erro ao cadastrar militar:", error);
+      toast({
+        title: "Erro ao cadastrar militar",
+        description: error.message || "Ocorreu um erro ao salvar os dados",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    navigate(redirectPath);
   };
   
   // Função para determinar as opções de posto com base no quadro selecionado
@@ -232,127 +291,58 @@ const CadastroMilitar = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Data de nascimento */}
+                {/* Data de nascimento - entrada manual */}
                 <FormField
                   control={form.control}
                   name="dataNascimento"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Data de Nascimento</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy", { locale: ptBR })
-                              ) : (
-                                <span>Selecione uma data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date > new Date()}
-                            initialFocus
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <Input 
+                          placeholder="DD/MM/AAAA" 
+                          {...field}
+                          maxLength={10}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                {/* Data de inclusão */}
+                {/* Data de inclusão - entrada manual */}
                 <FormField
                   control={form.control}
                   name="dataInclusao"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Data de Inclusão</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy", { locale: ptBR })
-                              ) : (
-                                <span>Selecione uma data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date > new Date()}
-                            initialFocus
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <Input 
+                          placeholder="DD/MM/AAAA" 
+                          {...field}
+                          maxLength={10}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                {/* Data da última promoção */}
+                {/* Data da última promoção - entrada manual */}
                 <FormField
                   control={form.control}
                   name="dataUltimaPromocao"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Data da Última Promoção</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy", { locale: ptBR })
-                              ) : (
-                                <span>Selecione uma data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date > new Date()}
-                            initialFocus
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <Input 
+                          placeholder="DD/MM/AAAA" 
+                          {...field}
+                          maxLength={10}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -418,8 +408,12 @@ const CadastroMilitar = () => {
                 <Button variant="outline" type="button" onClick={() => navigate(-1)}>
                   Cancelar
                 </Button>
-                <Button type="submit" className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple">
-                  Cadastrar Militar
+                <Button 
+                  type="submit" 
+                  className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Cadastrando..." : "Cadastrar Militar"}
                 </Button>
               </div>
             </form>

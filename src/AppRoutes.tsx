@@ -16,6 +16,7 @@ import FichaMilitar from "./pages/FichaMilitar";
 import CadastroMilitar from "./pages/CadastroMilitar";
 import EditarMilitar from "./pages/EditarMilitar";
 import HistoricoPromocoes from "./pages/HistoricoPromocoes";
+import GestaoPromocoes from "./pages/GestaoPromocoes";
 
 const AppRoutes = () => {
   return (
@@ -37,6 +38,7 @@ const AppRoutes = () => {
         <Route path="militar/:id/editar" element={<EditarMilitar />} />
         <Route path="militar/:id/promocoes" element={<HistoricoPromocoes />} />
         <Route path="cadastro-militar" element={<CadastroMilitar />} />
+        <Route path="gestao-promocoes" element={<GestaoPromocoes />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
