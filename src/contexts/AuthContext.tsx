@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { User } from "@/types";
+import { User, UserRole } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,11 +37,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
 
           if (profile) {
+            // Ensure role is properly cast to UserRole type
+            const role = (profile.role as string) === 'admin' ? 'admin' as UserRole : 'user' as UserRole;
+            
             setUser({
               id: currentSession.user.id,
               email: currentSession.user.email!,
               name: profile.name,
-              role: profile.role
+              role: role
             });
           }
         } else {
@@ -61,11 +64,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single()
           .then(({ data: profile }) => {
             if (profile) {
+              // Ensure role is properly cast to UserRole type
+              const role = (profile.role as string) === 'admin' ? 'admin' as UserRole : 'user' as UserRole;
+              
               setUser({
                 id: currentSession.user.id,
                 email: currentSession.user.email!,
                 name: profile.name,
-                role: profile.role
+                role: role
               });
             }
           });
