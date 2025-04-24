@@ -38,12 +38,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           if (profile) {
             // Ensure role is properly cast to UserRole type
-            const role = (profile.role as string) === 'admin' ? 'admin' as UserRole : 'user' as UserRole;
+            const role = profile.role === 'admin' ? 'admin' as UserRole : 'user' as UserRole;
             
             setUser({
               id: currentSession.user.id,
               email: currentSession.user.email!,
-              name: profile.name,
+              name: profile.name || '',
               role: role
             });
           }
@@ -65,18 +65,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .then(({ data: profile }) => {
             if (profile) {
               // Ensure role is properly cast to UserRole type
-              const role = (profile.role as string) === 'admin' ? 'admin' as UserRole : 'user' as UserRole;
+              const role = profile.role === 'admin' ? 'admin' as UserRole : 'user' as UserRole;
               
               setUser({
                 id: currentSession.user.id,
                 email: currentSession.user.email!,
-                name: profile.name,
+                name: profile.name || '',
                 role: role
               });
             }
+            setIsLoading(false);
           });
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return () => {
