@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,14 +10,12 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
-  const { login, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already authenticated
   if (isAuthenticated) {
     return <Navigate to="/" />;
   }
@@ -29,13 +27,16 @@ const Login = () => {
 
     try {
       await login(email, password);
-      navigate("/");
-    } catch (err) {
-      setError("Erro ao fazer login. Verifique suas credenciais.");
+    } catch (error: any) {
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
@@ -89,7 +90,11 @@ const Login = () => {
               />
             </div>
             
-            <Button type="submit" className="w-full bg-cbmepi-purple hover:bg-cbmepi-darkPurple" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-cbmepi-purple hover:bg-cbmepi-darkPurple" 
+              disabled={isLoading}
+            >
               {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </form>

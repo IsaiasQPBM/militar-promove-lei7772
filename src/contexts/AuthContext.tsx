@@ -1,8 +1,10 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { User, UserRole } from "@/types";
+import { User } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 
 type AuthContextType = {
   user: User | null;
@@ -10,66 +12,91 @@ type AuthContextType = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock localStorage persistence
-const saveUserToStorage = (user: User) => {
-  localStorage.setItem("cbmepi-user", JSON.stringify(user));
-};
-
-const getUserFromStorage = (): User | null => {
-  const storedUser = localStorage.getItem("cbmepi-user");
-  if (storedUser) {
-    try {
-      return JSON.parse(storedUser);
-    } catch (error) {
-      console.error("Error parsing stored user", error);
-    }
-  }
-  return null;
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Check if user is stored in localStorage
-    const storedUser = getUserFromStorage();
-    if (storedUser) {
-      setUser(storedUser);
-    }
-    setIsLoading(false);
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        setSession(currentSession);
+        if (currentSession?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single();
+
+          if (profile) {
+            setUser({
+              id: currentSession.user.id,
+              email: currentSession.user.email!,
+              name: profile.name,
+              role: profile.role
+            });
+          }
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      if (currentSession?.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile) {
+              setUser({
+                id: currentSession.user.id,
+                email: currentSession.user.email!,
+                name: profile.name,
+                role: profile.role
+              });
+            }
+          });
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API delay
-
-      // For demo purposes, any email/password combination works
-      const newUser: User = {
-        id: `user-${Date.now()}`,
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        name: email.split('@')[0],
-        role: "admin" // All users are admins for this demo
-      };
+        password
+      });
+
+      if (error) throw error;
       
-      setUser(newUser);
-      saveUserToStorage(newUser);
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${newUser.name}!`,
+        description: "Bem-vindo de volta!",
       });
-    } catch (error) {
+      navigate("/");
+    } catch (error: any) {
       toast({
         title: "Erro ao fazer login",
-        description: "Verifique suas credenciais e tente novamente.",
+        description: error.message,
         variant: "destructive"
       });
       throw error;
@@ -81,26 +108,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string) => {
     try {
       setIsLoading(true);
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API delay
-
-      const newUser: User = {
-        id: `user-${Date.now()}`,
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
-        name,
-        role: "admin" // All users are admins for this demo
-      };
-      
-      setUser(newUser);
-      saveUserToStorage(newUser);
+        password,
+        options: {
+          data: {
+            name
+          }
+        }
+      });
+
+      if (signUpError) throw signUpError;
+
       toast({
         title: "Registro realizado com sucesso!",
-        description: `Bem-vindo, ${name}!`,
+        description: "Bem-vindo ao sistema!",
       });
-    } catch (error) {
+      navigate("/");
+    } catch (error: any) {
       toast({
         title: "Erro ao registrar",
-        description: "Verifique os dados inseridos e tente novamente.",
+        description: error.message,
         variant: "destructive"
       });
       throw error;
@@ -109,12 +137,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("cbmepi-user");
-    toast({
-      title: "Logout realizado com sucesso!",
-    });
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      toast({
+        title: "Logout realizado com sucesso!",
+      });
+      navigate("/login");
+    } catch (error: any) {
+      toast({
+        title: "Erro ao fazer logout",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   return (
