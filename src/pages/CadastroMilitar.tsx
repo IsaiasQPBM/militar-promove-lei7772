@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,14 +29,12 @@ import { toast } from "@/components/ui/use-toast";
 import { mockMilitares } from "@/utils/mockData";
 import { v4 as uuidv4 } from 'uuid';
 
-// Função para validar formato da data (DD/MM/YYYY)
 const isValidDateString = (dateString: string) => {
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return false;
   const parsedDate = parse(dateString, "dd/MM/yyyy", new Date());
   return isValid(parsedDate);
 };
 
-// Schema com validações para as datas
 const formSchema = z.object({
   quadro: z.string().min(1, { message: "Selecione o quadro de pertencimento" }),
   posto: z.string().min(1, { message: "Selecione o posto/graduação" }),
@@ -82,24 +79,19 @@ const CadastroMilitar = () => {
     try {
       setIsSubmitting(true);
       
-      // Converter strings de data para objetos Date
       const dataNascimento = parse(values.dataNascimento, "dd/MM/yyyy", new Date());
       const dataInclusao = parse(values.dataInclusao, "dd/MM/yyyy", new Date());
       const dataUltimaPromocao = parse(values.dataUltimaPromocao, "dd/MM/yyyy", new Date());
       
-      // Determinando o quadro correto com base na situação
       let quadroFinal = values.quadro;
       if (values.situacao === "inativo") {
-        // Se for inativo, mover para o quadro de reserva correspondente
         if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
-          quadroFinal = "QORR"; // Quadro de Oficiais da Reserva Remunerada
+          quadroFinal = "QORR";
         } else if (quadroFinal === "QPBM") {
-          quadroFinal = "QPRR"; // Quadro de Praças da Reserva Remunerada
+          quadroFinal = "QPRR";
         }
       }
       
-      // Em uma aplicação real, aqui enviaríamos os dados para o backend
-      // Como estamos usando dados mock, apenas simulamos o cadastro
       const novoMilitar = {
         id: uuidv4(),
         quadro: quadroFinal,
@@ -114,7 +106,6 @@ const CadastroMilitar = () => {
         email: values.email
       };
       
-      // Simulando sucesso na operação
       console.log("Militar cadastrado:", novoMilitar);
       
       toast({
@@ -122,7 +113,6 @@ const CadastroMilitar = () => {
         description: `${values.nomeCompleto} foi adicionado ao quadro ${quadroFinal}`,
       });
       
-      // Determinar para qual página navegar com base no quadro
       let redirectPath = "/";
       
       if (quadroFinal === "QOEM") {
@@ -150,7 +140,6 @@ const CadastroMilitar = () => {
     }
   };
   
-  // Função para determinar as opções de posto com base no quadro selecionado
   const getPostoOptions = () => {
     if (selectedQuadro === "QOEM" || selectedQuadro === "QOE" || selectedQuadro === "QORR") {
       return [
@@ -193,7 +182,6 @@ const CadastroMilitar = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Quadro de pertencimento */}
                 <FormField
                   control={form.control}
                   name="quadro"
@@ -204,7 +192,6 @@ const CadastroMilitar = () => {
                         onValueChange={(value) => {
                           field.onChange(value);
                           setSelectedQuadro(value);
-                          // Reset posto selection when quadro changes
                           form.setValue("posto", "");
                         }}
                         defaultValue={field.value}
@@ -227,7 +214,6 @@ const CadastroMilitar = () => {
                   )}
                 />
                 
-                {/* Posto atual */}
                 <FormField
                   control={form.control}
                   name="posto"
@@ -259,7 +245,6 @@ const CadastroMilitar = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Nome completo */}
                 <FormField
                   control={form.control}
                   name="nomeCompleto"
@@ -274,7 +259,6 @@ const CadastroMilitar = () => {
                   )}
                 />
                 
-                {/* Nome de guerra */}
                 <FormField
                   control={form.control}
                   name="nomeGuerra"
@@ -291,7 +275,6 @@ const CadastroMilitar = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Data de nascimento - entrada manual */}
                 <FormField
                   control={form.control}
                   name="dataNascimento"
@@ -310,7 +293,6 @@ const CadastroMilitar = () => {
                   )}
                 />
                 
-                {/* Data de inclusão - entrada manual */}
                 <FormField
                   control={form.control}
                   name="dataInclusao"
@@ -329,7 +311,6 @@ const CadastroMilitar = () => {
                   )}
                 />
                 
-                {/* Data da última promoção - entrada manual */}
                 <FormField
                   control={form.control}
                   name="dataUltimaPromocao"
@@ -350,7 +331,6 @@ const CadastroMilitar = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Situação */}
                 <FormField
                   control={form.control}
                   name="situacao"
@@ -382,7 +362,6 @@ const CadastroMilitar = () => {
                   )}
                 />
                 
-                {/* Email */}
                 <FormField
                   control={form.control}
                   name="email"
@@ -398,7 +377,6 @@ const CadastroMilitar = () => {
                 />
               </div>
               
-              {/* Foto */}
               <div>
                 <Label htmlFor="photo">Foto (opcional)</Label>
                 <Input id="photo" type="file" accept="image/*" className="mt-1" />

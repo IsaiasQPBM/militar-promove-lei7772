@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { format, addYears, differenceInDays, differenceInMonths, parse } from "date-fns";
+import { format, addYears, differenceInDays, differenceInMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Militar, PostoPatente, QuadroMilitar } from "@/types";
-import { Award, Calendar } from "lucide-react";
+import { Award } from "lucide-react";
 import { mockMilitares } from "@/utils/mockData";
 import { toast } from "@/components/ui/use-toast";
 
