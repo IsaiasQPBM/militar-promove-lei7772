@@ -36,7 +36,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
 import { Plus } from "lucide-react";
 
@@ -158,25 +157,22 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
     }
   });
   
-  // Funções para adicionar itens
+  // Funções para adicionar itens (usando mock data em vez de chamadas ao Supabase)
   const adicionarCursoMilitar = async (data: z.infer<typeof cursoMilitarSchema>) => {
     try {
-      const { error } = await supabase
-        .from('cursos_militares')
-        .insert([{
-          militarId,
-          ...data
-        }]);
-        
-      if (error) throw error;
+      // Create a new curso militar object with required properties
+      const novoCurso: CursoMilitar = {
+        id: Date.now().toString(),
+        militarId,
+        nome: data.nome,
+        instituicao: data.instituicao,
+        cargaHoraria: data.cargaHoraria,
+        pontos: data.pontos,
+        anexo: null
+      };
       
       // Atualizar a lista
-      setCursosMilitares([...cursosMilitares, { 
-        id: Date.now().toString(), // temporário, será substituído pelo ID retornado
-        militarId,
-        ...data,
-        anexo: null
-      }]);
+      setCursosMilitares([...cursosMilitares, novoCurso]);
       
       toast({
         title: "Curso militar adicionado com sucesso!",
@@ -195,22 +191,19 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   
   const adicionarCursoCivil = async (data: z.infer<typeof cursoCivilSchema>) => {
     try {
-      const { error } = await supabase
-        .from('cursos_civis')
-        .insert([{
-          militarId,
-          ...data
-        }]);
-        
-      if (error) throw error;
+      // Create a new curso civil object with required properties
+      const novoCurso: CursoCivil = {
+        id: Date.now().toString(),
+        militarId,
+        nome: data.nome,
+        instituicao: data.instituicao,
+        cargaHoraria: data.cargaHoraria,
+        pontos: data.pontos,
+        anexo: null
+      };
       
       // Atualizar a lista
-      setCursosCivis([...cursosCivis, { 
-        id: Date.now().toString(), // temporário, será substituído pelo ID retornado
-        militarId,
-        ...data,
-        anexo: null
-      }]);
+      setCursosCivis([...cursosCivis, novoCurso]);
       
       toast({
         title: "Curso civil adicionado com sucesso!",
@@ -229,22 +222,19 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   
   const adicionarCondecoracao = async (data: z.infer<typeof condecoracaoSchema>) => {
     try {
-      const { error } = await supabase
-        .from('condecoracoes')
-        .insert([{
-          militarId,
-          ...data
-        }]);
-        
-      if (error) throw error;
+      // Create a new condecoracao object with required properties
+      const novaCondecoracao: Condecoracao = {
+        id: Date.now().toString(),
+        militarId,
+        tipo: data.tipo,
+        descricao: data.descricao,
+        dataRecebimento: data.dataRecebimento,
+        pontos: data.pontos,
+        anexo: null
+      };
       
       // Atualizar a lista
-      setCondecoracoes([...condecoracoes, { 
-        id: Date.now().toString(), // temporário, será substituído pelo ID retornado
-        militarId,
-        ...data,
-        anexo: null
-      }]);
+      setCondecoracoes([...condecoracoes, novaCondecoracao]);
       
       toast({
         title: "Condecoração adicionada com sucesso!",
@@ -263,22 +253,19 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   
   const adicionarElogio = async (data: z.infer<typeof elogioSchema>) => {
     try {
-      const { error } = await supabase
-        .from('elogios')
-        .insert([{
-          militarId,
-          ...data
-        }]);
-        
-      if (error) throw error;
+      // Create a new elogio object with required properties
+      const novoElogio: Elogio = {
+        id: Date.now().toString(),
+        militarId,
+        tipo: data.tipo,
+        descricao: data.descricao,
+        dataRecebimento: data.dataRecebimento,
+        pontos: data.pontos,
+        anexo: null
+      };
       
       // Atualizar a lista
-      setElogios([...elogios, { 
-        id: Date.now().toString(), // temporário, será substituído pelo ID retornado
-        militarId,
-        ...data,
-        anexo: null
-      }]);
+      setElogios([...elogios, novoElogio]);
       
       toast({
         title: "Elogio adicionado com sucesso!",
@@ -297,22 +284,19 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   
   const adicionarPunicao = async (data: z.infer<typeof punicaoSchema>) => {
     try {
-      const { error } = await supabase
-        .from('punicoes')
-        .insert([{
-          militarId,
-          ...data
-        }]);
-        
-      if (error) throw error;
+      // Create a new punicao object with required properties
+      const novaPunicao: Punicao = {
+        id: Date.now().toString(),
+        militarId,
+        tipo: data.tipo,
+        descricao: data.descricao,
+        dataRecebimento: data.dataRecebimento,
+        pontos: data.pontos,
+        anexo: null
+      };
       
       // Atualizar a lista
-      setPunicoes([...punicoes, { 
-        id: Date.now().toString(), // temporário, será substituído pelo ID retornado
-        militarId,
-        ...data,
-        anexo: null
-      }]);
+      setPunicoes([...punicoes, novaPunicao]);
       
       toast({
         title: "Punição adicionada com sucesso!",
