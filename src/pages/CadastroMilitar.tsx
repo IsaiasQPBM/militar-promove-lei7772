@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { parse } from "date-fns";
+import { parse, parseISO } from "date-fns";
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "@/components/ui/use-toast";
 import { formSchema, type FormValues } from "@/utils/militarValidation";
@@ -42,9 +41,48 @@ const CadastroMilitar = () => {
     try {
       setIsSubmitting(true);
       
-      const dataNascimento = parse(values.dataNascimento, "dd/MM/yyyy", new Date());
-      const dataInclusao = parse(values.dataInclusao, "dd/MM/yyyy", new Date());
-      const dataUltimaPromocao = parse(values.dataUltimaPromocao, "dd/MM/yyyy", new Date());
+      let dataNascimento: Date;
+      let dataInclusao: Date;
+      let dataUltimaPromocao: Date;
+      
+      try {
+        dataNascimento = parse(values.dataNascimento, "dd/MM/yyyy", new Date());
+        if (isNaN(dataNascimento.getTime())) throw new Error("Data de nascimento inválida");
+      } catch (error) {
+        toast({
+          title: "Erro na data de nascimento",
+          description: "Formato inválido. Use DD/MM/AAAA",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      try {
+        dataInclusao = parse(values.dataInclusao, "dd/MM/yyyy", new Date());
+        if (isNaN(dataInclusao.getTime())) throw new Error("Data de inclusão inválida");
+      } catch (error) {
+        toast({
+          title: "Erro na data de inclusão",
+          description: "Formato inválido. Use DD/MM/AAAA",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      try {
+        dataUltimaPromocao = parse(values.dataUltimaPromocao, "dd/MM/yyyy", new Date());
+        if (isNaN(dataUltimaPromocao.getTime())) throw new Error("Data de última promoção inválida");
+      } catch (error) {
+        toast({
+          title: "Erro na data de última promoção",
+          description: "Formato inválido. Use DD/MM/AAAA",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
       let quadroFinal = values.quadro;
       if (values.situacao === "inativo") {
