@@ -22,11 +22,17 @@ const GestaoPromocoes: React.FC = () => {
     const fetchMilitares = async () => {
       try {
         setLoading(true);
+        // Filter active militaries
         const militaresAtivos = mockMilitares.filter(militar => militar.situacao === 'ativo');
         setMilitares(militaresAtivos);
         calcularPrevisaoPromocoes(militaresAtivos);
       } catch (error) {
         console.error("Erro ao buscar militares:", error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar os dados dos militares.",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
@@ -50,26 +56,33 @@ const GestaoPromocoes: React.FC = () => {
   const handlePromover = (previsao: PrevisaoPromocao) => {
     if (!previsao.proximoPosto) return;
     
-    toast({
-      title: "Promoção realizada",
-      description: `${previsao.nome} foi promovido para ${previsao.proximoPosto}!`,
-      duration: 5000,
-    });
-    
+    // Update the militar's rank and promotion date
     setMilitares(prevMilitares => {
       const newMilitares = prevMilitares.map(militar => {
         if (militar.id === previsao.militarId && previsao.proximoPosto) {
-          return {
+          const updatedMilitar = {
             ...militar,
             posto: previsao.proximoPosto,
             dataUltimaPromocao: new Date().toISOString()
           };
+          
+          // In a real application, here we would call an API to update the database
+          console.log("Militar promovido:", updatedMilitar);
+          
+          return updatedMilitar;
         }
         return militar;
       });
       
+      // Recalculate promotions with updated data
       calcularPrevisaoPromocoes(newMilitares);
       return newMilitares;
+    });
+    
+    toast({
+      title: "Promoção realizada",
+      description: `${previsao.nome} foi promovido para ${previsao.proximoPosto}!`,
+      duration: 5000,
     });
   };
   

@@ -1,6 +1,6 @@
 
 import { PostoPatente, Militar } from "@/types";
-import { addYears, differenceInDays, differenceInMonths } from "date-fns";
+import { addYears, differenceInDays, differenceInMonths, parseISO } from "date-fns";
 
 // Interface para previsão de promoção
 export interface PrevisaoPromocao {
@@ -23,7 +23,7 @@ interface TempoPromocoesInterface {
   };
 }
 
-// Tempo mínimo para promoções de Oficiais
+// Tempo mínimo para promoções de Oficiais conforme Lei 7.772/2022
 export const tempoPromocoesOficiais: TempoPromocoesInterface = {
   "2º Tenente": { tempoMinimo: 2, criterio: "Antiguidade", proximoPosto: "1º Tenente" },
   "1º Tenente": { tempoMinimo: 4, criterio: "Antiguidade", proximoPosto: "Capitão" },
@@ -33,7 +33,7 @@ export const tempoPromocoesOficiais: TempoPromocoesInterface = {
   "Coronel": { tempoMinimo: 0, criterio: "Posto máximo", proximoPosto: null }
 };
 
-// Tempo mínimo para promoções de Praças
+// Tempo mínimo para promoções de Praças conforme Lei 7.772/2022
 export const tempoPromocoesPracas: TempoPromocoesInterface = {
   "Soldado": { tempoMinimo: 2, criterio: "Antiguidade", proximoPosto: "Cabo" },
   "Cabo": { tempoMinimo: 3, criterio: "Antiguidade", proximoPosto: "3º Sargento" },
@@ -53,7 +53,8 @@ export const calcularPrevisaoIndividual = (militar: Militar): PrevisaoPromocao =
     proximoPosto: null 
   };
   
-  const dataUltimaPromocao = new Date(militar.dataUltimaPromocao);
+  // Parse ISO date string to Date object
+  const dataUltimaPromocao = parseISO(militar.dataUltimaPromocao);
   let dataProximaPromocao: Date | null = null;
   let tempoRestante = "N/A";
   

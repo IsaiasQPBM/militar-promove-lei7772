@@ -24,3 +24,34 @@ export const dateToFormattedString = (date: Date) => {
   if (!isValid(date)) return "";
   return format(date, "dd/MM/yyyy");
 };
+
+// Function to normalize and format date input
+export const normalizeDateInput = (input: string) => {
+  // Remove non-digit characters
+  let digits = input.replace(/\D/g, '');
+  
+  // Limit to 8 digits (DDMMYYYY)
+  digits = digits.substring(0, 8);
+  
+  // Format as DD/MM/YYYY
+  let formatted = "";
+  if (digits.length > 0) {
+    formatted = digits.substring(0, Math.min(2, digits.length));
+    if (digits.length > 2) {
+      formatted += '/' + digits.substring(2, Math.min(4, digits.length));
+      if (digits.length > 4) {
+        formatted += '/' + digits.substring(4, 8);
+      }
+    }
+  }
+  
+  return formatted;
+};
+
+// Parse date string to Date object
+export const parseDateString = (dateString: string): Date | null => {
+  if (!isValidDateString(dateString)) return null;
+  
+  return parse(dateString, "dd/MM/yyyy", new Date());
+};
+
