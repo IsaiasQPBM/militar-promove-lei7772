@@ -27,7 +27,8 @@ import { format, parse, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { mockMilitares } from "@/utils/mockData";
+import { v4 as uuidv4 } from 'uuid';
 
 // Função para validar formato da data (DD/MM/YYYY)
 const isValidDateString = (dateString: string) => {
@@ -98,24 +99,23 @@ const CadastroMilitar = () => {
       }
       
       // Em uma aplicação real, aqui enviaríamos os dados para o backend
-      const { data, error } = await supabase
-        .from('militares')
-        .insert([
-          {
-            quadro: quadroFinal,
-            posto: values.posto,
-            nomeCompleto: values.nomeCompleto,
-            nomeGuerra: values.nomeGuerra,
-            dataNascimento: dataNascimento.toISOString(),
-            dataInclusao: dataInclusao.toISOString(),
-            dataUltimaPromocao: dataUltimaPromocao.toISOString(),
-            situacao: values.situacao,
-            email: values.email
-          }
-        ])
-        .select();
+      // Como estamos usando dados mock, apenas simulamos o cadastro
+      const novoMilitar = {
+        id: uuidv4(),
+        quadro: quadroFinal,
+        posto: values.posto,
+        nomeCompleto: values.nomeCompleto,
+        nomeGuerra: values.nomeGuerra,
+        foto: `https://api.dicebear.com/7.x/initials/svg?seed=${values.nomeGuerra}`,
+        dataNascimento: dataNascimento.toISOString(),
+        dataInclusao: dataInclusao.toISOString(),
+        dataUltimaPromocao: dataUltimaPromocao.toISOString(),
+        situacao: values.situacao,
+        email: values.email
+      };
       
-      if (error) throw error;
+      // Simulando sucesso na operação
+      console.log("Militar cadastrado:", novoMilitar);
       
       toast({
         title: "Militar cadastrado com sucesso!",

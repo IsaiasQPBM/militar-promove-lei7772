@@ -18,9 +18,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format, addYears, differenceInDays, differenceInMonths, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { supabase } from "@/integrations/supabase/client";
 import { Militar, PostoPatente, QuadroMilitar } from "@/types";
 import { Award, Calendar } from "lucide-react";
+import { mockMilitares } from "@/utils/mockData";
+import { toast } from "@/components/ui/use-toast";
 
 // Interface para previsão de promoção
 interface PrevisaoPromocao {
@@ -69,22 +70,15 @@ const GestaoPromocoes: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    // Usando dados mock ao invés de buscar do banco de dados
     const fetchMilitares = async () => {
       try {
         setLoading(true);
         
-        // Buscar todos os militares ativos
-        const { data, error } = await supabase
-          .from('militares')
-          .select('*')
-          .eq('situacao', 'ativo');
-          
-        if (error) throw error;
-        
-        if (data) {
-          setMilitares(data);
-          calcularPrevisaoPromocoes(data);
-        }
+        // Usar dados mock em vez de buscar do Supabase
+        const militaresAtivos = mockMilitares.filter(militar => militar.situacao === 'ativo');
+        setMilitares(militaresAtivos);
+        calcularPrevisaoPromocoes(militaresAtivos);
       } catch (error) {
         console.error("Erro ao buscar militares:", error);
       } finally {
@@ -163,6 +157,44 @@ const GestaoPromocoes: React.FC = () => {
     };
   };
   
+  // Função para promover um militar
+  const handlePromover = (previsao: PrevisaoPromocao) => {
+    if (!previsao.proximoPosto) return;
+    
+    // Em uma aplicação real, aqui enviaria para o backend
+    toast({
+      title: "Promoção realizada",
+      description: `${previsao.nome} foi promovido para ${previsao.proximoPosto}!`,
+      duration: 5000,
+    });
+    
+    // Atualizar localmente para demonstração
+    setMilitares(prevMilitares => {
+      return prevMilitares.map(militar => {
+        if (militar.id === previsao.militarId && previsao.proximoPosto) {
+          return {
+            ...militar,
+            posto: previsao.proximoPosto,
+            dataUltimaPromocao: new Date().toISOString()
+          };
+        }
+        return militar;
+      });
+    });
+    
+    // Recalcular previsões após promoção
+    calcularPrevisaoPromocoes(militares.map(militar => {
+      if (militar.id === previsao.militarId && previsao.proximoPosto) {
+        return {
+          ...militar,
+          posto: previsao.proximoPosto,
+          dataUltimaPromocao: new Date().toISOString()
+        };
+      }
+      return militar;
+    }));
+  };
+  
   // Função para obter a classe CSS da badge com base no tempo restante
   const getBadgeVariant = (tempoRestante: string) => {
     if (tempoRestante === "Promoção disponível") {
@@ -226,6 +258,7 @@ const GestaoPromocoes: React.FC = () => {
                       <Button 
                         size="sm" 
                         className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple"
+                        onClick={() => handlePromover(previsao)}
                       >
                         Promover
                       </Button>
