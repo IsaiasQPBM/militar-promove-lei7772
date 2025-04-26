@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { parse, parseISO } from "date-fns";
-import { v4 as uuidv4 } from 'uuid';
+import { parse } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { formSchema, type FormValues } from "@/utils/militarValidation";
 import QuadroPostoSelect from "@/components/militar/QuadroPostoSelect";
@@ -16,6 +16,7 @@ import DadosPessoais from "@/components/militar/DadosPessoais";
 import DatasImportantes from "@/components/militar/DatasImportantes";
 import SituacaoEmail from "@/components/militar/SituacaoEmail";
 import { UserPlus } from "lucide-react";
+import { createMilitar } from "@/services/militarService";
 
 const CadastroMilitar = () => {
   const navigate = useNavigate();
@@ -94,20 +95,23 @@ const CadastroMilitar = () => {
       }
       
       const novoMilitar = {
-        id: uuidv4(),
-        quadro: quadroFinal,
-        posto: values.posto,
         nomeCompleto: values.nomeCompleto,
         nomeGuerra: values.nomeGuerra,
         foto: `https://api.dicebear.com/7.x/initials/svg?seed=${values.nomeGuerra}`,
         dataNascimento: dataNascimento.toISOString(),
         dataInclusao: dataInclusao.toISOString(),
         dataUltimaPromocao: dataUltimaPromocao.toISOString(),
+        posto: values.posto,
+        quadro: quadroFinal,
         situacao: values.situacao,
         email: values.email
       };
       
-      console.log("Militar cadastrado:", novoMilitar);
+      console.log("Tentando cadastrar militar:", novoMilitar);
+      
+      // Salvar o militar no banco de dados usando o serviço
+      const militarSalvo = await createMilitar(novoMilitar);
+      console.log("Militar cadastrado com sucesso:", militarSalvo);
       
       toast({
         title: "Militar cadastrado com sucesso!",

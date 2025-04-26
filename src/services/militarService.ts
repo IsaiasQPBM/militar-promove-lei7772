@@ -3,15 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Militar } from "@/types";
 
 export const createMilitar = async (militar: Omit<Militar, "id">) => {
+  console.log("Enviando para o Supabase:", militar);
+  
   const { data, error } = await supabase
     .from("militares")
     .insert({
       nome: militar.nomeCompleto,
       nomeguerra: militar.nomeGuerra,
-      matricula: undefined, // será preenchido posteriormente
       posto: militar.posto,
       quadro: militar.quadro,
-      unidade: undefined, // será preenchido posteriormente
       datanascimento: militar.dataNascimento,
       data_ingresso: militar.dataInclusao,
       dataultimapromocao: militar.dataUltimaPromocao,
@@ -22,7 +22,12 @@ export const createMilitar = async (militar: Omit<Militar, "id">) => {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Erro no Supabase:", error);
+    throw error;
+  }
+  
+  console.log("Resposta do Supabase:", data);
   return data;
 };
 
