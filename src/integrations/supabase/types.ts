@@ -9,6 +9,250 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      condecoracoes: {
+        Row: {
+          anexo: string | null
+          created_at: string | null
+          datarecebimento: string | null
+          descricao: string | null
+          id: string
+          militar_id: string | null
+          pontos: number | null
+          tipo: string
+        }
+        Insert: {
+          anexo?: string | null
+          created_at?: string | null
+          datarecebimento?: string | null
+          descricao?: string | null
+          id?: string
+          militar_id?: string | null
+          pontos?: number | null
+          tipo: string
+        }
+        Update: {
+          anexo?: string | null
+          created_at?: string | null
+          datarecebimento?: string | null
+          descricao?: string | null
+          id?: string
+          militar_id?: string | null
+          pontos?: number | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "condecoracoes_militar_id_fkey"
+            columns: ["militar_id"]
+            isOneToOne: false
+            referencedRelation: "militares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cursos_civis: {
+        Row: {
+          anexo: string | null
+          cargahoraria: number | null
+          created_at: string | null
+          id: string
+          instituicao: string | null
+          militar_id: string | null
+          nome: string
+          pontos: number | null
+        }
+        Insert: {
+          anexo?: string | null
+          cargahoraria?: number | null
+          created_at?: string | null
+          id?: string
+          instituicao?: string | null
+          militar_id?: string | null
+          nome: string
+          pontos?: number | null
+        }
+        Update: {
+          anexo?: string | null
+          cargahoraria?: number | null
+          created_at?: string | null
+          id?: string
+          instituicao?: string | null
+          militar_id?: string | null
+          nome?: string
+          pontos?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cursos_civis_militar_id_fkey"
+            columns: ["militar_id"]
+            isOneToOne: false
+            referencedRelation: "militares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cursos_militares: {
+        Row: {
+          anexo: string | null
+          cargahoraria: number | null
+          created_at: string | null
+          id: string
+          instituicao: string | null
+          militar_id: string | null
+          nome: string
+          pontos: number | null
+        }
+        Insert: {
+          anexo?: string | null
+          cargahoraria?: number | null
+          created_at?: string | null
+          id?: string
+          instituicao?: string | null
+          militar_id?: string | null
+          nome: string
+          pontos?: number | null
+        }
+        Update: {
+          anexo?: string | null
+          cargahoraria?: number | null
+          created_at?: string | null
+          id?: string
+          instituicao?: string | null
+          militar_id?: string | null
+          nome?: string
+          pontos?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cursos_militares_militar_id_fkey"
+            columns: ["militar_id"]
+            isOneToOne: false
+            referencedRelation: "militares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elogios: {
+        Row: {
+          anexo: string | null
+          created_at: string | null
+          datarecebimento: string | null
+          descricao: string | null
+          id: string
+          militar_id: string | null
+          pontos: number | null
+          tipo: string
+        }
+        Insert: {
+          anexo?: string | null
+          created_at?: string | null
+          datarecebimento?: string | null
+          descricao?: string | null
+          id?: string
+          militar_id?: string | null
+          pontos?: number | null
+          tipo: string
+        }
+        Update: {
+          anexo?: string | null
+          created_at?: string | null
+          datarecebimento?: string | null
+          descricao?: string | null
+          id?: string
+          militar_id?: string | null
+          pontos?: number | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elogios_militar_id_fkey"
+            columns: ["militar_id"]
+            isOneToOne: false
+            referencedRelation: "militares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fichas_conceito: {
+        Row: {
+          id: string
+          militar_id: string | null
+          temposervicoquadro: number | null
+          totalpontos: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          militar_id?: string | null
+          temposervicoquadro?: number | null
+          totalpontos?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          militar_id?: string | null
+          temposervicoquadro?: number | null
+          totalpontos?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fichas_conceito_militar_id_fkey"
+            columns: ["militar_id"]
+            isOneToOne: true
+            referencedRelation: "militares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      militares: {
+        Row: {
+          data_ingresso: string | null
+          datanascimento: string | null
+          dataultimapromocao: string | null
+          email: string | null
+          foto: string | null
+          id: string
+          matricula: string | null
+          nome: string
+          nomeguerra: string | null
+          posto: string | null
+          quadro: string | null
+          situacao: string | null
+          unidade: string | null
+        }
+        Insert: {
+          data_ingresso?: string | null
+          datanascimento?: string | null
+          dataultimapromocao?: string | null
+          email?: string | null
+          foto?: string | null
+          id?: string
+          matricula?: string | null
+          nome: string
+          nomeguerra?: string | null
+          posto?: string | null
+          quadro?: string | null
+          situacao?: string | null
+          unidade?: string | null
+        }
+        Update: {
+          data_ingresso?: string | null
+          datanascimento?: string | null
+          dataultimapromocao?: string | null
+          email?: string | null
+          foto?: string | null
+          id?: string
+          matricula?: string | null
+          nome?: string
+          nomeguerra?: string | null
+          posto?: string | null
+          quadro?: string | null
+          situacao?: string | null
+          unidade?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -32,6 +276,79 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      promocoes: {
+        Row: {
+          data_promocao: string | null
+          id: string
+          militar_id: string | null
+          publicada: boolean | null
+          tipo_promocao: string | null
+        }
+        Insert: {
+          data_promocao?: string | null
+          id?: string
+          militar_id?: string | null
+          publicada?: boolean | null
+          tipo_promocao?: string | null
+        }
+        Update: {
+          data_promocao?: string | null
+          id?: string
+          militar_id?: string | null
+          publicada?: boolean | null
+          tipo_promocao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promocoes_militar_id_fkey"
+            columns: ["militar_id"]
+            isOneToOne: false
+            referencedRelation: "militares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      punicoes: {
+        Row: {
+          anexo: string | null
+          created_at: string | null
+          datarecebimento: string | null
+          descricao: string | null
+          id: string
+          militar_id: string | null
+          pontos: number | null
+          tipo: string
+        }
+        Insert: {
+          anexo?: string | null
+          created_at?: string | null
+          datarecebimento?: string | null
+          descricao?: string | null
+          id?: string
+          militar_id?: string | null
+          pontos?: number | null
+          tipo: string
+        }
+        Update: {
+          anexo?: string | null
+          created_at?: string | null
+          datarecebimento?: string | null
+          descricao?: string | null
+          id?: string
+          militar_id?: string | null
+          pontos?: number | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "punicoes_militar_id_fkey"
+            columns: ["militar_id"]
+            isOneToOne: false
+            referencedRelation: "militares"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
