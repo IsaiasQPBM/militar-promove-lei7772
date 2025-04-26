@@ -5,7 +5,20 @@ import { Militar } from "@/types";
 export const createMilitar = async (militar: Omit<Militar, "id">) => {
   const { data, error } = await supabase
     .from("militares")
-    .insert([militar])
+    .insert({
+      nome: militar.nomeCompleto,
+      nomeguerra: militar.nomeGuerra,
+      matricula: undefined, // será preenchido posteriormente
+      posto: militar.posto,
+      quadro: militar.quadro,
+      unidade: undefined, // será preenchido posteriormente
+      datanascimento: militar.dataNascimento,
+      data_ingresso: militar.dataInclusao,
+      dataultimapromocao: militar.dataUltimaPromocao,
+      situacao: militar.situacao,
+      email: militar.email,
+      foto: militar.foto
+    })
     .select()
     .single();
 
@@ -16,7 +29,18 @@ export const createMilitar = async (militar: Omit<Militar, "id">) => {
 export const updateMilitar = async (id: string, militar: Partial<Militar>) => {
   const { data, error } = await supabase
     .from("militares")
-    .update(militar)
+    .update({
+      nome: militar.nomeCompleto,
+      nomeguerra: militar.nomeGuerra,
+      posto: militar.posto,
+      quadro: militar.quadro,
+      datanascimento: militar.dataNascimento,
+      data_ingresso: militar.dataInclusao,
+      dataultimapromocao: militar.dataUltimaPromocao,
+      situacao: militar.situacao,
+      email: militar.email,
+      foto: militar.foto
+    })
     .eq("id", id)
     .select()
     .single();

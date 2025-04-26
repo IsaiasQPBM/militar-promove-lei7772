@@ -5,7 +5,12 @@ import { Promocao } from "@/types";
 export const createPromocao = async (promocao: Omit<Promocao, "id">) => {
   const { data, error } = await supabase
     .from("promocoes")
-    .insert([promocao])
+    .insert({
+      militar_id: promocao.militarId,
+      tipo_promocao: promocao.criterio,
+      data_promocao: promocao.dataPromocao,
+      publicada: false
+    })
     .select()
     .single();
 
@@ -13,7 +18,7 @@ export const createPromocao = async (promocao: Omit<Promocao, "id">) => {
   return data;
 };
 
-export const getPromocoesDoMilitar = async (militarId: string) => {
+export const getPromocoesByMilitar = async (militarId: string) => {
   const { data, error } = await supabase
     .from("promocoes")
     .select("*")

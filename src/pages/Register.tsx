@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -10,7 +9,7 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Register = () => {
-  const { register, isAuthenticated } = useAuth();
+  const { signUp, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,7 +18,6 @@ const Register = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already authenticated
   if (isAuthenticated) {
     return <Navigate to="/" />;
   }
@@ -36,9 +34,9 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      await register(name, email, password);
+      await signUp(email, password, name);
       navigate("/");
-    } catch (err) {
+    } catch (err: any) {
       setError("Erro ao registrar. Tente novamente.");
     } finally {
       setIsLoading(false);

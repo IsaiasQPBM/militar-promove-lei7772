@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 
 const MainLayout = () => {
   const { user } = useAuth();
+  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário';
   
   return (
     <div className="flex h-screen flex-col">
@@ -17,12 +18,12 @@ const MainLayout = () => {
         </div>
         <div className="flex items-center space-x-3">
           <div className="text-right mr-2">
-            <p className="text-sm font-bold">Usuário: {user?.name}</p>
+            <p className="text-sm font-bold">Usuário: {userName}</p>
             <p className="text-xs">Perfil: admin</p>
           </div>
           <Avatar>
-            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || "User"}`} />
-            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${userName}`} />
+            <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>
       </header>

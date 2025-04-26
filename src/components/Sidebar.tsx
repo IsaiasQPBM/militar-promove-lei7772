@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { 
   FileText, 
@@ -15,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export const Sidebar = () => {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
 
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
@@ -156,7 +155,7 @@ export const Sidebar = () => {
         
         {/* Logout Button */}
         <button 
-          onClick={logout}
+          onClick={signOut}
           className="w-full flex items-center space-x-2 px-4 py-2 text-white hover:bg-cbmepi-darkPurple rounded-md transition-colors mt-8"
         >
           <LogOut className="h-5 w-5" />

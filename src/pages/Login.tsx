@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, Navigate } from "react-router-dom";
@@ -10,11 +9,11 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { signIn, isAuthenticated, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isAuthenticated) {
     return <Navigate to="/" />;
@@ -23,18 +22,18 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await signIn(email, password);
     } catch (error: any) {
       setError(error.message);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (authLoading) {
+  if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   }
 
@@ -93,9 +92,9 @@ const Login = () => {
             <Button 
               type="submit" 
               className="w-full bg-cbmepi-purple hover:bg-cbmepi-darkPurple" 
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? "Entrando..." : "Entrar"}
+              {isSubmitting ? "Entrando..." : "Entrar"}
             </Button>
           </form>
         </CardContent>
