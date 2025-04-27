@@ -17,7 +17,7 @@ import DatasImportantes from "@/components/militar/DatasImportantes";
 import SituacaoEmail from "@/components/militar/SituacaoEmail";
 import { UserPlus } from "lucide-react";
 import { createMilitar } from "@/services/militarService";
-import { QuadroMilitar, SituacaoMilitar } from "@/types";
+import { QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
 
 const CadastroMilitar = () => {
   const navigate = useNavigate();
@@ -102,7 +102,7 @@ const CadastroMilitar = () => {
         dataNascimento: dataNascimento.toISOString(),
         dataInclusao: dataInclusao.toISOString(),
         dataUltimaPromocao: dataUltimaPromocao.toISOString(),
-        posto: values.posto,
+        posto: values.posto as PostoPatente,
         quadro: quadroFinal as QuadroMilitar,
         situacao: values.situacao as SituacaoMilitar,
         email: values.email
