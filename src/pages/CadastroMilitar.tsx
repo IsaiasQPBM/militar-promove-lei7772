@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Form } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { parse } from "date-fns";
@@ -16,13 +17,14 @@ import DadosPessoais from "@/components/militar/DadosPessoais";
 import DatasImportantes from "@/components/militar/DatasImportantes";
 import SituacaoEmail from "@/components/militar/SituacaoEmail";
 import { UserPlus } from "lucide-react";
-import { createMilitar } from "@/services/militarService";
+import { submitMilitarForm } from "@/utils/militarFormSubmission";
 import { QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
 
 const CadastroMilitar = () => {
   const navigate = useNavigate();
   const [selectedQuadro, setSelectedQuadro] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("quadro-posto");
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -43,97 +45,16 @@ const CadastroMilitar = () => {
     try {
       setIsSubmitting(true);
       
-      let dataNascimento: Date;
-      let dataInclusao: Date;
-      let dataUltimaPromocao: Date;
+      const result = await submitMilitarForm(values, navigate);
       
-      try {
-        dataNascimento = parse(values.dataNascimento, "dd/MM/yyyy", new Date());
-        if (isNaN(dataNascimento.getTime())) throw new Error("Data de nascimento inválida");
-      } catch (error) {
+      if (result.success) {
         toast({
-          title: "Erro na data de nascimento",
-          description: "Formato inválido. Use DD/MM/AAAA",
-          variant: "destructive"
+          title: "Militar cadastrado com sucesso!",
+          description: `${values.nomeCompleto} foi adicionado ao quadro ${result.quadro}`,
         });
-        setIsSubmitting(false);
-        return;
+        
+        navigate(result.redirectPath);
       }
-      
-      try {
-        dataInclusao = parse(values.dataInclusao, "dd/MM/yyyy", new Date());
-        if (isNaN(dataInclusao.getTime())) throw new Error("Data de inclusão inválida");
-      } catch (error) {
-        toast({
-          title: "Erro na data de inclusão",
-          description: "Formato inválido. Use DD/MM/AAAA",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      try {
-        dataUltimaPromocao = parse(values.dataUltimaPromocao, "dd/MM/yyyy", new Date());
-        if (isNaN(dataUltimaPromocao.getTime())) throw new Error("Data de última promoção inválida");
-      } catch (error) {
-        toast({
-          title: "Erro na data de última promoção",
-          description: "Formato inválido. Use DD/MM/AAAA",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      let quadroFinal = values.quadro;
-      if (values.situacao === "inativo") {
-        if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
-          quadroFinal = "QORR";
-        } else if (quadroFinal === "QPBM") {
-          quadroFinal = "QPRR";
-        }
-      }
-      
-      const novoMilitar = {
-        nomeCompleto: values.nomeCompleto,
-        nomeGuerra: values.nomeGuerra,
-        foto: `https://api.dicebear.com/7.x/initials/svg?seed=${values.nomeGuerra}`,
-        dataNascimento: dataNascimento.toISOString(),
-        dataInclusao: dataInclusao.toISOString(),
-        dataUltimaPromocao: dataUltimaPromocao.toISOString(),
-        posto: values.posto as PostoPatente,
-        quadro: quadroFinal as QuadroMilitar,
-        situacao: values.situacao as SituacaoMilitar,
-        email: values.email
-      };
-      
-      console.log("Tentando cadastrar militar:", novoMilitar);
-      
-      // Salvar o militar no banco de dados usando o serviço
-      const militarSalvo = await createMilitar(novoMilitar);
-      console.log("Militar cadastrado com sucesso:", militarSalvo);
-      
-      toast({
-        title: "Militar cadastrado com sucesso!",
-        description: `${values.nomeCompleto} foi adicionado ao quadro ${quadroFinal}`,
-      });
-      
-      let redirectPath = "/";
-      
-      if (quadroFinal === "QOEM") {
-        redirectPath = "/oficiais/estado-maior";
-      } else if (quadroFinal === "QOE") {
-        redirectPath = "/oficiais/especialistas";
-      } else if (quadroFinal === "QORR") {
-        redirectPath = "/oficiais/reserva";
-      } else if (quadroFinal === "QPBM") {
-        redirectPath = "/pracas/ativos";
-      } else if (quadroFinal === "QPRR") {
-        redirectPath = "/pracas/reserva";
-      }
-      
-      navigate(redirectPath);
     } catch (error: any) {
       console.error("Erro ao cadastrar militar:", error);
       toast({
@@ -168,34 +89,91 @@ const CadastroMilitar = () => {
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <QuadroPostoSelect 
-                form={form} 
-                selectedQuadro={selectedQuadro} 
-                setSelectedQuadro={setSelectedQuadro} 
-              />
+              <Tabs 
+                defaultValue="quadro-posto" 
+                value={activeTab} 
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="grid grid-cols-4 mb-6">
+                  <TabsTrigger value="quadro-posto">Quadro e Posto</TabsTrigger>
+                  <TabsTrigger value="dados-pessoais">Dados Pessoais</TabsTrigger>
+                  <TabsTrigger value="datas">Datas Importantes</TabsTrigger>
+                  <TabsTrigger value="situacao-contato">Situação e Contato</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="quadro-posto" className="space-y-4">
+                  <QuadroPostoSelect 
+                    form={form} 
+                    selectedQuadro={selectedQuadro} 
+                    setSelectedQuadro={setSelectedQuadro} 
+                  />
+                </TabsContent>
+                
+                <TabsContent value="dados-pessoais" className="space-y-4">
+                  <DadosPessoais form={form} />
+                  
+                  <div>
+                    <Label htmlFor="photo">Foto (opcional)</Label>
+                    <Input id="photo" type="file" accept="image/*" className="mt-1" />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="datas" className="space-y-4">
+                  <DatasImportantes form={form} />
+                </TabsContent>
+                
+                <TabsContent value="situacao-contato" className="space-y-4">
+                  <SituacaoEmail form={form} />
+                </TabsContent>
+              </Tabs>
               
-              <DadosPessoais form={form} />
-              
-              <DatasImportantes form={form} />
-              
-              <SituacaoEmail form={form} />
-              
-              <div>
-                <Label htmlFor="photo">Foto (opcional)</Label>
-                <Input id="photo" type="file" accept="image/*" className="mt-1" />
-              </div>
-              
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Cadastrando..." : "Cadastrar Militar"}
-                </Button>
+              <div className="flex justify-between items-center pt-4">
+                <div className="flex space-x-2">
+                  {activeTab !== "quadro-posto" && (
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => {
+                        const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+                        const currentIndex = tabs.indexOf(activeTab);
+                        if (currentIndex > 0) {
+                          setActiveTab(tabs[currentIndex - 1]);
+                        }
+                      }}
+                    >
+                      Anterior
+                    </Button>
+                  )}
+                  
+                  {activeTab !== "situacao-contato" && (
+                    <Button 
+                      type="button"
+                      onClick={() => {
+                        const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+                        const currentIndex = tabs.indexOf(activeTab);
+                        if (currentIndex < tabs.length - 1) {
+                          setActiveTab(tabs[currentIndex + 1]);
+                        }
+                      }}
+                    >
+                      Próximo
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex space-x-3">
+                  <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Cadastrando..." : "Cadastrar Militar"}
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
