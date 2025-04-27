@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Militar } from "@/types";
+import { Militar, QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
 
 export const createMilitar = async (militar: Omit<Militar, "id">) => {
   console.log("Enviando para o Supabase:", militar);
