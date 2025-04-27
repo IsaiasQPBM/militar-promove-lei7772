@@ -2,23 +2,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Form } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { parse } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { formSchema, type FormValues } from "@/utils/militarValidation";
+import { UserPlus } from "lucide-react";
+import { submitMilitarForm } from "@/utils/militarFormSubmission";
+import { Button } from "@/components/ui/button";
+
+// Form Components
 import QuadroPostoSelect from "@/components/militar/QuadroPostoSelect";
 import DadosPessoais from "@/components/militar/DadosPessoais";
 import DatasImportantes from "@/components/militar/DatasImportantes";
 import SituacaoEmail from "@/components/militar/SituacaoEmail";
-import { UserPlus } from "lucide-react";
-import { submitMilitarForm } from "@/utils/militarFormSubmission";
-import { QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
+import FormNavigation from "@/components/militar/FormNavigation";
 
 const CadastroMilitar = () => {
   const navigate = useNavigate();
@@ -41,6 +40,7 @@ const CadastroMilitar = () => {
     }
   });
   
+  // Form handling
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
@@ -67,6 +67,26 @@ const CadastroMilitar = () => {
     }
   };
 
+  // Tab navigation
+  const handleNext = () => {
+    const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+    const currentIndex = tabs.indexOf(activeTab);
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
+    }
+  };
+
+  const handlePrevious = () => {
+    const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+    const currentIndex = tabs.indexOf(activeTab);
+    if (currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
+    }
+  };
+
+  const isFirstTab = activeTab === "quadro-posto";
+  const isLastTab = activeTab === "situacao-contato";
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -90,7 +110,6 @@ const CadastroMilitar = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Tabs 
-                defaultValue="quadro-posto" 
                 value={activeTab} 
                 onValueChange={setActiveTab}
                 className="w-full"
@@ -112,11 +131,6 @@ const CadastroMilitar = () => {
                 
                 <TabsContent value="dados-pessoais" className="space-y-4">
                   <DadosPessoais form={form} />
-                  
-                  <div>
-                    <Label htmlFor="photo">Foto (opcional)</Label>
-                    <Input id="photo" type="file" accept="image/*" className="mt-1" />
-                  </div>
                 </TabsContent>
                 
                 <TabsContent value="datas" className="space-y-4">
@@ -128,53 +142,15 @@ const CadastroMilitar = () => {
                 </TabsContent>
               </Tabs>
               
-              <div className="flex justify-between items-center pt-4">
-                <div className="flex space-x-2">
-                  {activeTab !== "quadro-posto" && (
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => {
-                        const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
-                        const currentIndex = tabs.indexOf(activeTab);
-                        if (currentIndex > 0) {
-                          setActiveTab(tabs[currentIndex - 1]);
-                        }
-                      }}
-                    >
-                      Anterior
-                    </Button>
-                  )}
-                  
-                  {activeTab !== "situacao-contato" && (
-                    <Button 
-                      type="button"
-                      onClick={() => {
-                        const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
-                        const currentIndex = tabs.indexOf(activeTab);
-                        if (currentIndex < tabs.length - 1) {
-                          setActiveTab(tabs[currentIndex + 1]);
-                        }
-                      }}
-                    >
-                      Próximo
-                    </Button>
-                  )}
-                </div>
-                
-                <div className="flex space-x-3">
-                  <Button variant="outline" type="button" onClick={() => navigate(-1)}>
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Cadastrando..." : "Cadastrar Militar"}
-                  </Button>
-                </div>
-              </div>
+              <FormNavigation 
+                activeTab={activeTab}
+                isLastTab={isLastTab}
+                isFirstTab={isFirstTab}
+                isSubmitting={isSubmitting}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                onCancel={() => navigate(-1)}
+              />
             </form>
           </Form>
         </CardContent>

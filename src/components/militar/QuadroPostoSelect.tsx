@@ -3,6 +3,8 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "@/utils/militarValidation";
+import { PostoPatente, QuadroMilitar } from "@/types";
+import { useEffect } from "react";
 
 interface QuadroPostoSelectProps {
   form: UseFormReturn<FormValues>;
@@ -21,7 +23,7 @@ const QuadroPostoSelect = ({ form, selectedQuadro, setSelectedQuadro }: QuadroPo
         { value: "1º Tenente", label: "1º Tenente" },
         { value: "2º Tenente", label: "2º Tenente" }
       ];
-    } else {
+    } else if (selectedQuadro === "QPBM" || selectedQuadro === "QPRR") {
       return [
         { value: "Subtenente", label: "Subtenente" },
         { value: "1º Sargento", label: "1º Sargento" },
@@ -31,7 +33,15 @@ const QuadroPostoSelect = ({ form, selectedQuadro, setSelectedQuadro }: QuadroPo
         { value: "Soldado", label: "Soldado" }
       ];
     }
+    return [];
   };
+
+  // Reset posto when quadro changes
+  useEffect(() => {
+    if (selectedQuadro) {
+      form.setValue("posto", "");
+    }
+  }, [selectedQuadro, form]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -45,9 +55,9 @@ const QuadroPostoSelect = ({ form, selectedQuadro, setSelectedQuadro }: QuadroPo
               onValueChange={(value) => {
                 field.onChange(value);
                 setSelectedQuadro(value);
-                form.setValue("posto", "");
               }}
               defaultValue={field.value}
+              value={field.value}
             >
               <FormControl>
                 <SelectTrigger>
@@ -74,8 +84,8 @@ const QuadroPostoSelect = ({ form, selectedQuadro, setSelectedQuadro }: QuadroPo
           <FormItem>
             <FormLabel>Posto/Graduação</FormLabel>
             <Select 
-              onValueChange={field.onChange} 
-              defaultValue={field.value}
+              onValueChange={field.onChange}
+              value={field.value}
               disabled={!selectedQuadro}
             >
               <FormControl>

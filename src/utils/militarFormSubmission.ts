@@ -43,7 +43,7 @@ export const submitMilitarForm = async (
   }
   
   // Ajustar quadro com base na situação
-  let quadroFinal = values.quadro;
+  let quadroFinal = values.quadro as QuadroMilitar;
   if (values.situacao === "inativo") {
     if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
       quadroFinal = "QORR";
@@ -61,7 +61,7 @@ export const submitMilitarForm = async (
     dataInclusao: dataInclusao.toISOString(),
     dataUltimaPromocao: dataUltimaPromocao.toISOString(),
     posto: values.posto as PostoPatente,
-    quadro: quadroFinal as QuadroMilitar,
+    quadro: quadroFinal,
     situacao: values.situacao as SituacaoMilitar,
     email: values.email
   };
