@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface FormNavigationProps {
   activeTab: string;
@@ -29,6 +30,7 @@ const FormNavigation: React.FC<FormNavigationProps> = ({
             type="button" 
             variant="outline"
             onClick={onPrevious}
+            disabled={isSubmitting}
           >
             Anterior
           </Button>
@@ -38,6 +40,7 @@ const FormNavigation: React.FC<FormNavigationProps> = ({
           <Button 
             type="button"
             onClick={onNext}
+            disabled={isSubmitting}
           >
             Próximo
           </Button>
@@ -45,7 +48,12 @@ const FormNavigation: React.FC<FormNavigationProps> = ({
       </div>
       
       <div className="flex space-x-3">
-        <Button variant="outline" type="button" onClick={onCancel}>
+        <Button 
+          variant="outline" 
+          type="button" 
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           Cancelar
         </Button>
         {isLastTab && (
@@ -54,7 +62,14 @@ const FormNavigation: React.FC<FormNavigationProps> = ({
             className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Cadastrando..." : "Cadastrar Militar"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Cadastrando...
+              </>
+            ) : (
+              "Cadastrar Militar"
+            )}
           </Button>
         )}
       </div>
