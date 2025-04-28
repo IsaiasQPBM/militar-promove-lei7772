@@ -74,14 +74,14 @@ export const submitMilitarForm = async (
   try {
     console.log("Preparando dados para enviar ao Supabase...");
     
-    // Preparar objeto para salvar no banco de dados - usando EXATAMENTE os nomes das colunas do Supabase
+    // Preparar objeto para salvar no banco de dados
     const novoMilitar = {
-      nome: values.nomeCompleto,
-      nomeguerra: values.nomeGuerra,
+      nomeCompleto: values.nomeCompleto,
+      nomeGuerra: values.nomeGuerra,
       foto: `https://api.dicebear.com/7.x/initials/svg?seed=${values.nomeGuerra}`,
-      datanascimento: dataNascimento.toISOString(),
-      data_ingresso: dataInclusao.toISOString(),
-      dataultimapromocao: dataUltimaPromocao.toISOString(),
+      dataNascimento: dataNascimento.toISOString(),
+      dataInclusao: dataInclusao.toISOString(),
+      dataUltimaPromocao: dataUltimaPromocao.toISOString(),
       posto: values.posto as PostoPatente,
       quadro: quadroFinal,
       situacao: values.situacao as SituacaoMilitar,

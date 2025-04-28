@@ -5,6 +5,7 @@ import { Militar, QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
 export const createMilitar = async (militar: Omit<Militar, "id">) => {
   console.log("Enviando para o Supabase:", militar);
   
+  // Map the Militar type fields to the database column names
   const { data, error } = await supabase
     .from("militares")
     .insert({
