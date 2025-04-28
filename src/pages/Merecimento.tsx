@@ -1,29 +1,20 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Militar } from "@/types";
-import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { MerecimentoList } from "@/components/merecimento/MerecimentoList";
+import { CriteriosMerecimento } from "@/components/merecimento/CriteriosMerecimento";
+import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
+
+type MilitarComPontuacao = Militar & { pontuacao: number };
 
 const Merecimento = () => {
   const [tabValue, setTabValue] = useState("oficiais");
-  const [oficiais, setOficiais] = useState<(Militar & { pontuacao: number })[]>([]);
-  const [pracas, setPracas] = useState<(Militar & { pontuacao: number })[]>([]);
+  const [oficiais, setOficiais] = useState<MilitarComPontuacao[]>([]);
+  const [pracas, setPracas] = useState<MilitarComPontuacao[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -71,7 +62,7 @@ const Merecimento = () => {
         if (errorPunicoes) throw errorPunicoes;
         
         // Calcular pontuação para cada militar
-        const militaresComPontuacao = militares.map(militar => {
+        const militaresComPontuacao: MilitarComPontuacao[] = militares.map(militar => {
           const id = militar.id;
           
           // Pontos dos cursos militares
@@ -107,12 +98,12 @@ const Merecimento = () => {
             id: militar.id,
             nomeCompleto: militar.nome,
             nomeGuerra: militar.nomeguerra,
-            posto: militar.posto,
-            quadro: militar.quadro,
+            posto: toPostoPatente(militar.posto),
+            quadro: toQuadroMilitar(militar.quadro),
             dataNascimento: militar.datanascimento,
             dataInclusao: militar.data_ingresso,
             dataUltimaPromocao: militar.dataultimapromocao,
-            situacao: militar.situacao,
+            situacao: toSituacaoMilitar(militar.situacao),
             email: militar.email,
             foto: militar.foto,
             pontuacao
@@ -176,46 +167,11 @@ const Merecimento = () => {
               <CardTitle>Quadro de Acesso por Merecimento - Oficiais</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {loading ? (
-                <div className="flex justify-center items-center p-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Posição</TableHead>
-                      <TableHead>Posto</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Pontuação Total</TableHead>
-                      <TableHead>Situação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {oficiais.length > 0 ? (
-                      oficiais.map((militar, index) => (
-                        <TableRow key={militar.id}>
-                          <TableCell className="font-medium">{index + 1}º</TableCell>
-                          <TableCell>{militar.posto}</TableCell>
-                          <TableCell>{militar.nomeCompleto}</TableCell>
-                          <TableCell className="font-bold">{militar.pontuacao.toFixed(2)}</TableCell>
-                          <TableCell>
-                            {index < 3 ? (
-                              <Badge className="bg-green-600">Apto à promoção</Badge>
-                            ) : (
-                              <Badge variant="outline">Não apto</Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center">Não há oficiais cadastrados.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
+              <MerecimentoList 
+                militares={oficiais}
+                loading={loading} 
+                tipo="oficiais" 
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -226,83 +182,17 @@ const Merecimento = () => {
               <CardTitle>Quadro de Acesso por Merecimento - Praças</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {loading ? (
-                <div className="flex justify-center items-center p-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Posição</TableHead>
-                      <TableHead>Graduação</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Pontuação Total</TableHead>
-                      <TableHead>Situação</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pracas.length > 0 ? (
-                      pracas.map((militar, index) => (
-                        <TableRow key={militar.id}>
-                          <TableCell className="font-medium">{index + 1}º</TableCell>
-                          <TableCell>{militar.posto}</TableCell>
-                          <TableCell>{militar.nomeCompleto}</TableCell>
-                          <TableCell className="font-bold">{militar.pontuacao.toFixed(2)}</TableCell>
-                          <TableCell>
-                            {index < 3 ? (
-                              <Badge className="bg-green-600">Apto à promoção</Badge>
-                            ) : (
-                              <Badge variant="outline">Não apto</Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center">Não há praças cadastradas.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
+              <MerecimentoList 
+                militares={pracas} 
+                loading={loading}
+                tipo="pracas" 
+              />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Critérios de Merecimento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p>
-              Conforme a Lei 7.772/2022, a pontuação para o Quadro de Acesso por Merecimento é calculada com base nos seguintes critérios:
-            </p>
-            
-            <div className="space-y-3">
-              <h3 className="font-semibold">Pontos Positivos:</h3>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Cursos Militares: até 10 pontos, conforme a categoria do curso;</li>
-                <li>Cursos Civis: até 4 pontos, dependendo do nível (superior, especialização, mestrado, doutorado);</li>
-                <li>Medalhas e Condecorações: até 1 ponto, variando conforme a autoridade concedente;</li>
-                <li>Elogios: até 0,25 ponto, dependendo se individual ou coletivo.</li>
-              </ul>
-              
-              <h3 className="font-semibold">Pontos Negativos:</h3>
-              <ul className="list-disc pl-5 space-y-2">
-                <li>Punições: até 5 pontos negativos, conforme a gravidade (repreensão, detenção ou prisão);</li>
-                <li>Falta de aproveitamento em cursos militares: até 5 pontos negativos.</li>
-              </ul>
-            </div>
-            
-            <p className="text-sm text-muted-foreground mt-4">
-              No caso de empate na pontuação final, prevalece o critério de antiguidade para o desempate.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <CriteriosMerecimento />
     </div>
   );
 };

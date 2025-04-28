@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Militar, QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
+import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
 
 export const createMilitar = async (militar: Omit<Militar, "id">) => {
   console.log("Enviando para o Supabase:", militar);
@@ -35,12 +36,12 @@ export const createMilitar = async (militar: Omit<Militar, "id">) => {
     id: data.id,
     nomeCompleto: data.nome,
     nomeGuerra: data.nomeguerra,
-    posto: data.posto as PostoPatente,
-    quadro: data.quadro as QuadroMilitar,
+    posto: toPostoPatente(data.posto),
+    quadro: toQuadroMilitar(data.quadro),
     dataNascimento: data.datanascimento,
     dataInclusao: data.data_ingresso,
     dataUltimaPromocao: data.dataultimapromocao,
-    situacao: data.situacao as SituacaoMilitar,
+    situacao: toSituacaoMilitar(data.situacao),
     email: data.email,
     foto: data.foto
   };
@@ -75,12 +76,12 @@ export const updateMilitar = async (id: string, militar: Partial<Militar>) => {
     id: data.id,
     nomeCompleto: data.nome,
     nomeGuerra: data.nomeguerra,
-    posto: data.posto as PostoPatente,
-    quadro: data.quadro as QuadroMilitar,
+    posto: toPostoPatente(data.posto),
+    quadro: toQuadroMilitar(data.quadro),
     dataNascimento: data.datanascimento,
     dataInclusao: data.data_ingresso,
     dataUltimaPromocao: data.dataultimapromocao,
-    situacao: data.situacao as SituacaoMilitar,
+    situacao: toSituacaoMilitar(data.situacao),
     email: data.email,
     foto: data.foto
   };
@@ -109,12 +110,12 @@ export const getMilitarById = async (id: string) => {
     id: data.id,
     nomeCompleto: data.nome,
     nomeGuerra: data.nomeguerra,
-    posto: data.posto as PostoPatente,
-    quadro: data.quadro as QuadroMilitar,
+    posto: toPostoPatente(data.posto),
+    quadro: toQuadroMilitar(data.quadro),
     dataNascimento: data.datanascimento,
     dataInclusao: data.data_ingresso,
     dataUltimaPromocao: data.dataultimapromocao,
-    situacao: data.situacao as SituacaoMilitar,
+    situacao: toSituacaoMilitar(data.situacao),
     email: data.email,
     foto: data.foto
   };
@@ -134,12 +135,12 @@ export const getMilitaresByQuadro = async (quadro: string) => {
     id: item.id,
     nomeCompleto: item.nome,
     nomeGuerra: item.nomeguerra,
-    posto: item.posto as PostoPatente,
-    quadro: item.quadro as QuadroMilitar,
+    posto: toPostoPatente(item.posto),
+    quadro: toQuadroMilitar(item.quadro),
     dataNascimento: item.datanascimento,
     dataInclusao: item.data_ingresso,
     dataUltimaPromocao: item.dataultimapromocao,
-    situacao: item.situacao as SituacaoMilitar,
+    situacao: toSituacaoMilitar(item.situacao),
     email: item.email,
     foto: item.foto
   }));
@@ -158,12 +159,12 @@ export const getMilitaresAtivos = async () => {
     id: item.id,
     nomeCompleto: item.nome,
     nomeGuerra: item.nomeguerra,
-    posto: item.posto as PostoPatente,
-    quadro: item.quadro as QuadroMilitar,
+    posto: toPostoPatente(item.posto),
+    quadro: toQuadroMilitar(item.quadro),
     dataNascimento: item.datanascimento,
     dataInclusao: item.data_ingresso,
     dataUltimaPromocao: item.dataultimapromocao,
-    situacao: item.situacao as SituacaoMilitar,
+    situacao: toSituacaoMilitar(item.situacao),
     email: item.email,
     foto: item.foto
   }));

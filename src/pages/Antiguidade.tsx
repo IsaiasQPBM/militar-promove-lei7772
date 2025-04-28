@@ -1,25 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Militar } from "@/types";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { MilitarList } from "@/components/antiguidade/MilitarList";
+import { CriteriosAntiguidade } from "@/components/antiguidade/CriteriosAntiguidade";
+import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
 
 const Antiguidade = () => {
   const [tabValue, setTabValue] = useState("oficiais");
@@ -39,16 +27,16 @@ const Antiguidade = () => {
         if (error) throw error;
         
         // Converter os dados do formato do banco para o formato do tipo Militar
-        const militaresFormatados = data.map(item => ({
+        const militaresFormatados: Militar[] = data.map(item => ({
           id: item.id,
           nomeCompleto: item.nome,
           nomeGuerra: item.nomeguerra,
-          posto: item.posto,
-          quadro: item.quadro,
+          posto: toPostoPatente(item.posto),
+          quadro: toQuadroMilitar(item.quadro),
           dataNascimento: item.datanascimento,
           dataInclusao: item.data_ingresso,
           dataUltimaPromocao: item.dataultimapromocao,
-          situacao: item.situacao,
+          situacao: toSituacaoMilitar(item.situacao),
           email: item.email,
           foto: item.foto
         }));
@@ -123,48 +111,11 @@ const Antiguidade = () => {
               <CardTitle>Quadro de Acesso por Antiguidade - Oficiais</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {loading ? (
-                <div className="flex justify-center items-center p-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Posição</TableHead>
-                      <TableHead>Posto</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Data de Inclusão</TableHead>
-                      <TableHead>Última Promoção</TableHead>
-                      <TableHead>Idade</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {oficiaisOrdenados.length > 0 ? (
-                      oficiaisOrdenados.map((militar, index) => (
-                        <TableRow key={militar.id}>
-                          <TableCell className="font-medium">{index + 1}º</TableCell>
-                          <TableCell>{militar.posto}</TableCell>
-                          <TableCell>{militar.nomeCompleto}</TableCell>
-                          <TableCell>
-                            {format(new Date(militar.dataInclusao), "dd/MM/yyyy", { locale: ptBR })}
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(militar.dataUltimaPromocao), "dd/MM/yyyy", { locale: ptBR })}
-                          </TableCell>
-                          <TableCell>
-                            {new Date().getFullYear() - new Date(militar.dataNascimento).getFullYear()} anos
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center">Não há oficiais cadastrados.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
+              <MilitarList 
+                militares={oficiaisOrdenados} 
+                loading={loading} 
+                tipo="oficiais"
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -175,76 +126,17 @@ const Antiguidade = () => {
               <CardTitle>Quadro de Acesso por Antiguidade - Praças</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              {loading ? (
-                <div className="flex justify-center items-center p-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Posição</TableHead>
-                      <TableHead>Graduação</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Data de Inclusão</TableHead>
-                      <TableHead>Última Promoção</TableHead>
-                      <TableHead>Idade</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pracasOrdenadas.length > 0 ? (
-                      pracasOrdenadas.map((militar, index) => (
-                        <TableRow key={militar.id}>
-                          <TableCell className="font-medium">{index + 1}º</TableCell>
-                          <TableCell>{militar.posto}</TableCell>
-                          <TableCell>{militar.nomeCompleto}</TableCell>
-                          <TableCell>
-                            {format(new Date(militar.dataInclusao), "dd/MM/yyyy", { locale: ptBR })}
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(militar.dataUltimaPromocao), "dd/MM/yyyy", { locale: ptBR })}
-                          </TableCell>
-                          <TableCell>
-                            {new Date().getFullYear() - new Date(militar.dataNascimento).getFullYear()} anos
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center">Não há praças cadastradas.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
+              <MilitarList 
+                militares={pracasOrdenadas} 
+                loading={loading} 
+                tipo="pracas"
+              />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Critérios de Antiguidade</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p>
-              De acordo com a Lei 7.772/2022, o ordenamento hierárquico dos oficiais e praças é determinado pelos seguintes critérios de antiguidade:
-            </p>
-            
-            <ol className="list-decimal pl-5 space-y-2">
-              <li>Data de ingresso no respectivo quadro (mais antiga confere maior antiguidade);</li>
-              <li>Data da última promoção (mais antiga confere maior antiguidade);</li>
-              <li>Data de nascimento (maior idade confere maior antiguidade);</li>
-              <li>Classificação em curso de formação ou habilitação (melhor classificação confere maior antiguidade).</li>
-            </ol>
-            
-            <p className="text-sm text-muted-foreground mt-4">
-              A posição no Quadro de Acesso por Antiguidade (QAA) é um dos critérios para promoção conforme estabelecido na legislação vigente.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <CriteriosAntiguidade />
     </div>
   );
 };

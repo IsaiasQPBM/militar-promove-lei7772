@@ -31,7 +31,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
-import { getMilitarById } from "@/utils/mockData";
+import { getMilitarById, updateMilitar } from "@/services/militarService";
 
 const formSchema = z.object({
   quadro: z.string().min(1, { message: "Selecione o quadro de pertencimento" }),
@@ -55,6 +55,7 @@ const EditarMilitar = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedQuadro, setSelectedQuadro] = useState<string>("");
+  const [loading, setLoading] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,48 +70,88 @@ const EditarMilitar = () => {
   });
   
   useEffect(() => {
-    if (id) {
-      const militar = getMilitarById(id);
-      if (militar) {
-        setSelectedQuadro(militar.quadro);
-        form.reset({
-          quadro: militar.quadro,
-          posto: militar.posto,
-          nomeCompleto: militar.nomeCompleto,
-          nomeGuerra: militar.nomeGuerra,
-          dataNascimento: new Date(militar.dataNascimento),
-          dataInclusao: new Date(militar.dataInclusao),
-          dataUltimaPromocao: new Date(militar.dataUltimaPromocao),
-          situacao: militar.situacao,
-          email: militar.email
-        });
+    const loadMilitarData = async () => {
+      if (id) {
+        try {
+          setLoading(true);
+          const militar = await getMilitarById(id);
+          
+          if (militar) {
+            setSelectedQuadro(militar.quadro);
+            form.reset({
+              quadro: militar.quadro,
+              posto: militar.posto,
+              nomeCompleto: militar.nomeCompleto,
+              nomeGuerra: militar.nomeGuerra,
+              dataNascimento: new Date(militar.dataNascimento),
+              dataInclusao: new Date(militar.dataInclusao),
+              dataUltimaPromocao: new Date(militar.dataUltimaPromocao),
+              situacao: militar.situacao,
+              email: militar.email
+            });
+          }
+        } catch (error) {
+          console.error("Erro ao carregar dados do militar:", error);
+          toast({
+            title: "Erro ao carregar dados",
+            description: "Não foi possível carregar os dados do militar.",
+            variant: "destructive"
+          });
+        } finally {
+          setLoading(false);
+        }
       }
-    }
+    };
+    
+    loadMilitarData();
   }, [id, form]);
   
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Em uma aplicação real, aqui enviaríamos os dados para o backend
-    console.log("Formulário enviado:", values);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!id) return;
     
-    toast({
-      title: "Dados atualizados com sucesso!",
-      description: `As informações de ${values.nomeCompleto} foram atualizadas.`,
-    });
-    
-    // Determinar para qual página navegar com base no quadro
-    let redirectPath = "/";
-    
-    if (values.quadro === "QOEM" || values.quadro === "QOE") {
-      redirectPath = `/oficiais/${values.quadro === "QOEM" ? "estado-maior" : "especialistas"}`;
-    } else if (values.quadro === "QORR") {
-      redirectPath = "/oficiais/reserva";
-    } else if (values.quadro === "QPBM") {
-      redirectPath = "/pracas/ativos";
-    } else if (values.quadro === "QPRR") {
-      redirectPath = "/pracas/reserva";
+    try {
+      setLoading(true);
+      await updateMilitar(id, {
+        quadro: values.quadro,
+        posto: values.posto,
+        nomeCompleto: values.nomeCompleto,
+        nomeGuerra: values.nomeGuerra,
+        dataNascimento: format(values.dataNascimento, "yyyy-MM-dd"),
+        dataInclusao: format(values.dataInclusao, "yyyy-MM-dd"),
+        dataUltimaPromocao: format(values.dataUltimaPromocao, "yyyy-MM-dd"),
+        situacao: values.situacao,
+        email: values.email
+      });
+      
+      toast({
+        title: "Dados atualizados com sucesso!",
+        description: `As informações de ${values.nomeCompleto} foram atualizadas.`,
+      });
+      
+      // Determinar para qual página navegar com base no quadro
+      let redirectPath = "/";
+      
+      if (values.quadro === "QOEM" || values.quadro === "QOE") {
+        redirectPath = `/oficiais/${values.quadro === "QOEM" ? "estado-maior" : "especialistas"}`;
+      } else if (values.quadro === "QORR") {
+        redirectPath = "/oficiais/reserva";
+      } else if (values.quadro === "QPBM") {
+        redirectPath = "/pracas/ativos";
+      } else if (values.quadro === "QPRR") {
+        redirectPath = "/pracas/reserva";
+      }
+      
+      navigate(redirectPath);
+    } catch (error) {
+      console.error("Erro ao atualizar militar:", error);
+      toast({
+        title: "Erro ao atualizar dados",
+        description: "Ocorreu um erro ao salvar as alterações.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    navigate(redirectPath);
   };
   
   // Função para determinar as opções de posto com base no quadro selecionado
@@ -135,6 +176,15 @@ const EditarMilitar = () => {
       ];
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
+        <span className="ml-2">Carregando dados do militar...</span>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -448,8 +498,12 @@ const EditarMilitar = () => {
                 <Button variant="outline" type="button" onClick={() => navigate(-1)}>
                   Cancelar
                 </Button>
-                <Button type="submit" className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple">
-                  Salvar Alterações
+                <Button 
+                  type="submit" 
+                  className="bg-cbmepi-purple hover:bg-cbmepi-darkPurple"
+                  disabled={loading}
+                >
+                  {loading ? "Salvando..." : "Salvar Alterações"}
                 </Button>
               </div>
             </form>
