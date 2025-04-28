@@ -12,9 +12,8 @@ import { DadosPessoais } from "@/components/fichaMilitar/DadosPessoais";
 import { DadosFormacao } from "@/components/fichaMilitar/DadosFormacao";
 import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
 
-const FichaMilitar = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+// Hook personalizado para buscar os dados do militar
+const useFichaMilitar = (id: string | undefined) => {
   const [militar, setMilitar] = useState<Militar | null>(null);
   const [cursosMilitares, setCursosMilitares] = useState<CursoMilitar[]>([]);
   const [cursosCivis, setCursosCivis] = useState<CursoCivil[]>([]);
@@ -23,168 +22,245 @@ const FichaMilitar = () => {
   const [punicoes, setPunicoes] = useState<Punicao[]>([]);
   const [totalPontos, setTotalPontos] = useState(0);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
-    if (id) {
-      const fetchData = async () => {
-        try {
-          setLoading(true);
+    if (!id) return;
+
+    const fetchMilitarData = async () => {
+      try {
+        setLoading(true);
+        // Buscar dados do militar
+        const { data: militarData, error: militarError } = await supabase
+          .from("militares")
+          .select("*")
+          .eq("id", id)
+          .single();
           
-          // Obter dados do militar
-          const { data: militarData, error: militarError } = await supabase
-            .from("militares")
-            .select("*")
-            .eq("id", id)
-            .single();
-            
-          if (militarError) throw militarError;
-          
-          if (militarData) {
-            // Converter do formato do banco para o formato do tipo Militar
-            setMilitar({
-              id: militarData.id,
-              nomeCompleto: militarData.nome,
-              nomeGuerra: militarData.nomeguerra,
-              posto: toPostoPatente(militarData.posto),
-              quadro: toQuadroMilitar(militarData.quadro),
-              dataNascimento: militarData.datanascimento,
-              dataInclusao: militarData.data_ingresso,
-              dataUltimaPromocao: militarData.dataultimapromocao,
-              situacao: toSituacaoMilitar(militarData.situacao),
-              email: militarData.email,
-              foto: militarData.foto
-            });
-          }
-          
-          // Obter cursos militares
-          const { data: cursosMilitaresData, error: cursosMilitaresError } = await supabase
-            .from("cursos_militares")
-            .select("*")
-            .eq("militar_id", id);
-            
-          if (cursosMilitaresError) throw cursosMilitaresError;
-          
-          // Converter do formato do banco para o formato do tipo
-          const cursosMilitaresMapeados = cursosMilitaresData.map(curso => ({
-            id: curso.id,
-            militarId: curso.militar_id,
-            nome: curso.nome,
-            instituicao: curso.instituicao,
-            cargaHoraria: curso.cargahoraria,
-            pontos: curso.pontos,
-            anexo: curso.anexo
-          }));
-          
-          setCursosMilitares(cursosMilitaresMapeados);
-          
-          // Obter cursos civis
-          const { data: cursosCivisData, error: cursosCivisError } = await supabase
-            .from("cursos_civis")
-            .select("*")
-            .eq("militar_id", id);
-            
-          if (cursosCivisError) throw cursosCivisError;
-          
-          // Converter do formato do banco para o formato do tipo
-          const cursosCivisMapeados = cursosCivisData.map(curso => ({
-            id: curso.id,
-            militarId: curso.militar_id,
-            nome: curso.nome,
-            instituicao: curso.instituicao,
-            cargaHoraria: curso.cargahoraria,
-            pontos: curso.pontos,
-            anexo: curso.anexo
-          }));
-          
-          setCursosCivis(cursosCivisMapeados);
-          
-          // Obter condecorações
-          const { data: condecoracoesData, error: condecoracoesError } = await supabase
-            .from("condecoracoes")
-            .select("*")
-            .eq("militar_id", id);
-            
-          if (condecoracoesError) throw condecoracoesError;
-          
-          // Converter do formato do banco para o formato do tipo
-          const condecoracoesMapeadas = condecoracoesData.map(cond => ({
-            id: cond.id,
-            militarId: cond.militar_id,
-            tipo: cond.tipo,
-            descricao: cond.descricao,
-            pontos: cond.pontos,
-            dataRecebimento: cond.datarecebimento,
-            anexo: cond.anexo
-          }));
-          
-          setCondecoracoes(condecoracoesMapeadas);
-          
-          // Obter elogios
-          const { data: elogiosData, error: elogiosError } = await supabase
-            .from("elogios")
-            .select("*")
-            .eq("militar_id", id);
-            
-          if (elogiosError) throw elogiosError;
-          
-          // Converter do formato do banco para o formato do tipo
-          const elogiosMapeados = elogiosData.map(elogio => ({
-            id: elogio.id,
-            militarId: elogio.militar_id,
-            tipo: elogio.tipo as "Individual" | "Coletivo",
-            descricao: elogio.descricao,
-            pontos: elogio.pontos,
-            dataRecebimento: elogio.datarecebimento,
-            anexo: elogio.anexo
-          }));
-          
-          setElogios(elogiosMapeados);
-          
-          // Obter punições
-          const { data: punicoesData, error: punicoesError } = await supabase
-            .from("punicoes")
-            .select("*")
-            .eq("militar_id", id);
-            
-          if (punicoesError) throw punicoesError;
-          
-          // Converter do formato do banco para o formato do tipo
-          const punicoesMapeadas = punicoesData.map(punicao => ({
-            id: punicao.id,
-            militarId: punicao.militar_id,
-            tipo: punicao.tipo as "Repreensão" | "Detenção" | "Prisão",
-            descricao: punicao.descricao,
-            pontos: punicao.pontos,
-            dataRecebimento: punicao.datarecebimento,
-            anexo: punicao.anexo
-          }));
-          
-          setPunicoes(punicoesMapeadas);
-          
-          // Calcular total de pontos
-          const pontosM = cursosMilitaresMapeados.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
-          const pontosC = cursosCivisMapeados.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
-          const pontosD = condecoracoesMapeadas.reduce((sum, cond) => sum + (cond.pontos || 0), 0);
-          const pontosE = elogiosMapeados.reduce((sum, elogio) => sum + (elogio.pontos || 0), 0);
-          const pontosP = punicoesMapeadas.reduce((sum, punicao) => sum + (punicao.pontos || 0), 0);
-          
-          setTotalPontos(pontosM + pontosC + pontosD + pontosE - pontosP);
-          
-        } catch (error) {
-          console.error("Erro ao buscar dados do militar:", error);
-          toast({
-            title: "Erro ao carregar dados",
-            description: "Não foi possível carregar os dados do militar.",
-            variant: "destructive"
+        if (militarError) throw militarError;
+        
+        if (militarData) {
+          setMilitar({
+            id: militarData.id,
+            nomeCompleto: militarData.nome,
+            nomeGuerra: militarData.nomeguerra,
+            posto: toPostoPatente(militarData.posto),
+            quadro: toQuadroMilitar(militarData.quadro),
+            dataNascimento: militarData.datanascimento,
+            dataInclusao: militarData.data_ingresso,
+            dataUltimaPromocao: militarData.dataultimapromocao,
+            situacao: toSituacaoMilitar(militarData.situacao),
+            email: militarData.email,
+            foto: militarData.foto
           });
-        } finally {
-          setLoading(false);
         }
-      };
+        
+        // Carregar dados relacionados
+        await Promise.all([
+          buscarCursosMilitares(id),
+          buscarCursosCivis(id),
+          buscarCondecoracoes(id),
+          buscarElogios(id),
+          buscarPunicoes(id)
+        ]);
+      } catch (error) {
+        console.error("Erro ao buscar dados do militar:", error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar os dados do militar.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Funções auxiliares para buscar dados relacionados
+    const buscarCursosMilitares = async (militarId: string) => {
+      const { data, error } = await supabase
+        .from("cursos_militares")
+        .select("*")
+        .eq("militar_id", militarId);
+        
+      if (error) throw error;
       
-      fetchData();
-    }
-  }, [id]);
+      const cursosMapeados = data.map(curso => ({
+        id: curso.id,
+        militarId: curso.militar_id,
+        nome: curso.nome,
+        instituicao: curso.instituicao,
+        cargaHoraria: curso.cargahoraria,
+        pontos: curso.pontos,
+        anexo: curso.anexo
+      }));
+      
+      setCursosMilitares(cursosMapeados);
+      return cursosMapeados;
+    };
+
+    const buscarCursosCivis = async (militarId: string) => {
+      const { data, error } = await supabase
+        .from("cursos_civis")
+        .select("*")
+        .eq("militar_id", militarId);
+        
+      if (error) throw error;
+      
+      const cursosMapeados = data.map(curso => ({
+        id: curso.id,
+        militarId: curso.militar_id,
+        nome: curso.nome,
+        instituicao: curso.instituicao,
+        cargaHoraria: curso.cargahoraria,
+        pontos: curso.pontos,
+        anexo: curso.anexo
+      }));
+      
+      setCursosCivis(cursosMapeados);
+      return cursosMapeados;
+    };
+
+    const buscarCondecoracoes = async (militarId: string) => {
+      const { data, error } = await supabase
+        .from("condecoracoes")
+        .select("*")
+        .eq("militar_id", militarId);
+        
+      if (error) throw error;
+      
+      const condecoracoesMapeadas = data.map(cond => ({
+        id: cond.id,
+        militarId: cond.militar_id,
+        tipo: cond.tipo,
+        descricao: cond.descricao,
+        pontos: cond.pontos,
+        dataRecebimento: cond.datarecebimento,
+        anexo: cond.anexo
+      }));
+      
+      setCondecoracoes(condecoracoesMapeadas);
+      return condecoracoesMapeadas;
+    };
+
+    const buscarElogios = async (militarId: string) => {
+      const { data, error } = await supabase
+        .from("elogios")
+        .select("*")
+        .eq("militar_id", militarId);
+        
+      if (error) throw error;
+      
+      const elogiosMapeados = data.map(elogio => ({
+        id: elogio.id,
+        militarId: elogio.militar_id,
+        tipo: elogio.tipo as "Individual" | "Coletivo",
+        descricao: elogio.descricao,
+        pontos: elogio.pontos,
+        dataRecebimento: elogio.datarecebimento,
+        anexo: elogio.anexo
+      }));
+      
+      setElogios(elogiosMapeados);
+      return elogiosMapeados;
+    };
+
+    const buscarPunicoes = async (militarId: string) => {
+      const { data, error } = await supabase
+        .from("punicoes")
+        .select("*")
+        .eq("militar_id", militarId);
+        
+      if (error) throw error;
+      
+      const punicoesMapeadas = data.map(punicao => ({
+        id: punicao.id,
+        militarId: punicao.militar_id,
+        tipo: punicao.tipo as "Repreensão" | "Detenção" | "Prisão",
+        descricao: punicao.descricao,
+        pontos: punicao.pontos,
+        dataRecebimento: punicao.datarecebimento,
+        anexo: punicao.anexo
+      }));
+      
+      setPunicoes(punicoesMapeadas);
+      return punicoesMapeadas;
+    };
+
+    // Inicia o carregamento dos dados
+    fetchMilitarData().then(() => {
+      // Calcular total de pontos após carregar todos os dados
+      const pontosM = cursosMilitares.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
+      const pontosC = cursosCivis.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
+      const pontosD = condecoracoes.reduce((sum, cond) => sum + (cond.pontos || 0), 0);
+      const pontosE = elogios.reduce((sum, elogio) => sum + (elogio.pontos || 0), 0);
+      const pontosP = punicoes.reduce((sum, punicao) => sum + (punicao.pontos || 0), 0);
+      
+      setTotalPontos(pontosM + pontosC + pontosD + pontosE - pontosP);
+    });
+  }, [id, cursosMilitares, cursosCivis, condecoracoes, elogios, punicoes]);
+
+  return { 
+    militar, 
+    cursosMilitares, 
+    cursosCivis, 
+    condecoracoes, 
+    elogios, 
+    punicoes, 
+    totalPontos, 
+    loading 
+  };
+};
+
+// Componente para ações e navegação
+const AcoesNavegacao = ({ id }: { id: string }) => {
+  const navigate = useNavigate();
+  
+  return (
+    <div className="flex space-x-2">
+      <Button
+        onClick={() => navigate(`/militar/${id}/editar`)}
+        variant="outline"
+      >
+        Editar Dados
+      </Button>
+      <Button
+        onClick={() => navigate(`/militar/${id}/promocoes`)}
+        variant="outline"
+      >
+        Histórico de Promoções
+      </Button>
+      <Button
+        onClick={() => navigate(-1)}
+        variant="outline"
+      >
+        Voltar
+      </Button>
+    </div>
+  );
+};
+
+// Componente para o resumo de pontos
+const ResumoPontos = ({ totalPontos }: { totalPontos: number }) => {
+  return (
+    <div className="p-4 flex justify-between items-center bg-gray-100">
+      <span className="font-bold text-xl">Total de Pontos:</span>
+      <span className="font-bold text-xl">{totalPontos.toFixed(2)}</span>
+    </div>
+  );
+};
+
+const FichaMilitar = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { 
+    militar, 
+    cursosMilitares, 
+    cursosCivis, 
+    condecoracoes, 
+    elogios, 
+    punicoes, 
+    totalPontos, 
+    loading 
+  } = useFichaMilitar(id);
   
   if (loading) {
     return (
@@ -203,26 +279,7 @@ const FichaMilitar = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Ficha Individual do Militar</h1>
-        <div className="flex space-x-2">
-          <Button
-            onClick={() => navigate(`/militar/${id}/editar`)}
-            variant="outline"
-          >
-            Editar Dados
-          </Button>
-          <Button
-            onClick={() => navigate(`/militar/${id}/promocoes`)}
-            variant="outline"
-          >
-            Histórico de Promoções
-          </Button>
-          <Button
-            onClick={() => navigate(-1)}
-            variant="outline"
-          >
-            Voltar
-          </Button>
-        </div>
+        {id && <AcoesNavegacao id={id} />}
       </div>
       
       {/* Dados do Militar */}
@@ -259,10 +316,7 @@ const FichaMilitar = () => {
           
           <Separator />
           
-          <div className="p-4 flex justify-between items-center bg-gray-100">
-            <span className="font-bold text-xl">Total de Pontos:</span>
-            <span className="font-bold text-xl">{totalPontos.toFixed(2)}</span>
-          </div>
+          <ResumoPontos totalPontos={totalPontos} />
         </CardContent>
       </Card>
     </div>

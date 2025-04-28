@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Militar } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,20 +9,46 @@ import { MerecimentoList } from "@/components/merecimento/MerecimentoList";
 import { CriteriosMerecimento } from "@/components/merecimento/CriteriosMerecimento";
 import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
 
-type MilitarComPontuacao = Militar & { pontuacao: number };
+// Tipo que extende Militar com pontuação
+export type MilitarComPontuacao = Militar & { pontuacao: number };
 
-const Merecimento = () => {
-  const [tabValue, setTabValue] = useState("oficiais");
+// Componente para renderizar a lista de militares com pontuação
+type MeritTableProps = {
+  militares: MilitarComPontuacao[];
+  loading: boolean;
+  tipo: "oficiais" | "pracas";
+  titulo: string;
+};
+
+const MeritTable = ({ militares, loading, tipo, titulo }: MeritTableProps) => {
+  return (
+    <Card>
+      <Card.Header className="bg-cbmepi-purple text-white">
+        <Card.Title>{titulo}</Card.Title>
+      </Card.Header>
+      <Card.Content className="p-0">
+        <MerecimentoList 
+          militares={militares}
+          loading={loading}
+          tipo={tipo}
+        />
+      </Card.Content>
+    </Card>
+  );
+};
+
+// Hook personalizado para buscar e calcular pontuações
+const useMilitaresPontuacao = () => {
   const [oficiais, setOficiais] = useState<MilitarComPontuacao[]>([]);
   const [pracas, setPracas] = useState<MilitarComPontuacao[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         
-        // Buscar militares ativos
+        // Buscar dados necessários
         const { data: militares, error } = await supabase
           .from("militares")
           .select("*")
@@ -30,109 +56,25 @@ const Merecimento = () => {
         
         if (error) throw error;
         
-        // Buscar dados de pontuação para cálculo de mérito
-        const { data: cursosMilitares, error: errorCursosM } = await supabase
-          .from("cursos_militares")
-          .select("*");
-          
-        if (errorCursosM) throw errorCursosM;
-        
-        const { data: cursosCivis, error: errorCursosC } = await supabase
-          .from("cursos_civis")
-          .select("*");
-          
-        if (errorCursosC) throw errorCursosC;
-        
-        const { data: condecoracoes, error: errorCond } = await supabase
-          .from("condecoracoes")
-          .select("*");
-          
-        if (errorCond) throw errorCond;
-        
-        const { data: elogios, error: errorElogios } = await supabase
-          .from("elogios")
-          .select("*");
-          
-        if (errorElogios) throw errorElogios;
-        
-        const { data: punicoes, error: errorPunicoes } = await supabase
-          .from("punicoes")
-          .select("*");
-          
-        if (errorPunicoes) throw errorPunicoes;
+        // Buscar demais dados para cálculo
+        const { data: cursosMilitares } = await supabase.from("cursos_militares").select("*");
+        const { data: cursosCivis } = await supabase.from("cursos_civis").select("*");
+        const { data: condecoracoes } = await supabase.from("condecoracoes").select("*");
+        const { data: elogios } = await supabase.from("elogios").select("*");
+        const { data: punicoes } = await supabase.from("punicoes").select("*");
         
         // Calcular pontuação para cada militar
-        const militaresComPontuacao: MilitarComPontuacao[] = militares.map(militar => {
-          const id = militar.id;
-          
-          // Pontos dos cursos militares
-          const pontosCursosM = cursosMilitares
-            .filter(curso => curso.militar_id === id)
-            .reduce((acc, curso) => acc + (curso.pontos || 0), 0);
-          
-          // Pontos dos cursos civis
-          const pontosCursosC = cursosCivis
-            .filter(curso => curso.militar_id === id)
-            .reduce((acc, curso) => acc + (curso.pontos || 0), 0);
-          
-          // Pontos das condecorações
-          const pontosCondecoracoes = condecoracoes
-            .filter(cond => cond.militar_id === id)
-            .reduce((acc, cond) => acc + (cond.pontos || 0), 0);
-          
-          // Pontos dos elogios
-          const pontosElogios = elogios
-            .filter(elogio => elogio.militar_id === id)
-            .reduce((acc, elogio) => acc + (elogio.pontos || 0), 0);
-          
-          // Pontos negativos das punições
-          const pontosPunicoes = punicoes
-            .filter(punicao => punicao.militar_id === id)
-            .reduce((acc, punicao) => acc + (punicao.pontos || 0), 0);
-          
-          // Total de pontos
-          const pontuacao = pontosCursosM + pontosCursosC + pontosCondecoracoes + pontosElogios - pontosPunicoes;
-          
-          // Converter dados do banco para o formato do tipo Militar
-          return {
-            id: militar.id,
-            nomeCompleto: militar.nome,
-            nomeGuerra: militar.nomeguerra,
-            posto: toPostoPatente(militar.posto),
-            quadro: toQuadroMilitar(militar.quadro),
-            dataNascimento: militar.datanascimento,
-            dataInclusao: militar.data_ingresso,
-            dataUltimaPromocao: militar.dataultimapromocao,
-            situacao: toSituacaoMilitar(militar.situacao),
-            email: militar.email,
-            foto: militar.foto,
-            pontuacao
-          };
-        });
-        
-        // Separar oficiais e praças
-        const oficiaisAtivos = militaresComPontuacao.filter(
-          m => (m.quadro === "QOEM" || m.quadro === "QOE") && m.situacao === "ativo"
+        const militaresComPontuacao = calcularPontuacaoMilitares(
+          militares, 
+          cursosMilitares || [], 
+          cursosCivis || [], 
+          condecoracoes || [], 
+          elogios || [], 
+          punicoes || []
         );
         
-        const pracasAtivas = militaresComPontuacao.filter(
-          m => m.quadro === "QPBM" && m.situacao === "ativo"
-        );
-        
-        // Ordenar por pontuação e, em caso de empate, por antiguidade
-        const oficiaisOrdenados = [...oficiaisAtivos].sort((a, b) => {
-          if (b.pontuacao !== a.pontuacao) {
-            return b.pontuacao - a.pontuacao;
-          }
-          return new Date(a.dataInclusao).getTime() - new Date(b.dataInclusao).getTime();
-        });
-        
-        const pracasOrdenadas = [...pracasAtivas].sort((a, b) => {
-          if (b.pontuacao !== a.pontuacao) {
-            return b.pontuacao - a.pontuacao;
-          }
-          return new Date(a.dataInclusao).getTime() - new Date(b.dataInclusao).getTime();
-        });
+        // Separar e ordenar oficiais e praças
+        const { oficiaisOrdenados, pracasOrdenadas } = separarEOrdenarPorMerito(militaresComPontuacao);
         
         setOficiais(oficiaisOrdenados);
         setPracas(pracasOrdenadas);
@@ -150,6 +92,84 @@ const Merecimento = () => {
     
     fetchData();
   }, []);
+
+  return { oficiais, pracas, loading };
+};
+
+// Função para calcular pontuação de cada militar
+const calcularPontuacaoMilitares = (
+  militares: any[], 
+  cursosMilitares: any[], 
+  cursosCivis: any[], 
+  condecoracoes: any[], 
+  elogios: any[], 
+  punicoes: any[]
+): MilitarComPontuacao[] => {
+  return militares.map(militar => {
+    const id = militar.id;
+    
+    // Calcular pontos para cada categoria
+    const pontosCursosM = somaPontos(cursosMilitares.filter(c => c.militar_id === id));
+    const pontosCursosC = somaPontos(cursosCivis.filter(c => c.militar_id === id));
+    const pontosCondecoracoes = somaPontos(condecoracoes.filter(c => c.militar_id === id));
+    const pontosElogios = somaPontos(elogios.filter(e => e.militar_id === id));
+    const pontosPunicoes = somaPontos(punicoes.filter(p => p.militar_id === id));
+    
+    // Total de pontos
+    const pontuacao = pontosCursosM + pontosCursosC + pontosCondecoracoes + pontosElogios - pontosPunicoes;
+    
+    return {
+      id: militar.id,
+      nomeCompleto: militar.nome,
+      nomeGuerra: militar.nomeguerra,
+      posto: toPostoPatente(militar.posto),
+      quadro: toQuadroMilitar(militar.quadro),
+      dataNascimento: militar.datanascimento,
+      dataInclusao: militar.data_ingresso,
+      dataUltimaPromocao: militar.dataultimapromocao,
+      situacao: toSituacaoMilitar(militar.situacao),
+      email: militar.email,
+      foto: militar.foto,
+      pontuacao
+    };
+  });
+};
+
+// Função auxiliar para somar pontos
+const somaPontos = (items: any[]): number => {
+  return items.reduce((acc, item) => acc + (item.pontos || 0), 0);
+};
+
+// Função para separar e ordenar militares por mérito
+const separarEOrdenarPorMerito = (militaresComPontuacao: MilitarComPontuacao[]) => {
+  // Separar oficiais e praças
+  const oficiaisAtivos = militaresComPontuacao.filter(
+    m => (m.quadro === "QOEM" || m.quadro === "QOE") && m.situacao === "ativo"
+  );
+  
+  const pracasAtivas = militaresComPontuacao.filter(
+    m => m.quadro === "QPBM" && m.situacao === "ativo"
+  );
+  
+  // Ordenar por pontuação e, em caso de empate, por antiguidade
+  const ordenarPorMerito = (militares: MilitarComPontuacao[]) => {
+    return [...militares].sort((a, b) => {
+      if (b.pontuacao !== a.pontuacao) {
+        return b.pontuacao - a.pontuacao;
+      }
+      return new Date(a.dataInclusao).getTime() - new Date(b.dataInclusao).getTime();
+    });
+  };
+  
+  return {
+    oficiaisOrdenados: ordenarPorMerito(oficiaisAtivos),
+    pracasOrdenadas: ordenarPorMerito(pracasAtivas)
+  };
+};
+
+const Merecimento = () => {
+  const [tabValue, setTabValue] = useState("oficiais");
+  const { oficiais, pracas, loading } = useMilitaresPontuacao();
   
   return (
     <div className="space-y-6">
@@ -162,33 +182,21 @@ const Merecimento = () => {
         </TabsList>
         
         <TabsContent value="oficiais">
-          <Card>
-            <CardHeader className="bg-cbmepi-purple text-white">
-              <CardTitle>Quadro de Acesso por Merecimento - Oficiais</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <MerecimentoList 
-                militares={oficiais}
-                loading={loading} 
-                tipo="oficiais" 
-              />
-            </CardContent>
-          </Card>
+          <MeritTable 
+            militares={oficiais}
+            loading={loading}
+            tipo="oficiais"
+            titulo="Quadro de Acesso por Merecimento - Oficiais"
+          />
         </TabsContent>
         
         <TabsContent value="pracas">
-          <Card>
-            <CardHeader className="bg-cbmepi-purple text-white">
-              <CardTitle>Quadro de Acesso por Merecimento - Praças</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <MerecimentoList 
-                militares={pracas} 
-                loading={loading}
-                tipo="pracas" 
-              />
-            </CardContent>
-          </Card>
+          <MeritTable 
+            militares={pracas}
+            loading={loading}
+            tipo="pracas"
+            titulo="Quadro de Acesso por Merecimento - Praças"
+          />
         </TabsContent>
       </Tabs>
       

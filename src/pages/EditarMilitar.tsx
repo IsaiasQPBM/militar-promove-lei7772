@@ -32,9 +32,11 @@ import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
 import { getMilitarById, updateMilitar } from "@/services/militarService";
+import { QuadroMilitar, PostoPatente, SituacaoMilitar } from "@/types";
+import { toQuadroMilitar, toPostoPatente, fromQuadroMilitar, fromPostoPatente } from "@/utils/typeConverters";
 
 const formSchema = z.object({
-  quadro: z.string().min(1, { message: "Selecione o quadro de pertencimento" }),
+  quadro: z.enum(["QOEM", "QOE", "QORR", "QPBM", "QPRR"] as const),
   posto: z.string().min(1, { message: "Selecione o posto/graduação" }),
   nomeCompleto: z.string().min(3, { message: "Nome completo deve ter no mínimo 3 caracteres" }),
   nomeGuerra: z.string().min(2, { message: "Nome de guerra deve ter no mínimo 2 caracteres" }),
@@ -47,24 +49,26 @@ const formSchema = z.object({
   dataUltimaPromocao: z.date({
     required_error: "Data da última promoção é obrigatória",
   }),
-  situacao: z.enum(["ativo", "inativo"]),
+  situacao: z.enum(["ativo", "inativo"] as const),
   email: z.string().email({ message: "Email inválido" })
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 const EditarMilitar = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [selectedQuadro, setSelectedQuadro] = useState<string>("");
+  const [selectedQuadro, setSelectedQuadro] = useState<QuadroMilitar>("QPBM");
   const [loading, setLoading] = useState(false);
   
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quadro: "",
+      quadro: "QPBM" as const,
       posto: "",
       nomeCompleto: "",
       nomeGuerra: "",
-      situacao: "ativo",
+      situacao: "ativo" as const,
       email: ""
     }
   });
@@ -77,16 +81,18 @@ const EditarMilitar = () => {
           const militar = await getMilitarById(id);
           
           if (militar) {
-            setSelectedQuadro(militar.quadro);
+            const quadroValue = toQuadroMilitar(militar.quadro);
+            setSelectedQuadro(quadroValue);
+            
             form.reset({
-              quadro: militar.quadro,
+              quadro: quadroValue,
               posto: militar.posto,
               nomeCompleto: militar.nomeCompleto,
               nomeGuerra: militar.nomeGuerra,
               dataNascimento: new Date(militar.dataNascimento),
               dataInclusao: new Date(militar.dataInclusao),
               dataUltimaPromocao: new Date(militar.dataUltimaPromocao),
-              situacao: militar.situacao,
+              situacao: militar.situacao as "ativo" | "inativo",
               email: militar.email
             });
           }
@@ -106,14 +112,14 @@ const EditarMilitar = () => {
     loadMilitarData();
   }, [id, form]);
   
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     if (!id) return;
     
     try {
       setLoading(true);
       await updateMilitar(id, {
         quadro: values.quadro,
-        posto: values.posto,
+        posto: values.posto as PostoPatente,
         nomeCompleto: values.nomeCompleto,
         nomeGuerra: values.nomeGuerra,
         dataNascimento: format(values.dataNascimento, "yyyy-MM-dd"),

@@ -1,7 +1,25 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+type CriterioProps = {
+  numero: number;
+  descricao: string;
+};
+
+const Criterio = ({ numero, descricao }: CriterioProps) => {
+  return (
+    <li className="py-1">{descricao}</li>
+  );
+};
+
 export const CriteriosAntiguidade = () => {
+  const criterios = [
+    { numero: 1, descricao: "Data de ingresso no respectivo quadro (mais antiga confere maior antiguidade);" },
+    { numero: 2, descricao: "Data da última promoção (mais antiga confere maior antiguidade);" },
+    { numero: 3, descricao: "Data de nascimento (maior idade confere maior antiguidade);" },
+    { numero: 4, descricao: "Classificação em curso de formação ou habilitação (melhor classificação confere maior antiguidade)." }
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -14,10 +32,9 @@ export const CriteriosAntiguidade = () => {
           </p>
           
           <ol className="list-decimal pl-5 space-y-2">
-            <li>Data de ingresso no respectivo quadro (mais antiga confere maior antiguidade);</li>
-            <li>Data da última promoção (mais antiga confere maior antiguidade);</li>
-            <li>Data de nascimento (maior idade confere maior antiguidade);</li>
-            <li>Classificação em curso de formação ou habilitação (melhor classificação confere maior antiguidade).</li>
+            {criterios.map((criterio) => (
+              <Criterio key={criterio.numero} {...criterio} />
+            ))}
           </ol>
           
           <p className="text-sm text-muted-foreground mt-4">

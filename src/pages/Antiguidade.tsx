@@ -9,6 +9,31 @@ import { MilitarList } from "@/components/antiguidade/MilitarList";
 import { CriteriosAntiguidade } from "@/components/antiguidade/CriteriosAntiguidade";
 import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
 
+// Componente para exibir um grupo de militares em uma tabela
+type MilitarTableProps = {
+  militares: Militar[];
+  loading: boolean;
+  tipo: "oficiais" | "pracas";
+  titulo: string;
+};
+
+const MilitarTable = ({ militares, loading, tipo, titulo }: MilitarTableProps) => {
+  return (
+    <Card>
+      <CardHeader className="bg-cbmepi-purple text-white">
+        <CardTitle>{titulo}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <MilitarList 
+          militares={militares} 
+          loading={loading} 
+          tipo={tipo}
+        />
+      </CardContent>
+    </Card>
+  );
+};
+
 const Antiguidade = () => {
   const [tabValue, setTabValue] = useState("oficiais");
   const [militares, setMilitares] = useState<Militar[]>([]);
@@ -81,12 +106,11 @@ const Antiguidade = () => {
     });
   };
   
-  // Filtrar oficiais ativos
+  // Filtrar e preparar dados
   const oficiais = militares.filter(m => 
     (m.quadro === "QOEM" || m.quadro === "QOE") && m.situacao === "ativo"
   );
   
-  // Filtrar praças ativas
   const pracas = militares.filter(m => 
     m.quadro === "QPBM" && m.situacao === "ativo"
   );
@@ -106,33 +130,21 @@ const Antiguidade = () => {
         </TabsList>
         
         <TabsContent value="oficiais">
-          <Card>
-            <CardHeader className="bg-cbmepi-purple text-white">
-              <CardTitle>Quadro de Acesso por Antiguidade - Oficiais</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <MilitarList 
-                militares={oficiaisOrdenados} 
-                loading={loading} 
-                tipo="oficiais"
-              />
-            </CardContent>
-          </Card>
+          <MilitarTable 
+            militares={oficiaisOrdenados} 
+            loading={loading} 
+            tipo="oficiais"
+            titulo="Quadro de Acesso por Antiguidade - Oficiais"
+          />
         </TabsContent>
         
         <TabsContent value="pracas">
-          <Card>
-            <CardHeader className="bg-cbmepi-purple text-white">
-              <CardTitle>Quadro de Acesso por Antiguidade - Praças</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <MilitarList 
-                militares={pracasOrdenadas} 
-                loading={loading} 
-                tipo="pracas"
-              />
-            </CardContent>
-          </Card>
+          <MilitarTable 
+            militares={pracasOrdenadas} 
+            loading={loading} 
+            tipo="pracas"
+            titulo="Quadro de Acesso por Antiguidade - Praças"
+          />
         </TabsContent>
       </Tabs>
       
