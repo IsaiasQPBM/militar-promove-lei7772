@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getMilitaresAtivos } from "@/services/militarService";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
 const Antiguidade = () => {
@@ -30,8 +30,30 @@ const Antiguidade = () => {
     const fetchMilitares = async () => {
       try {
         setLoading(true);
-        const data = await getMilitaresAtivos();
-        setMilitares(data);
+        
+        const { data, error } = await supabase
+          .from("militares")
+          .select("*")
+          .eq("situacao", "ativo");
+          
+        if (error) throw error;
+        
+        // Converter os dados do formato do banco para o formato do tipo Militar
+        const militaresFormatados = data.map(item => ({
+          id: item.id,
+          nomeCompleto: item.nome,
+          nomeGuerra: item.nomeguerra,
+          posto: item.posto,
+          quadro: item.quadro,
+          dataNascimento: item.datanascimento,
+          dataInclusao: item.data_ingresso,
+          dataUltimaPromocao: item.dataultimapromocao,
+          situacao: item.situacao,
+          email: item.email,
+          foto: item.foto
+        }));
+        
+        setMilitares(militaresFormatados);
       } catch (error) {
         console.error("Erro ao buscar militares:", error);
         toast({

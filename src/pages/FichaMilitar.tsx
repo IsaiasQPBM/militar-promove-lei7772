@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getMilitarById, mockCursosMilitares, mockCursosCivis, mockCondecoracoes, mockElogios, mockPunicoes } from "@/utils/mockData";
 import { Militar, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -11,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const FichaMilitar = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,50 +23,184 @@ const FichaMilitar = () => {
   const [elogios, setElogios] = useState<Elogio[]>([]);
   const [punicoes, setPunicoes] = useState<Punicao[]>([]);
   const [totalPontos, setTotalPontos] = useState(0);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     if (id) {
-      // Obter dados do militar
-      const militarData = getMilitarById(id);
-      if (militarData) {
-        setMilitar(militarData);
-      }
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          
+          // Obter dados do militar
+          const { data: militarData, error: militarError } = await supabase
+            .from("militares")
+            .select("*")
+            .eq("id", id)
+            .single();
+            
+          if (militarError) throw militarError;
+          
+          if (militarData) {
+            // Converter do formato do banco para o formato do tipo Militar
+            setMilitar({
+              id: militarData.id,
+              nomeCompleto: militarData.nome,
+              nomeGuerra: militarData.nomeguerra,
+              posto: militarData.posto,
+              quadro: militarData.quadro,
+              dataNascimento: militarData.datanascimento,
+              dataInclusao: militarData.data_ingresso,
+              dataUltimaPromocao: militarData.dataultimapromocao,
+              situacao: militarData.situacao,
+              email: militarData.email,
+              foto: militarData.foto
+            });
+          }
+          
+          // Obter cursos militares
+          const { data: cursosMilitaresData, error: cursosMilitaresError } = await supabase
+            .from("cursos_militares")
+            .select("*")
+            .eq("militar_id", id);
+            
+          if (cursosMilitaresError) throw cursosMilitaresError;
+          
+          // Converter do formato do banco para o formato do tipo
+          const cursosMilitaresMapeados = cursosMilitaresData.map(curso => ({
+            id: curso.id,
+            militarId: curso.militar_id,
+            nome: curso.nome,
+            instituicao: curso.instituicao,
+            cargaHoraria: curso.cargahoraria,
+            pontos: curso.pontos,
+            anexo: curso.anexo
+          }));
+          
+          setCursosMilitares(cursosMilitaresMapeados);
+          
+          // Obter cursos civis
+          const { data: cursosCivisData, error: cursosCivisError } = await supabase
+            .from("cursos_civis")
+            .select("*")
+            .eq("militar_id", id);
+            
+          if (cursosCivisError) throw cursosCivisError;
+          
+          // Converter do formato do banco para o formato do tipo
+          const cursosCivisMapeados = cursosCivisData.map(curso => ({
+            id: curso.id,
+            militarId: curso.militar_id,
+            nome: curso.nome,
+            instituicao: curso.instituicao,
+            cargaHoraria: curso.cargahoraria,
+            pontos: curso.pontos,
+            anexo: curso.anexo
+          }));
+          
+          setCursosCivis(cursosCivisMapeados);
+          
+          // Obter condecorações
+          const { data: condecoracoesData, error: condecoracoesError } = await supabase
+            .from("condecoracoes")
+            .select("*")
+            .eq("militar_id", id);
+            
+          if (condecoracoesError) throw condecoracoesError;
+          
+          // Converter do formato do banco para o formato do tipo
+          const condecoracoesMapeadas = condecoracoesData.map(cond => ({
+            id: cond.id,
+            militarId: cond.militar_id,
+            tipo: cond.tipo,
+            descricao: cond.descricao,
+            pontos: cond.pontos,
+            dataRecebimento: cond.datarecebimento,
+            anexo: cond.anexo
+          }));
+          
+          setCondecoracoes(condecoracoesMapeadas);
+          
+          // Obter elogios
+          const { data: elogiosData, error: elogiosError } = await supabase
+            .from("elogios")
+            .select("*")
+            .eq("militar_id", id);
+            
+          if (elogiosError) throw elogiosError;
+          
+          // Converter do formato do banco para o formato do tipo
+          const elogiosMapeados = elogiosData.map(elogio => ({
+            id: elogio.id,
+            militarId: elogio.militar_id,
+            tipo: elogio.tipo as "Individual" | "Coletivo",
+            descricao: elogio.descricao,
+            pontos: elogio.pontos,
+            dataRecebimento: elogio.datarecebimento,
+            anexo: elogio.anexo
+          }));
+          
+          setElogios(elogiosMapeados);
+          
+          // Obter punições
+          const { data: punicoesData, error: punicoesError } = await supabase
+            .from("punicoes")
+            .select("*")
+            .eq("militar_id", id);
+            
+          if (punicoesError) throw punicoesError;
+          
+          // Converter do formato do banco para o formato do tipo
+          const punicoesMapeadas = punicoesData.map(punicao => ({
+            id: punicao.id,
+            militarId: punicao.militar_id,
+            tipo: punicao.tipo as "Repreensão" | "Detenção" | "Prisão",
+            descricao: punicao.descricao,
+            pontos: punicao.pontos,
+            dataRecebimento: punicao.datarecebimento,
+            anexo: punicao.anexo
+          }));
+          
+          setPunicoes(punicoesMapeadas);
+          
+          // Calcular total de pontos
+          const pontosM = cursosMilitaresMapeados.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
+          const pontosC = cursosCivisMapeados.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
+          const pontosD = condecoracoesMapeadas.reduce((sum, cond) => sum + (cond.pontos || 0), 0);
+          const pontosE = elogiosMapeados.reduce((sum, elogio) => sum + (elogio.pontos || 0), 0);
+          const pontosP = punicoesMapeadas.reduce((sum, punicao) => sum + (punicao.pontos || 0), 0);
+          
+          setTotalPontos(pontosM + pontosC + pontosD + pontosE - pontosP);
+          
+        } catch (error) {
+          console.error("Erro ao buscar dados do militar:", error);
+          toast({
+            title: "Erro ao carregar dados",
+            description: "Não foi possível carregar os dados do militar.",
+            variant: "destructive"
+          });
+        } finally {
+          setLoading(false);
+        }
+      };
       
-      // Obter cursos militares
-      const cursosMilitaresData = mockCursosMilitares.filter(curso => curso.militarId === id);
-      setCursosMilitares(cursosMilitaresData);
-      
-      // Obter cursos civis
-      const cursosCivisData = mockCursosCivis.filter(curso => curso.militarId === id);
-      setCursosCivis(cursosCivisData);
-      
-      // Obter condecorações
-      const condecoracoesData = mockCondecoracoes.filter(cond => cond.militarId === id);
-      setCondecoracoes(condecoracoesData);
-      
-      // Obter elogios
-      const elogiosData = mockElogios.filter(elogio => elogio.militarId === id);
-      setElogios(elogiosData);
-      
-      // Obter punições
-      const punicoesData = mockPunicoes.filter(punicao => punicao.militarId === id);
-      setPunicoes(punicoesData);
-      
-      // Calcular total de pontos
-      const pontosM = cursosMilitaresData.reduce((sum, curso) => sum + curso.pontos, 0);
-      const pontosC = cursosCivisData.reduce((sum, curso) => sum + curso.pontos, 0);
-      const pontosD = condecoracoesData.reduce((sum, cond) => sum + cond.pontos, 0);
-      const pontosE = elogiosData.reduce((sum, elogio) => sum + elogio.pontos, 0);
-      const pontosP = punicoesData.reduce((sum, punicao) => sum + punicao.pontos, 0);
-      
-      setTotalPontos(pontosM + pontosC + pontosD + pontosE - pontosP);
+      fetchData();
     }
   }, [id]);
   
-  if (!militar) {
-    return <div className="flex justify-center items-center h-64">Carregando dados do militar...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
+        <span className="ml-2">Carregando dados do militar...</span>
+      </div>
+    );
   }
   
+  if (!militar) {
+    return <div className="flex justify-center items-center h-64">Militar não encontrado.</div>;
+  }
+  
+  // O resto do componente permanece o mesmo
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -194,7 +329,7 @@ const FichaMilitar = () => {
                     <tfoot className="bg-gray-100">
                       <tr>
                         <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                        <td className="p-2 font-bold">{cursosMilitares.reduce((sum, curso) => sum + curso.pontos, 0)}</td>
+                        <td className="p-2 font-bold">{cursosMilitares.reduce((sum, curso) => sum + (curso.pontos || 0), 0)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -229,7 +364,7 @@ const FichaMilitar = () => {
                     <tfoot className="bg-gray-100">
                       <tr>
                         <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                        <td className="p-2 font-bold">{cursosCivis.reduce((sum, curso) => sum + curso.pontos, 0)}</td>
+                        <td className="p-2 font-bold">{cursosCivis.reduce((sum, curso) => sum + (curso.pontos || 0), 0)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -256,7 +391,7 @@ const FichaMilitar = () => {
                         <tr key={cond.id} className="border-b hover:bg-gray-50">
                           <td className="p-2">{cond.tipo}</td>
                           <td className="p-2">{cond.descricao}</td>
-                          <td className="p-2">{format(new Date(cond.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
+                          <td className="p-2">{cond.dataRecebimento && format(new Date(cond.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
                           <td className="p-2 font-bold">{cond.pontos}</td>
                         </tr>
                       ))}
@@ -264,7 +399,7 @@ const FichaMilitar = () => {
                     <tfoot className="bg-gray-100">
                       <tr>
                         <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                        <td className="p-2 font-bold">{condecoracoes.reduce((sum, cond) => sum + cond.pontos, 0)}</td>
+                        <td className="p-2 font-bold">{condecoracoes.reduce((sum, cond) => sum + (cond.pontos || 0), 0)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -291,7 +426,7 @@ const FichaMilitar = () => {
                         <tr key={elogio.id} className="border-b hover:bg-gray-50">
                           <td className="p-2">{elogio.tipo}</td>
                           <td className="p-2">{elogio.descricao}</td>
-                          <td className="p-2">{format(new Date(elogio.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
+                          <td className="p-2">{elogio.dataRecebimento && format(new Date(elogio.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
                           <td className="p-2 font-bold">{elogio.pontos}</td>
                         </tr>
                       ))}
@@ -299,7 +434,7 @@ const FichaMilitar = () => {
                     <tfoot className="bg-gray-100">
                       <tr>
                         <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                        <td className="p-2 font-bold">{elogios.reduce((sum, elogio) => sum + elogio.pontos, 0)}</td>
+                        <td className="p-2 font-bold">{elogios.reduce((sum, elogio) => sum + (elogio.pontos || 0), 0)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -326,7 +461,7 @@ const FichaMilitar = () => {
                         <tr key={punicao.id} className="border-b hover:bg-gray-50">
                           <td className="p-2">{punicao.tipo}</td>
                           <td className="p-2">{punicao.descricao}</td>
-                          <td className="p-2">{format(new Date(punicao.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
+                          <td className="p-2">{punicao.dataRecebimento && format(new Date(punicao.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
                           <td className="p-2 font-bold text-red-500">{punicao.pontos}</td>
                         </tr>
                       ))}
@@ -334,7 +469,7 @@ const FichaMilitar = () => {
                     <tfoot className="bg-gray-100">
                       <tr>
                         <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                        <td className="p-2 font-bold text-red-500">{punicoes.reduce((sum, punicao) => sum + punicao.pontos, 0)}</td>
+                        <td className="p-2 font-bold text-red-500">{punicoes.reduce((sum, punicao) => sum + (punicao.pontos || 0), 0)}</td>
                       </tr>
                     </tfoot>
                   </table>
