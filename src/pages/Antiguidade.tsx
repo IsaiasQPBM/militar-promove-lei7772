@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Tabs, 
@@ -7,7 +7,6 @@ import {
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
-import { mockMilitares } from "@/utils/mockData";
 import { Militar } from "@/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -19,9 +18,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getMilitaresAtivos } from "@/services/militarService";
+import { toast } from "@/components/ui/use-toast";
 
 const Antiguidade = () => {
   const [tabValue, setTabValue] = useState("oficiais");
+  const [militares, setMilitares] = useState<Militar[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchMilitares = async () => {
+      try {
+        setLoading(true);
+        const data = await getMilitaresAtivos();
+        setMilitares(data);
+      } catch (error) {
+        console.error("Erro ao buscar militares:", error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar os dados dos militares.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMilitares();
+  }, []);
   
   // Função para ordenar militares por antiguidade
   const ordenarPorAntiguidade = (militares: Militar[]): Militar[] => {
@@ -48,12 +72,12 @@ const Antiguidade = () => {
   };
   
   // Filtrar oficiais ativos
-  const oficiais = mockMilitares.filter(m => 
+  const oficiais = militares.filter(m => 
     (m.quadro === "QOEM" || m.quadro === "QOE") && m.situacao === "ativo"
   );
   
   // Filtrar praças ativas
-  const pracas = mockMilitares.filter(m => 
+  const pracas = militares.filter(m => 
     m.quadro === "QPBM" && m.situacao === "ativo"
   );
   
@@ -77,42 +101,48 @@ const Antiguidade = () => {
               <CardTitle>Quadro de Acesso por Antiguidade - Oficiais</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Posição</TableHead>
-                    <TableHead>Posto</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Data de Inclusão</TableHead>
-                    <TableHead>Última Promoção</TableHead>
-                    <TableHead>Idade</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {oficiaisOrdenados.length > 0 ? (
-                    oficiaisOrdenados.map((militar, index) => (
-                      <TableRow key={militar.id}>
-                        <TableCell className="font-medium">{index + 1}º</TableCell>
-                        <TableCell>{militar.posto}</TableCell>
-                        <TableCell>{militar.nomeCompleto}</TableCell>
-                        <TableCell>
-                          {format(new Date(militar.dataInclusao), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(militar.dataUltimaPromocao), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell>
-                          {new Date().getFullYear() - new Date(militar.dataNascimento).getFullYear()} anos
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+              {loading ? (
+                <div className="flex justify-center items-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center">Não há oficiais cadastrados.</TableCell>
+                      <TableHead>Posição</TableHead>
+                      <TableHead>Posto</TableHead>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Data de Inclusão</TableHead>
+                      <TableHead>Última Promoção</TableHead>
+                      <TableHead>Idade</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {oficiaisOrdenados.length > 0 ? (
+                      oficiaisOrdenados.map((militar, index) => (
+                        <TableRow key={militar.id}>
+                          <TableCell className="font-medium">{index + 1}º</TableCell>
+                          <TableCell>{militar.posto}</TableCell>
+                          <TableCell>{militar.nomeCompleto}</TableCell>
+                          <TableCell>
+                            {format(new Date(militar.dataInclusao), "dd/MM/yyyy", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(militar.dataUltimaPromocao), "dd/MM/yyyy", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell>
+                            {new Date().getFullYear() - new Date(militar.dataNascimento).getFullYear()} anos
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">Não há oficiais cadastrados.</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -123,42 +153,48 @@ const Antiguidade = () => {
               <CardTitle>Quadro de Acesso por Antiguidade - Praças</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Posição</TableHead>
-                    <TableHead>Graduação</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Data de Inclusão</TableHead>
-                    <TableHead>Última Promoção</TableHead>
-                    <TableHead>Idade</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pracasOrdenadas.length > 0 ? (
-                    pracasOrdenadas.map((militar, index) => (
-                      <TableRow key={militar.id}>
-                        <TableCell className="font-medium">{index + 1}º</TableCell>
-                        <TableCell>{militar.posto}</TableCell>
-                        <TableCell>{militar.nomeCompleto}</TableCell>
-                        <TableCell>
-                          {format(new Date(militar.dataInclusao), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(militar.dataUltimaPromocao), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell>
-                          {new Date().getFullYear() - new Date(militar.dataNascimento).getFullYear()} anos
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+              {loading ? (
+                <div className="flex justify-center items-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center">Não há praças cadastradas.</TableCell>
+                      <TableHead>Posição</TableHead>
+                      <TableHead>Graduação</TableHead>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Data de Inclusão</TableHead>
+                      <TableHead>Última Promoção</TableHead>
+                      <TableHead>Idade</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {pracasOrdenadas.length > 0 ? (
+                      pracasOrdenadas.map((militar, index) => (
+                        <TableRow key={militar.id}>
+                          <TableCell className="font-medium">{index + 1}º</TableCell>
+                          <TableCell>{militar.posto}</TableCell>
+                          <TableCell>{militar.nomeCompleto}</TableCell>
+                          <TableCell>
+                            {format(new Date(militar.dataInclusao), "dd/MM/yyyy", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(militar.dataUltimaPromocao), "dd/MM/yyyy", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell>
+                            {new Date().getFullYear() - new Date(militar.dataNascimento).getFullYear()} anos
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">Não há praças cadastradas.</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
