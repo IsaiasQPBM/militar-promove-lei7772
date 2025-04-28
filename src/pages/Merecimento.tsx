@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Militar } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import { MerecimentoList } from "@/components/merecimento/MerecimentoList";
 import { CriteriosMerecimento } from "@/components/merecimento/CriteriosMerecimento";
 import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
 
-// Tipo que estende Militar com pontuação
+// Tipo que extende Militar com pontuação
 export type MilitarComPontuacao = Militar & { pontuacao: number };
 
 // Componente para renderizar a lista de militares com pontuação
@@ -23,16 +23,16 @@ type MeritTableProps = {
 const MeritTable = ({ militares, loading, tipo, titulo }: MeritTableProps) => {
   return (
     <Card>
-      <CardHeader className="bg-cbmepi-purple text-white">
-        <CardTitle>{titulo}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
+      <Card.Header className="bg-cbmepi-purple text-white">
+        <Card.Title>{titulo}</Card.Title>
+      </Card.Header>
+      <Card.Content className="p-0">
         <MerecimentoList 
           militares={militares}
           loading={loading}
           tipo={tipo}
         />
-      </CardContent>
+      </Card.Content>
     </Card>
   );
 };
@@ -47,32 +47,35 @@ const useMilitaresPontuacao = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
+        
         // Buscar dados necessários
         const { data: militares, error } = await supabase
           .from("militares")
           .select("*")
           .eq("situacao", "ativo");
-
+        
         if (error) throw error;
-
+        
+        // Buscar demais dados para cálculo
         const { data: cursosMilitares } = await supabase.from("cursos_militares").select("*");
         const { data: cursosCivis } = await supabase.from("cursos_civis").select("*");
         const { data: condecoracoes } = await supabase.from("condecoracoes").select("*");
         const { data: elogios } = await supabase.from("elogios").select("*");
         const { data: punicoes } = await supabase.from("punicoes").select("*");
-
+        
+        // Calcular pontuação para cada militar
         const militaresComPontuacao = calcularPontuacaoMilitares(
-          militares || [], 
+          militares, 
           cursosMilitares || [], 
           cursosCivis || [], 
           condecoracoes || [], 
           elogios || [], 
           punicoes || []
         );
-
+        
+        // Separar e ordenar oficiais e praças
         const { oficiaisOrdenados, pracasOrdenadas } = separarEOrdenarPorMerito(militaresComPontuacao);
-
+        
         setOficiais(oficiaisOrdenados);
         setPracas(pracasOrdenadas);
       } catch (error) {
@@ -86,7 +89,7 @@ const useMilitaresPontuacao = () => {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, []);
 
@@ -104,15 +107,17 @@ const calcularPontuacaoMilitares = (
 ): MilitarComPontuacao[] => {
   return militares.map(militar => {
     const id = militar.id;
-
+    
+    // Calcular pontos para cada categoria
     const pontosCursosM = somaPontos(cursosMilitares.filter(c => c.militar_id === id));
     const pontosCursosC = somaPontos(cursosCivis.filter(c => c.militar_id === id));
     const pontosCondecoracoes = somaPontos(condecoracoes.filter(c => c.militar_id === id));
     const pontosElogios = somaPontos(elogios.filter(e => e.militar_id === id));
     const pontosPunicoes = somaPontos(punicoes.filter(p => p.militar_id === id));
-
+    
+    // Total de pontos
     const pontuacao = pontosCursosM + pontosCursosC + pontosCondecoracoes + pontosElogios - pontosPunicoes;
-
+    
     return {
       id: militar.id,
       nomeCompleto: militar.nome,
@@ -137,14 +142,16 @@ const somaPontos = (items: any[]): number => {
 
 // Função para separar e ordenar militares por mérito
 const separarEOrdenarPorMerito = (militaresComPontuacao: MilitarComPontuacao[]) => {
+  // Separar oficiais e praças
   const oficiaisAtivos = militaresComPontuacao.filter(
     m => (m.quadro === "QOEM" || m.quadro === "QOE") && m.situacao === "ativo"
   );
-
+  
   const pracasAtivas = militaresComPontuacao.filter(
     m => m.quadro === "QPBM" && m.situacao === "ativo"
   );
-
+  
+  // Ordenar por pontuação e, em caso de empate, por antiguidade
   const ordenarPorMerito = (militares: MilitarComPontuacao[]) => {
     return [...militares].sort((a, b) => {
       if (b.pontuacao !== a.pontuacao) {
@@ -153,7 +160,7 @@ const separarEOrdenarPorMerito = (militaresComPontuacao: MilitarComPontuacao[]) 
       return new Date(a.dataInclusao).getTime() - new Date(b.dataInclusao).getTime();
     });
   };
-
+  
   return {
     oficiaisOrdenados: ordenarPorMerito(oficiaisAtivos),
     pracasOrdenadas: ordenarPorMerito(pracasAtivas)
@@ -163,17 +170,17 @@ const separarEOrdenarPorMerito = (militaresComPontuacao: MilitarComPontuacao[]) 
 const Merecimento = () => {
   const [tabValue, setTabValue] = useState("oficiais");
   const { oficiais, pracas, loading } = useMilitaresPontuacao();
-
+  
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Quadro de Acesso por Merecimento (QAM)</h1>
-
+      
       <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">
         <TabsList className="grid grid-cols-2 w-full">
           <TabsTrigger value="oficiais">Oficiais</TabsTrigger>
           <TabsTrigger value="pracas">Praças</TabsTrigger>
         </TabsList>
-
+        
         <TabsContent value="oficiais">
           <MeritTable 
             militares={oficiais}
@@ -182,7 +189,7 @@ const Merecimento = () => {
             titulo="Quadro de Acesso por Merecimento - Oficiais"
           />
         </TabsContent>
-
+        
         <TabsContent value="pracas">
           <MeritTable 
             militares={pracas}
@@ -192,7 +199,7 @@ const Merecimento = () => {
           />
         </TabsContent>
       </Tabs>
-
+      
       <CriteriosMerecimento />
     </div>
   );
