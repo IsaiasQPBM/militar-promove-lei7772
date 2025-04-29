@@ -47,7 +47,7 @@ const HistoricoPromocoes = () => {
             const promocoesData: Promocao[] = data.map(item => ({
               id: item.id,
               militarId: item.militar_id,
-              cargo: item.posto || militarData.posto, // Usar o posto do item ou o posto atual do militar se não disponível
+              cargo: militarData.posto, // Usar o posto atual do militar já que a promoção não tem esse campo
               dataPromocao: item.data_promocao,
               criterio: (item.tipo_promocao || "Antiguidade") as CriterioPromocao,
               anexoDocumento: null
