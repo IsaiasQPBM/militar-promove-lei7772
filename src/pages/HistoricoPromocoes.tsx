@@ -12,6 +12,7 @@ import { FileIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMilitarById } from "@/services/militarService";
 import { toast } from "@/components/ui/use-toast";
+import LoaderComponent from "@/components/editarMilitar/LoaderComponent";
 
 const HistoricoPromocoes = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,7 +47,7 @@ const HistoricoPromocoes = () => {
             const promocoesData: Promocao[] = data.map(item => ({
               id: item.id,
               militarId: item.militar_id,
-              cargo: item.posto || "Não especificado",
+              cargo: item.posto || militarData.posto, // Usar o posto do item ou o posto atual do militar se não disponível
               dataPromocao: item.data_promocao,
               criterio: (item.tipo_promocao || "Antiguidade") as CriterioPromocao,
               anexoDocumento: null
@@ -71,12 +72,7 @@ const HistoricoPromocoes = () => {
   }, [id]);
   
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
-        <span className="ml-2">Carregando dados...</span>
-      </div>
-    );
+    return <LoaderComponent message="Carregando dados..." />;
   }
   
   if (!militar) {
