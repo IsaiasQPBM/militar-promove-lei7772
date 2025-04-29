@@ -1,180 +1,62 @@
 
-import { FormValues } from "@/utils/militarValidation";
-import { parse } from "date-fns";
-import { createMilitar } from "@/services/militarService";
 import { NavigateFunction } from "react-router-dom";
-import { QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
-import { toast } from "@/components/ui/use-toast";
-import { verificarDisponibilidadeVaga } from "@/services/qfvService";
-
-interface SubmitMilitarResult {
-  success: boolean;
-  quadro: string;
-  redirectPath: string;
-  error?: string;
-}
+import { FormValues } from "./militarValidation";
+import { createMilitar } from "@/services/militarService";
+import { QuadroMilitar, PostoPatente, SituacaoMilitar } from "@/types";
 
 export const submitMilitarForm = async (
   values: FormValues,
   navigate: NavigateFunction
-): Promise<SubmitMilitarResult> => {
-  // Validar e converter datas
-  let dataNascimento: Date;
-  let dataInclusao: Date;
-  let dataUltimaPromocao: Date;
-  
-  try {
-    dataNascimento = parse(values.dataNascimento, "dd/MM/yyyy", new Date());
-    if (isNaN(dataNascimento.getTime())) throw new Error("Data de nascimento inválida");
-  } catch (error) {
-    console.error("Erro na data de nascimento:", error);
-    toast({
-      title: "Erro no formulário",
-      description: "Erro na data de nascimento: Formato inválido. Use DD/MM/AAAA",
-      variant: "destructive"
-    });
-    throw new Error("Erro na data de nascimento: Formato inválido. Use DD/MM/AAAA");
-  }
-  
-  try {
-    dataInclusao = parse(values.dataInclusao, "dd/MM/yyyy", new Date());
-    if (isNaN(dataInclusao.getTime())) throw new Error("Data de inclusão inválida");
-  } catch (error) {
-    console.error("Erro na data de inclusão:", error);
-    toast({
-      title: "Erro no formulário",
-      description: "Erro na data de inclusão: Formato inválido. Use DD/MM/AAAA",
-      variant: "destructive"
-    });
-    throw new Error("Erro na data de inclusão: Formato inválido. Use DD/MM/AAAA");
-  }
-  
-  try {
-    dataUltimaPromocao = parse(values.dataUltimaPromocao, "dd/MM/yyyy", new Date());
-    if (isNaN(dataUltimaPromocao.getTime())) throw new Error("Data de última promoção inválida");
-  } catch (error) {
-    console.error("Erro na data de última promoção:", error);
-    toast({
-      title: "Erro no formulário",
-      description: "Erro na data de última promoção: Formato inválido. Use DD/MM/AAAA",
-      variant: "destructive"
-    });
-    throw new Error("Erro na data de última promoção: Formato inválido. Use DD/MM/AAAA");
-  }
-  
-  // Ajustar quadro com base na situação
-  let quadroFinal = values.quadro as QuadroMilitar;
-  let postoFinal = values.posto as PostoPatente;
-  
+) => {
+  // Verificar se o quadro deve ser ajustado com base na situação
+  let quadro = values.quadro as QuadroMilitar;
   if (values.situacao === "inativo") {
-    if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
-      quadroFinal = "QORR";
-    } else if (quadroFinal === "QPBM") {
-      quadroFinal = "QPRR";
+    if (quadro === "QOEM" || quadro === "QOE") {
+      quadro = "QORR";
+    } else if (quadro === "QPBM") {
+      quadro = "QPRR";
     }
   }
   
   try {
-    console.log("Preparando dados para enviar ao Supabase...");
-    
-    // Se o militar está ativo, verificar disponibilidade de vaga
-    if (values.situacao === "ativo") {
-      // Verificar disponibilidade de vaga no QFV
-      const { disponivel, mensagem } = await verificarDisponibilidadeVaga(postoFinal, quadroFinal);
-      
-      if (!disponivel) {
-        toast({
-          title: "Cadastro não permitido",
-          description: mensagem,
-          variant: "destructive"
-        });
-        
-        throw new Error(`Não há vaga disponível: ${mensagem}`);
-      } else {
-        // Exibir mensagem de vaga disponível
-        toast({
-          title: "Vaga disponível",
-          description: mensagem,
-        });
-      }
-    }
-    
-    // Preparar objeto para salvar no banco de dados
-    const novoMilitar = {
+    // Criar militar no banco de dados
+    const militar = await createMilitar({
       nomeCompleto: values.nomeCompleto,
       nomeGuerra: values.nomeGuerra,
-      foto: `https://api.dicebear.com/7.x/initials/svg?seed=${values.nomeGuerra}`,
-      dataNascimento: dataNascimento.toISOString(),
-      dataInclusao: dataInclusao.toISOString(),
-      dataUltimaPromocao: dataUltimaPromocao.toISOString(),
-      posto: postoFinal,
-      quadro: quadroFinal,
+      posto: values.posto as PostoPatente,
+      quadro: quadro,
+      dataNascimento: values.dataNascimento,
+      dataInclusao: values.dataInclusao,
+      dataUltimaPromocao: values.dataUltimaPromocao,
       situacao: values.situacao as SituacaoMilitar,
-      email: values.email
-    };
-    
-    console.log("Dados preparados para envio:", novoMilitar);
-    
-    // Salvar o militar no banco de dados
-    const militarCriado = await createMilitar(novoMilitar);
-    console.log("Resposta da criação do militar:", militarCriado);
-    
-    if (!militarCriado) {
-      throw new Error("Não foi possível criar o militar. Resposta vazia do servidor.");
-    }
-    
+      email: values.email,
+      foto: ""
+    });
+
     // Determinar para qual página redirecionar
     let redirectPath = "/";
     
-    if (quadroFinal === "QOEM") {
+    if (militar.quadro === "QOEM") {
       redirectPath = "/oficiais/estado-maior";
-    } else if (quadroFinal === "QOE") {
+    } else if (militar.quadro === "QOE") {
       redirectPath = "/oficiais/especialistas";
-    } else if (quadroFinal === "QORR") {
+    } else if (militar.quadro === "QORR") {
       redirectPath = "/oficiais/reserva";
-    } else if (quadroFinal === "QPBM") {
+    } else if (militar.quadro === "QPBM") {
       redirectPath = "/pracas/ativos";
-    } else if (quadroFinal === "QPRR") {
+    } else if (militar.quadro === "QPRR") {
       redirectPath = "/pracas/reserva";
     }
     
-    toast({
-      title: "Sucesso!",
-      description: `Militar ${values.nomeGuerra} cadastrado com sucesso no quadro ${quadroFinal}`,
-    });
-    
     return {
       success: true,
-      quadro: quadroFinal,
-      redirectPath
+      redirectPath,
+      militar,
+      quadro: militar.quadro
     };
+    
   } catch (error: any) {
-    console.error("Erro ao cadastrar militar no Supabase:", error);
-    
-    let errorMessage = "Erro desconhecido ao cadastrar militar";
-    
-    if (error?.message) {
-      errorMessage = error.message;
-    }
-    
-    if (error?.code === "23505") {
-      errorMessage = "Já existe um militar com esses dados cadastrados";
-    } else if (error?.code === "23503") {
-      errorMessage = "Erro de referência: um dos campos faz referência a um valor que não existe";
-    } else if (error?.code === "42P01") {
-      errorMessage = "Tabela 'militares' não encontrada no banco de dados";
-    } else if (error?.code === "42703") {
-      errorMessage = "Coluna não existe na tabela 'militares'";
-    } else if (error?.statusText === "Unauthorized") {
-      errorMessage = "Seu acesso expirou ou você não tem permissão para realizar essa operação";
-    }
-    
-    toast({
-      title: "Erro ao cadastrar militar",
-      description: errorMessage,
-      variant: "destructive"
-    });
-    
-    throw new Error(errorMessage);
+    console.error("Erro ao cadastrar militar:", error);
+    throw error;
   }
 };

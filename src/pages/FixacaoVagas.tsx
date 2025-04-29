@@ -58,6 +58,7 @@ const FixacaoVagas = () => {
 
     const totalPrevistas = vagas.reduce((acc, curr) => acc + curr.previstas, 0);
     const totalExistentes = vagas.reduce((acc, curr) => acc + curr.existentes, 0);
+    const totalDisponiveis = totalPrevistas - totalExistentes;
     
     return (
       <div className="overflow-x-auto">
@@ -66,7 +67,8 @@ const FixacaoVagas = () => {
             <tr>
               <th className="p-3 text-left">{tipo === "oficiais" ? "Posto" : "Graduação"}</th>
               <th className="p-3 text-center">Vagas Previstas</th>
-              <th className="p-3 text-center">Vagas Existentes</th>
+              <th className="p-3 text-center">Vagas Ocupadas</th>
+              <th className="p-3 text-center">Vagas Disponíveis</th>
               <th className="p-3 text-center">Situação</th>
             </tr>
           </thead>
@@ -76,10 +78,11 @@ const FixacaoVagas = () => {
                 <td className="p-3 font-medium">{vaga.posto}</td>
                 <td className="p-3 text-center">{vaga.previstas}</td>
                 <td className="p-3 text-center">{vaga.existentes}</td>
+                <td className="p-3 text-center">{vaga.disponiveis}</td>
                 <td className="p-3 text-center">
-                  {vaga.existentes < vaga.previstas ? (
+                  {vaga.disponiveis > 0 ? (
                     <Badge className="bg-green-600">Disponível</Badge>
-                  ) : vaga.existentes === vaga.previstas ? (
+                  ) : vaga.disponiveis === 0 ? (
                     <Badge className="bg-orange-500">Completo</Badge>
                   ) : (
                     <Badge className="bg-red-500">Excedente</Badge>
@@ -91,16 +94,17 @@ const FixacaoVagas = () => {
               <td className="p-3">Total</td>
               <td className="p-3 text-center">{totalPrevistas}</td>
               <td className="p-3 text-center">{totalExistentes}</td>
+              <td className="p-3 text-center">{totalDisponiveis}</td>
               <td className="p-3 text-center">
-                {totalExistentes < totalPrevistas ? (
+                {totalDisponiveis > 0 ? (
                   <Badge className="bg-green-600">
-                    {totalPrevistas - totalExistentes} vagas disponíveis
+                    {totalDisponiveis} vagas disponíveis
                   </Badge>
-                ) : totalExistentes === totalPrevistas ? (
+                ) : totalDisponiveis === 0 ? (
                   <Badge className="bg-orange-500">Completo</Badge>
                 ) : (
                   <Badge className="bg-red-500">
-                    {totalExistentes - totalPrevistas} excedentes
+                    {-totalDisponiveis} excedentes
                   </Badge>
                 )}
               </td>

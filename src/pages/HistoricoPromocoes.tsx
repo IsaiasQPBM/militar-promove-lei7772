@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getMilitarById, getPromocoesByMilitar } from "@/utils/mockData";
 import { Militar, Promocao } from "@/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -10,29 +9,80 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { getMilitarById } from "@/services/militarService";
+import { toast } from "@/components/ui/use-toast";
 
 const HistoricoPromocoes = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [militar, setMilitar] = useState<Militar | null>(null);
   const [promocoes, setPromocoes] = useState<Promocao[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    if (id) {
-      // Obter dados do militar
-      const militarData = getMilitarById(id);
-      if (militarData) {
-        setMilitar(militarData);
-      }
+    const fetchData = async () => {
+      if (!id) return;
       
-      // Obter promoções
-      const promocoesData = getPromocoesByMilitar(id);
-      setPromocoes(promocoesData);
-    }
+      setIsLoading(true);
+      
+      try {
+        // Buscar dados do militar
+        const militarData = await getMilitarById(id);
+        setMilitar(militarData);
+        
+        if (militarData) {
+          // Buscar histórico de promoções
+          const { data, error } = await supabase
+            .from("promocoes")
+            .select("*")
+            .eq("militar_id", id)
+            .order("data_promocao", { ascending: false });
+            
+          if (error) throw error;
+          
+          // Mapear dados para o formato esperado
+          const promocoesData = data.map(item => ({
+            id: item.id,
+            militarId: item.militar_id,
+            cargo: item.posto || "Não especificado",
+            dataPromocao: item.data_promocao,
+            criterio: item.tipo_promocao || "Não especificado",
+            anexoDocumento: null
+          }));
+          
+          setPromocoes(promocoesData);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar o histórico de promoções.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
   }, [id]);
   
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
+        <span className="ml-2">Carregando dados...</span>
+      </div>
+    );
+  }
+  
   if (!militar) {
-    return <div className="flex justify-center items-center h-64">Carregando dados do militar...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <span>Militar não encontrado.</span>
+      </div>
+    );
   }
   
   return (
@@ -106,7 +156,9 @@ const HistoricoPromocoes = () => {
                         </Badge>
                       </td>
                       <td className="p-3">
-                        {format(new Date(promocao.dataPromocao), "dd/MM/yyyy", { locale: ptBR })}
+                        {promocao.dataPromocao ? 
+                          format(new Date(promocao.dataPromocao), "dd/MM/yyyy", { locale: ptBR }) : 
+                          "Data não disponível"}
                       </td>
                       <td className="p-3">{promocao.criterio}</td>
                       <td className="p-3">
@@ -126,6 +178,7 @@ const HistoricoPromocoes = () => {
           ) : (
             <div className="text-center p-8">
               <p>Não há registros de promoções para este militar.</p>
+              <p className="text-sm text-muted-foreground mt-2">As promoções serão exibidas aqui após serem registradas no sistema.</p>
             </div>
           )}
         </CardContent>

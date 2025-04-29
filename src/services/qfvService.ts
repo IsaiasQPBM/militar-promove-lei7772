@@ -17,7 +17,7 @@ export const getVagasInfo = async (): Promise<{
   vagasOficiais: VagaInfo[],
   vagasPracas: VagaInfo[]
 }> => {
-  // Buscar todos militares ativos para contar vagas existentes
+  // Buscar todos militares ativos para contar vagas ocupadas
   const { data: militares, error } = await supabase
     .from("militares")
     .select("*")
@@ -51,20 +51,26 @@ export const getVagasInfo = async (): Promise<{
   };
 
   // Processar vagas de oficiais
-  const vagasOficiais = vagasPrevistas.oficiais.map(vaga => ({
-    posto: vaga.posto,
-    previstas: vaga.previstas,
-    existentes: contarMilitaresPorPosto(vaga.posto),
-    disponiveis: vaga.previstas - contarMilitaresPorPosto(vaga.posto)
-  }));
+  const vagasOficiais = vagasPrevistas.oficiais.map(vaga => {
+    const existentes = contarMilitaresPorPosto(vaga.posto);
+    return {
+      posto: vaga.posto,
+      previstas: vaga.previstas,
+      existentes: existentes,
+      disponiveis: vaga.previstas - existentes
+    };
+  });
 
   // Processar vagas de praças
-  const vagasPracas = vagasPrevistas.pracas.map(vaga => ({
-    posto: vaga.posto,
-    previstas: vaga.previstas,
-    existentes: contarMilitaresPorPosto(vaga.posto),
-    disponiveis: vaga.previstas - contarMilitaresPorPosto(vaga.posto)
-  }));
+  const vagasPracas = vagasPrevistas.pracas.map(vaga => {
+    const existentes = contarMilitaresPorPosto(vaga.posto);
+    return {
+      posto: vaga.posto,
+      previstas: vaga.previstas,
+      existentes: existentes,
+      disponiveis: vaga.previstas - existentes
+    };
+  });
 
   return {
     vagasOficiais,
@@ -86,7 +92,7 @@ export const verificarDisponibilidadeVaga = async (
     // Consultar quantidade de militares ativos com este posto/quadro
     const { count: existentes, error } = await supabase
       .from("militares")
-      .select("*", { count: true, head: false })
+      .select("*", { count: "exact", head: false })
       .eq("posto", postoFormatado)
       .eq("quadro", quadroFormatado)
       .eq("situacao", "ativo");

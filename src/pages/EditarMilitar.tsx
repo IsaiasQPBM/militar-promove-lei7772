@@ -20,6 +20,7 @@ import DadosPessoais from "@/components/militar/DadosPessoais";
 import DatasImportantes from "@/components/militar/DatasImportantes";
 import SituacaoEmail from "@/components/militar/SituacaoEmail";
 import FormNavigation from "@/components/militar/FormNavigation";
+import { verificarDisponibilidadeVaga } from "@/services/qfvService";
 
 const EditarMilitar = () => {
   const navigate = useNavigate();
@@ -108,6 +109,30 @@ const EditarMilitar = () => {
           quadroFinal = "QORR";
         } else if (quadroFinal === "QPBM") {
           quadroFinal = "QPRR";
+        }
+      }
+      
+      // Se estiver mudando para ativo ou alterando posto/quadro, verificar disponibilidade
+      const currentValues = form.getValues();
+      if (values.situacao === "ativo" && 
+          (currentValues.situacao !== values.situacao || 
+           currentValues.posto !== values.posto || 
+           currentValues.quadro !== values.quadro)) {
+        
+        // Verificar se o novo posto/quadro tem vagas disponíveis
+        const { disponivel, mensagem } = await verificarDisponibilidadeVaga(
+          values.posto as PostoPatente, 
+          quadroFinal
+        );
+        
+        if (!disponivel) {
+          toast({
+            title: "Sem vagas disponíveis",
+            description: mensagem,
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
         }
       }
       
@@ -243,11 +268,23 @@ const EditarMilitar = () => {
               
               <FormNavigation 
                 activeTab={activeTab}
-                isLastTab={isLastTab}
-                isFirstTab={isFirstTab}
+                isLastTab={activeTab === "situacao-contato"}
+                isFirstTab={activeTab === "quadro-posto"}
                 isSubmitting={isSubmitting}
-                onPrevious={handlePrevious}
-                onNext={handleNext}
+                onPrevious={() => {
+                  const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+                  const currentIndex = tabs.indexOf(activeTab);
+                  if (currentIndex > 0) {
+                    setActiveTab(tabs[currentIndex - 1]);
+                  }
+                }}
+                onNext={() => {
+                  const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+                  const currentIndex = tabs.indexOf(activeTab);
+                  if (currentIndex < tabs.length - 1) {
+                    setActiveTab(tabs[currentIndex + 1]);
+                  }
+                }}
                 onCancel={() => navigate(-1)}
               />
             </form>

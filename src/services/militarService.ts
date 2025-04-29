@@ -9,6 +9,7 @@ import {
   fromPostoPatente,
   fromSituacaoMilitar
 } from "@/utils/typeConverters";
+import { verificarDisponibilidadeVaga } from "./qfvService";
 
 // Função auxiliar para mapear dados do militar do banco para o tipo Militar
 const mapDatabaseToMilitar = (data: any): Militar => {
@@ -28,6 +29,20 @@ const mapDatabaseToMilitar = (data: any): Militar => {
 };
 
 export const createMilitar = async (militar: Omit<Militar, "id">) => {
+  console.log("Verificando disponibilidade de vaga...");
+  
+  // Verificar se há vaga disponível para o posto/quadro
+  if (militar.situacao === "ativo" && (militar.quadro === "QOEM" || militar.quadro === "QOE" || militar.quadro === "QPBM")) {
+    const { disponivel, mensagem } = await verificarDisponibilidadeVaga(militar.posto, militar.quadro);
+    
+    if (!disponivel) {
+      console.error("Não há vagas disponíveis:", mensagem);
+      throw new Error(mensagem);
+    }
+    
+    console.log("Vaga disponível:", mensagem);
+  }
+  
   console.log("Enviando para o Supabase:", militar);
   
   // Map the Militar type fields to the database column names
