@@ -96,20 +96,26 @@ export const deleteMilitar = async (id: string) => {
   if (error) throw error;
 };
 
-export const getMilitarById = async (id: string) => {
+export const getMilitarById = async (id: string): Promise<Militar | null> => {
   const { data, error } = await supabase
     .from("militares")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // No rows returned - militar not found
+      return null;
+    }
+    throw error;
+  }
   
   // Convert database column names to Militar type field names
   return mapDatabaseToMilitar(data);
 };
 
-export const getMilitaresByQuadro = async (quadro: string) => {
+export const getMilitaresByQuadro = async (quadro: string): Promise<Militar[]> => {
   const { data, error } = await supabase
     .from("militares")
     .select("*")
@@ -122,7 +128,7 @@ export const getMilitaresByQuadro = async (quadro: string) => {
   return data.map(item => mapDatabaseToMilitar(item));
 };
 
-export const getMilitaresAtivos = async () => {
+export const getMilitaresAtivos = async (): Promise<Militar[]> => {
   const { data, error } = await supabase
     .from("militares")
     .select("*")

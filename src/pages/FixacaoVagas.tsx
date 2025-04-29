@@ -1,33 +1,115 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { VagaInfo, getVagasInfo } from "@/services/qfvService";
+import { toast } from "@/components/ui/use-toast";
 
 const FixacaoVagas = () => {
-  // Dados de exemplo para vagas de oficiais
-  const vagasOficiais = [
-    { posto: "Coronel", previstas: 8, existentes: 6 },
-    { posto: "Tenente-Coronel", previstas: 12, existentes: 10 },
-    { posto: "Major", previstas: 20, existentes: 16 },
-    { posto: "Capitão", previstas: 35, existentes: 28 },
-    { posto: "1º Tenente", previstas: 45, existentes: 38 },
-    { posto: "2º Tenente", previstas: 50, existentes: 42 }
-  ];
+  const [vagasOficiais, setVagasOficiais] = useState<VagaInfo[]>([]);
+  const [vagasPracas, setVagasPracas] = useState<VagaInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Dados de exemplo para vagas de praças
-  const vagasPracas = [
-    { posto: "Subtenente", previstas: 25, existentes: 20 },
-    { posto: "1º Sargento", previstas: 40, existentes: 32 },
-    { posto: "2º Sargento", previstas: 65, existentes: 55 },
-    { posto: "3º Sargento", previstas: 90, existentes: 72 },
-    { posto: "Cabo", previstas: 130, existentes: 105 },
-    { posto: "Soldado", previstas: 350, existentes: 290 }
-  ];
+  useEffect(() => {
+    const loadVagas = async () => {
+      try {
+        setIsLoading(true);
+        const { vagasOficiais, vagasPracas } = await getVagasInfo();
+        setVagasOficiais(vagasOficiais);
+        setVagasPracas(vagasPracas);
+      } catch (error) {
+        console.error("Erro ao carregar informações de vagas:", error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar as informações do Quadro de Fixação de Vagas.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadVagas();
+  }, []);
   
   // Cálculos para os totais
   const totalOficiaisPrevistas = vagasOficiais.reduce((acc, curr) => acc + curr.previstas, 0);
   const totalOficiaisExistentes = vagasOficiais.reduce((acc, curr) => acc + curr.existentes, 0);
   const totalPracasPrevistas = vagasPracas.reduce((acc, curr) => acc + curr.previstas, 0);
   const totalPracasExistentes = vagasPracas.reduce((acc, curr) => acc + curr.existentes, 0);
+
+  // Componente para tabela de vagas
+  const VagasTable = ({ 
+    vagas, 
+    isLoading, 
+    tipo 
+  }: { 
+    vagas: VagaInfo[], 
+    isLoading: boolean, 
+    tipo: "oficiais" | "praças" 
+  }) => {
+    if (isLoading) {
+      return (
+        <div className="p-8 text-center">
+          <p>Carregando informações de vagas...</p>
+        </div>
+      );
+    }
+
+    const totalPrevistas = vagas.reduce((acc, curr) => acc + curr.previstas, 0);
+    const totalExistentes = vagas.reduce((acc, curr) => acc + curr.existentes, 0);
+    
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <th className="p-3 text-left">{tipo === "oficiais" ? "Posto" : "Graduação"}</th>
+              <th className="p-3 text-center">Vagas Previstas</th>
+              <th className="p-3 text-center">Vagas Existentes</th>
+              <th className="p-3 text-center">Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {vagas.map((vaga, index) => (
+              <tr key={index} className="border-b hover:bg-gray-50">
+                <td className="p-3 font-medium">{vaga.posto}</td>
+                <td className="p-3 text-center">{vaga.previstas}</td>
+                <td className="p-3 text-center">{vaga.existentes}</td>
+                <td className="p-3 text-center">
+                  {vaga.existentes < vaga.previstas ? (
+                    <Badge className="bg-green-600">Disponível</Badge>
+                  ) : vaga.existentes === vaga.previstas ? (
+                    <Badge className="bg-orange-500">Completo</Badge>
+                  ) : (
+                    <Badge className="bg-red-500">Excedente</Badge>
+                  )}
+                </td>
+              </tr>
+            ))}
+            <tr className="bg-gray-100 font-semibold">
+              <td className="p-3">Total</td>
+              <td className="p-3 text-center">{totalPrevistas}</td>
+              <td className="p-3 text-center">{totalExistentes}</td>
+              <td className="p-3 text-center">
+                {totalExistentes < totalPrevistas ? (
+                  <Badge className="bg-green-600">
+                    {totalPrevistas - totalExistentes} vagas disponíveis
+                  </Badge>
+                ) : totalExistentes === totalPrevistas ? (
+                  <Badge className="bg-orange-500">Completo</Badge>
+                ) : (
+                  <Badge className="bg-red-500">
+                    {totalExistentes - totalPrevistas} excedentes
+                  </Badge>
+                )}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -39,50 +121,7 @@ const FixacaoVagas = () => {
           <CardTitle>Vagas de Oficiais</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-100 text-gray-700">
-                <tr>
-                  <th className="p-3 text-left">Posto</th>
-                  <th className="p-3 text-center">Vagas Previstas</th>
-                  <th className="p-3 text-center">Vagas Existentes</th>
-                  <th className="p-3 text-center">Situação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vagasOficiais.map((vaga, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="p-3 font-medium">{vaga.posto}</td>
-                    <td className="p-3 text-center">{vaga.previstas}</td>
-                    <td className="p-3 text-center">{vaga.existentes}</td>
-                    <td className="p-3 text-center">
-                      {vaga.existentes < vaga.previstas ? (
-                        <Badge className="bg-green-600">Disponível</Badge>
-                      ) : vaga.existentes === vaga.previstas ? (
-                        <Badge className="bg-orange-500">Completo</Badge>
-                      ) : (
-                        <Badge className="bg-red-500">Excedente</Badge>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-100 font-semibold">
-                  <td className="p-3">Total</td>
-                  <td className="p-3 text-center">{totalOficiaisPrevistas}</td>
-                  <td className="p-3 text-center">{totalOficiaisExistentes}</td>
-                  <td className="p-3 text-center">
-                    {totalOficiaisExistentes < totalOficiaisPrevistas ? (
-                      <Badge className="bg-green-600">
-                        {totalOficiaisPrevistas - totalOficiaisExistentes} vagas disponíveis
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-orange-500">Completo</Badge>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <VagasTable vagas={vagasOficiais} isLoading={isLoading} tipo="oficiais" />
         </CardContent>
       </Card>
       
@@ -92,50 +131,7 @@ const FixacaoVagas = () => {
           <CardTitle>Vagas de Praças</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-100 text-gray-700">
-                <tr>
-                  <th className="p-3 text-left">Graduação</th>
-                  <th className="p-3 text-center">Vagas Previstas</th>
-                  <th className="p-3 text-center">Vagas Existentes</th>
-                  <th className="p-3 text-center">Situação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vagasPracas.map((vaga, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
-                    <td className="p-3 font-medium">{vaga.posto}</td>
-                    <td className="p-3 text-center">{vaga.previstas}</td>
-                    <td className="p-3 text-center">{vaga.existentes}</td>
-                    <td className="p-3 text-center">
-                      {vaga.existentes < vaga.previstas ? (
-                        <Badge className="bg-green-600">Disponível</Badge>
-                      ) : vaga.existentes === vaga.previstas ? (
-                        <Badge className="bg-orange-500">Completo</Badge>
-                      ) : (
-                        <Badge className="bg-red-500">Excedente</Badge>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-100 font-semibold">
-                  <td className="p-3">Total</td>
-                  <td className="p-3 text-center">{totalPracasPrevistas}</td>
-                  <td className="p-3 text-center">{totalPracasExistentes}</td>
-                  <td className="p-3 text-center">
-                    {totalPracasExistentes < totalPracasPrevistas ? (
-                      <Badge className="bg-green-600">
-                        {totalPracasPrevistas - totalPracasExistentes} vagas disponíveis
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-orange-500">Completo</Badge>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <VagasTable vagas={vagasPracas} isLoading={isLoading} tipo="praças" />
         </CardContent>
       </Card>
       

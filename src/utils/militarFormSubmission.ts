@@ -5,6 +5,7 @@ import { createMilitar } from "@/services/militarService";
 import { NavigateFunction } from "react-router-dom";
 import { QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
 import { toast } from "@/components/ui/use-toast";
+import { verificarDisponibilidadeVaga } from "@/services/qfvService";
 
 interface SubmitMilitarResult {
   success: boolean;
@@ -63,6 +64,8 @@ export const submitMilitarForm = async (
   
   // Ajustar quadro com base na situação
   let quadroFinal = values.quadro as QuadroMilitar;
+  let postoFinal = values.posto as PostoPatente;
+  
   if (values.situacao === "inativo") {
     if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
       quadroFinal = "QORR";
@@ -74,6 +77,28 @@ export const submitMilitarForm = async (
   try {
     console.log("Preparando dados para enviar ao Supabase...");
     
+    // Se o militar está ativo, verificar disponibilidade de vaga
+    if (values.situacao === "ativo") {
+      // Verificar disponibilidade de vaga no QFV
+      const { disponivel, mensagem } = await verificarDisponibilidadeVaga(postoFinal, quadroFinal);
+      
+      if (!disponivel) {
+        toast({
+          title: "Cadastro não permitido",
+          description: mensagem,
+          variant: "destructive"
+        });
+        
+        throw new Error(`Não há vaga disponível: ${mensagem}`);
+      } else {
+        // Exibir mensagem de vaga disponível
+        toast({
+          title: "Vaga disponível",
+          description: mensagem,
+        });
+      }
+    }
+    
     // Preparar objeto para salvar no banco de dados
     const novoMilitar = {
       nomeCompleto: values.nomeCompleto,
@@ -82,7 +107,7 @@ export const submitMilitarForm = async (
       dataNascimento: dataNascimento.toISOString(),
       dataInclusao: dataInclusao.toISOString(),
       dataUltimaPromocao: dataUltimaPromocao.toISOString(),
-      posto: values.posto as PostoPatente,
+      posto: postoFinal,
       quadro: quadroFinal,
       situacao: values.situacao as SituacaoMilitar,
       email: values.email

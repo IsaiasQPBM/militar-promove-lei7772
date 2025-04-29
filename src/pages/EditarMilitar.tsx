@@ -1,190 +1,187 @@
 
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form";
+import { useNavigate, useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
+import { UserPlus } from "lucide-react";
+import { formSchema, FormValues } from "@/utils/militarValidation";
 import { getMilitarById, updateMilitar } from "@/services/militarService";
+import { format } from "date-fns";
 import { QuadroMilitar, PostoPatente, SituacaoMilitar } from "@/types";
-import { toQuadroMilitar } from "@/utils/typeConverters";
 
-const formSchema = z.object({
-  quadro: z.enum(["QOEM", "QOE", "QORR", "QPBM", "QPRR"] as const),
-  posto: z.string().min(1, { message: "Selecione o posto/graduação" }),
-  nomeCompleto: z.string().min(3, { message: "Nome completo deve ter no mínimo 3 caracteres" }),
-  nomeGuerra: z.string().min(2, { message: "Nome de guerra deve ter no mínimo 2 caracteres" }),
-  dataNascimento: z.date({
-    required_error: "Data de nascimento é obrigatória",
-  }),
-  dataInclusao: z.date({
-    required_error: "Data de inclusão é obrigatória",
-  }),
-  dataUltimaPromocao: z.date({
-    required_error: "Data da última promoção é obrigatória",
-  }),
-  situacao: z.enum(["ativo", "inativo"] as const),
-  email: z.string().email({ message: "Email inválido" })
-});
-
-type FormValues = z.infer<typeof formSchema>;
+// Form Components
+import QuadroPostoSelect from "@/components/militar/QuadroPostoSelect";
+import DadosPessoais from "@/components/militar/DadosPessoais";
+import DatasImportantes from "@/components/militar/DatasImportantes";
+import SituacaoEmail from "@/components/militar/SituacaoEmail";
+import FormNavigation from "@/components/militar/FormNavigation";
 
 const EditarMilitar = () => {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [selectedQuadro, setSelectedQuadro] = useState<QuadroMilitar>("QPBM");
-  const [loading, setLoading] = useState(false);
+  const { id } = useParams();
+  const [selectedQuadro, setSelectedQuadro] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("quadro-posto");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quadro: "QPBM",
+      quadro: "",
       posto: "",
       nomeCompleto: "",
       nomeGuerra: "",
+      dataNascimento: "",
+      dataInclusao: "",
+      dataUltimaPromocao: "",
       situacao: "ativo",
       email: ""
     }
   });
 
   useEffect(() => {
-    const loadMilitarData = async () => {
-      if (id) {
-        try {
-          setLoading(true);
-          const militar = await getMilitarById(id);
+    const loadMilitar = async () => {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        const militar = await getMilitarById(id);
+        
+        if (militar) {
+          // Convertendo datas para o formato DD/MM/AAAA
+          const formatDate = (dateString: string) => {
+            if (!dateString) return "";
+            try {
+              return format(new Date(dateString), "dd/MM/yyyy");
+            } catch (e) {
+              console.error("Erro ao formatar data:", e);
+              return "";
+            }
+          };
 
-          if (militar) {
-            const quadroValue = toQuadroMilitar(militar.quadro);
-            setSelectedQuadro(quadroValue);
-
-            form.reset({
-              quadro: quadroValue,
-              posto: militar.posto,
-              nomeCompleto: militar.nomeCompleto,
-              nomeGuerra: militar.nomeGuerra,
-              dataNascimento: new Date(militar.dataNascimento),
-              dataInclusao: new Date(militar.dataInclusao),
-              dataUltimaPromocao: new Date(militar.dataUltimaPromocao),
-              situacao: militar.situacao as "ativo" | "inativo",
-              email: militar.email
-            });
-          }
-        } catch (error) {
-          console.error("Erro ao carregar dados do militar:", error);
-          toast({
-            title: "Erro ao carregar dados",
-            description: "Não foi possível carregar os dados do militar.",
-            variant: "destructive"
+          // Preencher o formulário com os dados do militar
+          form.reset({
+            quadro: militar.quadro,
+            posto: militar.posto,
+            nomeCompleto: militar.nomeCompleto,
+            nomeGuerra: militar.nomeGuerra,
+            dataNascimento: formatDate(militar.dataNascimento),
+            dataInclusao: formatDate(militar.dataInclusao),
+            dataUltimaPromocao: formatDate(militar.dataUltimaPromocao),
+            situacao: militar.situacao,
+            email: militar.email || ""
           });
-        } finally {
-          setLoading(false);
+          
+          // Atualizar o estado do quadro selecionado para correta exibição dos postos
+          setSelectedQuadro(militar.quadro);
         }
+      } catch (error) {
+        console.error("Erro ao carregar dados do militar:", error);
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar os dados do militar.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    loadMilitarData();
+    
+    loadMilitar();
   }, [id, form]);
 
   const onSubmit = async (values: FormValues) => {
     if (!id) return;
-
+    
     try {
-      setLoading(true);
+      setIsSubmitting(true);
+      
+      // Verificar se o quadro deve ser ajustado com base na situação
+      let quadroFinal = values.quadro as QuadroMilitar;
+      if (values.situacao === "inativo") {
+        if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
+          quadroFinal = "QORR";
+        } else if (quadroFinal === "QPBM") {
+          quadroFinal = "QPRR";
+        }
+      }
+      
+      // Atualizar o militar no banco de dados
       await updateMilitar(id, {
-        quadro: values.quadro,
-        posto: values.posto as PostoPatente,
         nomeCompleto: values.nomeCompleto,
         nomeGuerra: values.nomeGuerra,
-        dataNascimento: format(values.dataNascimento, "yyyy-MM-dd"),
-        dataInclusao: format(values.dataInclusao, "yyyy-MM-dd"),
-        dataUltimaPromocao: format(values.dataUltimaPromocao, "yyyy-MM-dd"),
-        situacao: values.situacao,
+        quadro: quadroFinal,
+        posto: values.posto as PostoPatente,
+        dataNascimento: values.dataNascimento,
+        dataInclusao: values.dataInclusao,
+        dataUltimaPromocao: values.dataUltimaPromocao,
+        situacao: values.situacao as SituacaoMilitar,
         email: values.email
       });
-
+      
       toast({
-        title: "Dados atualizados com sucesso!",
-        description: `As informações de ${values.nomeCompleto} foram atualizadas.`,
+        title: "Militar atualizado com sucesso!",
+        description: `Os dados de ${values.nomeCompleto} foram atualizados.`
       });
-
+      
+      // Determinar para qual página redirecionar
       let redirectPath = "/";
-      if (values.quadro === "QOEM" || values.quadro === "QOE") {
-        redirectPath = `/oficiais/${values.quadro === "QOEM" ? "estado-maior" : "especialistas"}`;
-      } else if (values.quadro === "QORR") {
+      
+      if (quadroFinal === "QOEM") {
+        redirectPath = "/oficiais/estado-maior";
+      } else if (quadroFinal === "QOE") {
+        redirectPath = "/oficiais/especialistas";
+      } else if (quadroFinal === "QORR") {
         redirectPath = "/oficiais/reserva";
-      } else if (values.quadro === "QPBM") {
+      } else if (quadroFinal === "QPBM") {
         redirectPath = "/pracas/ativos";
-      } else if (values.quadro === "QPRR") {
+      } else if (quadroFinal === "QPRR") {
         redirectPath = "/pracas/reserva";
       }
-
+      
       navigate(redirectPath);
+      
     } catch (error) {
       console.error("Erro ao atualizar militar:", error);
       toast({
-        title: "Erro ao atualizar dados",
+        title: "Erro ao atualizar militar",
         description: "Ocorreu um erro ao salvar as alterações.",
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const getPostoOptions = () => {
-    if (selectedQuadro === "QOEM" || selectedQuadro === "QOE" || selectedQuadro === "QORR") {
-      return [
-        { value: "Coronel", label: "Coronel" },
-        { value: "Tenente-Coronel", label: "Tenente-Coronel" },
-        { value: "Major", label: "Major" },
-        { value: "Capitão", label: "Capitão" },
-        { value: "1º Tenente", label: "1º Tenente" },
-        { value: "2º Tenente", label: "2º Tenente" }
-      ];
-    } else {
-      return [
-        { value: "Subtenente", label: "Subtenente" },
-        { value: "1º Sargento", label: "1º Sargento" },
-        { value: "2º Sargento", label: "2º Sargento" },
-        { value: "3º Sargento", label: "3º Sargento" },
-        { value: "Cabo", label: "Cabo" },
-        { value: "Soldado", label: "Soldado" }
-      ];
+  // Tab navigation
+  const handleNext = () => {
+    const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+    const currentIndex = tabs.indexOf(activeTab);
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
     }
   };
 
-  if (loading) {
+  const handlePrevious = () => {
+    const tabs = ["quadro-posto", "dados-pessoais", "datas", "situacao-contato"];
+    const currentIndex = tabs.indexOf(activeTab);
+    if (currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
+    }
+  };
+
+  const isFirstTab = activeTab === "quadro-posto";
+  const isLastTab = activeTab === "situacao-contato";
+
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
-        <span className="ml-2">Carregando dados do militar...</span>
+        <p>Carregando dados do militar...</p>
       </div>
     );
   }
@@ -192,35 +189,67 @@ const EditarMilitar = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Editar Dados do Militar</h1>
-        <div className="space-x-2">
-          <Button onClick={() => navigate(`/militar/${id}`)} variant="outline">
-            Ver Ficha
-          </Button>
-          <Button onClick={() => navigate(-1)} variant="outline">
-            Voltar
-          </Button>
-        </div>
+        <h1 className="text-2xl font-bold">Editar Militar</h1>
+        <Button
+          onClick={() => navigate(-1)}
+          variant="outline"
+        >
+          Voltar
+        </Button>
       </div>
-
+      
       <Card>
         <CardHeader className="bg-cbmepi-purple text-white">
-          <CardTitle>Dados Pessoais</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5" />
+            Atualizar Dados
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Seus campos de formulário aqui... (já estavam completos no seu envio) */}
+              <Tabs 
+                value={activeTab} 
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="grid grid-cols-4 mb-6">
+                  <TabsTrigger value="quadro-posto">Quadro e Posto</TabsTrigger>
+                  <TabsTrigger value="dados-pessoais">Dados Pessoais</TabsTrigger>
+                  <TabsTrigger value="datas">Datas Importantes</TabsTrigger>
+                  <TabsTrigger value="situacao-contato">Situação e Contato</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="quadro-posto" className="space-y-4">
+                  <QuadroPostoSelect 
+                    form={form} 
+                    selectedQuadro={selectedQuadro} 
+                    setSelectedQuadro={setSelectedQuadro} 
+                  />
+                </TabsContent>
+                
+                <TabsContent value="dados-pessoais" className="space-y-4">
+                  <DadosPessoais form={form} />
+                </TabsContent>
+                
+                <TabsContent value="datas" className="space-y-4">
+                  <DatasImportantes form={form} />
+                </TabsContent>
+                
+                <TabsContent value="situacao-contato" className="space-y-4">
+                  <SituacaoEmail form={form} />
+                </TabsContent>
+              </Tabs>
               
-              {/* Botões de Ações */}
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" className="bg-cbmepi-purple text-white hover:bg-cbmepi-purple/90">
-                  Salvar Alterações
-                </Button>
-              </div>
+              <FormNavigation 
+                activeTab={activeTab}
+                isLastTab={isLastTab}
+                isFirstTab={isFirstTab}
+                isSubmitting={isSubmitting}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                onCancel={() => navigate(-1)}
+              />
             </form>
           </Form>
         </CardContent>

@@ -13,12 +13,12 @@ import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/type
 export type MilitarComPontuacao = Militar & { pontuacao: number };
 
 // Componente para renderizar a lista de militares com pontuação
-type MeritTableProps = {
+interface MeritTableProps {
   militares: MilitarComPontuacao[];
   loading: boolean;
   tipo: "oficiais" | "pracas";
   titulo: string;
-};
+}
 
 const MeritTable = ({ militares, loading, tipo, titulo }: MeritTableProps) => {
   return (
