@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Militar, Promocao } from "@/types";
+import { Militar, Promocao, CriterioPromocao } from "@/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,16 +42,18 @@ const HistoricoPromocoes = () => {
           if (error) throw error;
           
           // Mapear dados para o formato esperado
-          const promocoesData = data.map(item => ({
-            id: item.id,
-            militarId: item.militar_id,
-            cargo: item.posto || "Não especificado",
-            dataPromocao: item.data_promocao,
-            criterio: item.tipo_promocao || "Não especificado",
-            anexoDocumento: null
-          }));
-          
-          setPromocoes(promocoesData);
+          if (data) {
+            const promocoesData: Promocao[] = data.map(item => ({
+              id: item.id,
+              militarId: item.militar_id,
+              cargo: item.posto || "Não especificado",
+              dataPromocao: item.data_promocao,
+              criterio: (item.tipo_promocao || "Antiguidade") as CriterioPromocao,
+              anexoDocumento: null
+            }));
+            
+            setPromocoes(promocoesData);
+          }
         }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);

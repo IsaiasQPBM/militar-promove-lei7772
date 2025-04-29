@@ -3,6 +3,8 @@ import { NavigateFunction } from "react-router-dom";
 import { FormValues } from "./militarValidation";
 import { createMilitar } from "@/services/militarService";
 import { QuadroMilitar, PostoPatente, SituacaoMilitar } from "@/types";
+import { verificarDisponibilidadeVaga } from "@/services/qfvService";
+import { toast } from "@/components/ui/use-toast";
 
 export const submitMilitarForm = async (
   values: FormValues,
@@ -15,6 +17,23 @@ export const submitMilitarForm = async (
       quadro = "QORR";
     } else if (quadro === "QPBM") {
       quadro = "QPRR";
+    }
+  }
+  
+  // Verificar disponibilidade de vaga para militares ativos
+  if (values.situacao === "ativo") {
+    const { disponivel, mensagem } = await verificarDisponibilidadeVaga(
+      values.posto as PostoPatente,
+      quadro
+    );
+    
+    if (!disponivel) {
+      toast({
+        title: "Sem vagas disponíveis",
+        description: mensagem,
+        variant: "destructive"
+      });
+      return { success: false, error: mensagem };
     }
   }
   
