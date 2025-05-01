@@ -1,62 +1,32 @@
 
-import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useLocation } from 'react-router-dom';
 
 interface SidebarLinkProps {
   to: string;
-  active: boolean;
-  children: ReactNode;
-  icon: ReactNode;
-  iconBg?: string;
-  iconShape?: "circle" | "triangle";
+  children: React.ReactNode;
+  className?: string;
 }
 
-export const SidebarLink = ({ 
-  to, 
-  active, 
-  children, 
-  icon, 
-  iconBg, 
-  iconShape = "circle" 
-}: SidebarLinkProps) => {
-  const renderIcon = () => {
-    if (!iconBg) {
-      return <div className="w-5">{icon}</div>;
-    }
-    
-    if (iconShape === "triangle") {
-      return (
-        <div 
-          className={cn("flex items-center justify-center", iconBg)} 
-          style={{ 
-            clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)", 
-            width: "20px", 
-            height: "20px" 
-          }}
-        >
-          {icon}
-        </div>
-      );
-    }
-    
-    return (
-      <div className={cn("rounded-full p-0.5 flex items-center justify-center", iconBg)}>
-        {icon}
-      </div>
-    );
-  };
+const SidebarLink = ({ to, children, className }: SidebarLinkProps) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
   
   return (
-    <Link 
+    <Link
       to={to}
       className={cn(
-        "flex items-center space-x-2 px-4 py-2 rounded-md transition-colors",
-        active ? "bg-cbmepi-darkPurple" : "hover:bg-cbmepi-lightPurple"
+        "flex items-center p-2 pl-9 text-sm rounded-lg",
+        isActive 
+          ? "bg-gray-200 text-gray-900 font-medium" 
+          : "text-gray-700 hover:bg-gray-100",
+        className
       )}
     >
-      {renderIcon()}
-      <span className="text-sm font-medium">{children}</span>
+      {children}
     </Link>
   );
 };
+
+export default SidebarLink;

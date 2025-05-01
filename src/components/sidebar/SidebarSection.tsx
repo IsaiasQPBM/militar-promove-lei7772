@@ -12,13 +12,13 @@ interface SidebarSectionProps {
   children?: React.ReactNode;
 }
 
-const SidebarSection: React.FC<SidebarSectionProps> = ({
+const SidebarSection = ({
   title,
   icon,
   isOpen,
   toggleOpen,
   children
-}) => {
+}: SidebarSectionProps) => {
   return (
     <div className="border-b border-gray-200 pb-1">
       <Button
@@ -120,7 +120,7 @@ export const QuadroVagasSection: React.FC<{
   );
 };
 
-// Componente para a se
+// Componente para a seção de legislação
 export const LegislacaoSection: React.FC<{
   isOpen: boolean;
   toggleOpen: () => void;
@@ -153,3 +153,5 @@ export const DashboardSection: React.FC<{
     </SidebarSection>
   );
 };
+
+export default SidebarSection;

@@ -1,404 +1,310 @@
 
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
-import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
-import { 
-  EditarCursoMilitar,
-  EditarCursoCivil,
-  EditarCondecoracao,
-  EditarElogio,
-  EditarPunicao
-} from "@/components/fichaMilitar/editarRegistros";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, PencilLine } from "lucide-react";
 
-type DadosFormacaoProps = {
+interface DadosFormacaoProps {
   militarId: string;
-  cursosMilitares: CursoMilitar[];
-  cursosCivis: CursoCivil[];
-  condecoracoes: Condecoracao[];
-  elogios: Elogio[];
-  punicoes: Punicao[];
-  onDataChange: () => void;
-};
+}
 
-export const DadosFormacao = ({ 
-  militarId,
-  cursosMilitares, 
-  cursosCivis,
-  condecoracoes,
-  elogios,
-  punicoes,
-  onDataChange
-}: DadosFormacaoProps) => {
-  const [editandoCursosMilitares, setEditandoCursosMilitares] = useState(false);
-  const [editandoCursosCivis, setEditandoCursosCivis] = useState(false);
-  const [editandoCondecoracoes, setEditandoCondecoracoes] = useState(false);
-  const [editandoElogios, setEditandoElogios] = useState(false);
-  const [editandoPunicoes, setEditandoPunicoes] = useState(false);
-
-  // Função para excluir um item
-  const excluirRegistro = async (
-    tabela: string, 
-    id: string, 
-    onSuccess: () => void,
-    tipoRegistro: string
-  ) => {
-    try {
-      const { error } = await supabase
-        .from(tabela)
-        .delete()
-        .eq('id', id);
+const DadosFormacao = ({ militarId }: DadosFormacaoProps) => {
+  const [activeTab, setActiveTab] = useState("cursos-militares");
+  const [cursosMilitares, setCursosMilitares] = useState<CursoMilitar[]>([]);
+  const [cursosCivis, setCursosCivis] = useState<CursoCivil[]>([]);
+  const [condecoracoes, setCondecoracoes] = useState<Condecoracao[]>([]);
+  const [elogios, setElogios] = useState<Elogio[]>([]);
+  const [punicoes, setPunicoes] = useState<Punicao[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+  
+  useEffect(() => {
+    const fetchDadosFormacao = async () => {
+      setLoadingData(true);
+      
+      try {
+        // Fetch cursos militares
+        const { data: cursosMilitaresData, error: cursosMilitaresError } = await supabase
+          .from("cursos_militares")
+          .select("*")
+          .eq("militar_id", militarId);
         
-      if (error) throw error;
-      
-      toast({
-        title: `${tipoRegistro} excluído com sucesso!`,
-        variant: "default"
-      });
-      
-      onSuccess();
-      onDataChange();
-      
-    } catch (error: any) {
-      toast({
-        title: `Erro ao excluir ${tipoRegistro.toLowerCase()}`,
-        description: error.message,
-        variant: "destructive"
-      });
+        if (cursosMilitaresError) throw cursosMilitaresError;
+        setCursosMilitares(cursosMilitaresData || []);
+        
+        // Fetch cursos civis
+        const { data: cursosCivisData, error: cursosCivisError } = await supabase
+          .from("cursos_civis")
+          .select("*")
+          .eq("militar_id", militarId);
+        
+        if (cursosCivisError) throw cursosCivisError;
+        setCursosCivis(cursosCivisData || []);
+        
+        // Fetch condecorações
+        const { data: condecoracoesData, error: condecoracoesError } = await supabase
+          .from("condecoracoes")
+          .select("*")
+          .eq("militar_id", militarId);
+        
+        if (condecoracoesError) throw condecoracoesError;
+        setCondecoracoes(condecoracoesData || []);
+        
+        // Fetch elogios
+        const { data: elogiosData, error: elogiosError } = await supabase
+          .from("elogios")
+          .select("*")
+          .eq("militar_id", militarId);
+        
+        if (elogiosError) throw elogiosError;
+        setElogios(elogiosData || []);
+        
+        // Fetch punições
+        const { data: punicoesData, error: punicoesError } = await supabase
+          .from("punicoes")
+          .select("*")
+          .eq("militar_id", militarId);
+        
+        if (punicoesError) throw punicoesError;
+        setPunicoes(punicoesData || []);
+        
+      } catch (error) {
+        console.error("Erro ao carregar dados de formação:", error);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    
+    if (militarId) {
+      fetchDadosFormacao();
     }
+  }, [militarId]);
+  
+  const handleEditarSecao = (secao: string) => {
+    console.log(`Editar seção ${secao}`);
   };
-
+  
+  const renderCursosMilitares = () => {
+    if (loadingData) return <p>Carregando...</p>;
+    
+    if (cursosMilitares.length === 0) {
+      return <p className="text-gray-500">Nenhum curso militar registrado.</p>;
+    }
+    
+    return (
+      <div className="space-y-4">
+        {cursosMilitares.map(curso => (
+          <div key={curso.id} className="border-b pb-3">
+            <h4 className="font-medium">{curso.nome}</h4>
+            <p className="text-sm text-gray-600">Instituição: {curso.instituicao}</p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-500">Carga horária: {curso.cargaHoraria}h</span>
+              <span className="text-sm font-medium">Pontuação: {curso.pontos}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+  
+  const renderCursosCivis = () => {
+    if (loadingData) return <p>Carregando...</p>;
+    
+    if (cursosCivis.length === 0) {
+      return <p className="text-gray-500">Nenhum curso civil registrado.</p>;
+    }
+    
+    return (
+      <div className="space-y-4">
+        {cursosCivis.map(curso => (
+          <div key={curso.id} className="border-b pb-3">
+            <h4 className="font-medium">{curso.nome}</h4>
+            <p className="text-sm text-gray-600">Instituição: {curso.instituicao}</p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-500">Carga horária: {curso.cargaHoraria}h</span>
+              <span className="text-sm font-medium">Pontuação: {curso.pontos}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+  
+  const renderCondecoracoes = () => {
+    if (loadingData) return <p>Carregando...</p>;
+    
+    if (condecoracoes.length === 0) {
+      return <p className="text-gray-500">Nenhuma condecoração registrada.</p>;
+    }
+    
+    return (
+      <div className="space-y-4">
+        {condecoracoes.map(condecoracao => (
+          <div key={condecoracao.id} className="border-b pb-3">
+            <h4 className="font-medium">{condecoracao.tipo}</h4>
+            <p className="text-sm text-gray-600">{condecoracao.descricao}</p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-500">
+                Recebida em: {new Date(condecoracao.dataRecebimento).toLocaleDateString()}
+              </span>
+              <span className="text-sm font-medium">Pontuação: {condecoracao.pontos}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+  
+  const renderElogios = () => {
+    if (loadingData) return <p>Carregando...</p>;
+    
+    if (elogios.length === 0) {
+      return <p className="text-gray-500">Nenhum elogio registrado.</p>;
+    }
+    
+    return (
+      <div className="space-y-4">
+        {elogios.map(elogio => (
+          <div key={elogio.id} className="border-b pb-3">
+            <h4 className="font-medium">Elogio {elogio.tipo}</h4>
+            <p className="text-sm text-gray-600">{elogio.descricao}</p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-500">
+                Recebido em: {new Date(elogio.dataRecebimento).toLocaleDateString()}
+              </span>
+              <span className="text-sm font-medium">Pontuação: {elogio.pontos}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+  
+  const renderPunicoes = () => {
+    if (loadingData) return <p>Carregando...</p>;
+    
+    if (punicoes.length === 0) {
+      return <p className="text-gray-500">Nenhuma punição registrada.</p>;
+    }
+    
+    return (
+      <div className="space-y-4">
+        {punicoes.map(punicao => (
+          <div key={punicao.id} className="border-b pb-3">
+            <h4 className="font-medium">Punição: {punicao.tipo}</h4>
+            <p className="text-sm text-gray-600">{punicao.descricao}</p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-500">
+                Recebida em: {new Date(punicao.dataRecebimento).toLocaleDateString()}
+              </span>
+              <span className="text-sm font-medium">Pontuação: {punicao.pontos}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+  
   return (
-    <>
-      <TabsContent value="cursos-militares" className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Cursos Militares</h3>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => setEditandoCursosMilitares(true)}
-          >
-            <Pencil className="h-4 w-4" /> Editar
-          </Button>
-        </div>
-        
-        {editandoCursosMilitares ? (
-          <EditarCursoMilitar
-            militarId={militarId}
-            cursos={cursosMilitares}
-            onCancel={() => setEditandoCursosMilitares(false)}
-            onSave={() => {
-              setEditandoCursosMilitares(false);
-              onDataChange();
-            }}
-            onDelete={(id) => excluirRegistro(
-              'cursos_militares', 
-              id, 
-              () => {}, 
-              'Curso militar'
-            )}
-          />
-        ) : (
-          cursosMilitares.length > 0 ? (
-            <div className="space-y-4">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-2 text-left">Curso</th>
-                    <th className="p-2 text-left">Instituição</th>
-                    <th className="p-2 text-left">Carga Horária</th>
-                    <th className="p-2 text-left">Pontos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cursosMilitares.map((curso) => (
-                    <tr key={curso.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{curso.nome}</td>
-                      <td className="p-2">{curso.instituicao}</td>
-                      <td className="p-2">{curso.cargaHoraria}h</td>
-                      <td className="p-2 font-bold">{curso.pontos}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-100">
-                  <tr>
-                    <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                    <td className="p-2 font-bold">{cursosMilitares.reduce((sum, curso) => sum + (curso.pontos || 0), 0)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+    <Card>
+      <CardHeader className="bg-gray-100">
+        <CardTitle>Ficha de Conceito do Militar</CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6 grid grid-cols-5 max-w-full">
+            <TabsTrigger value="cursos-militares">Cursos Militares</TabsTrigger>
+            <TabsTrigger value="cursos-civis">Cursos Civis</TabsTrigger>
+            <TabsTrigger value="condecoracoes">Condecorações</TabsTrigger>
+            <TabsTrigger value="elogios">Elogios</TabsTrigger>
+            <TabsTrigger value="punicoes">Punições</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="cursos-militares">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Cursos Militares</h3>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <PlusCircle className="h-4 w-4" /> Adicionar
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-1"
+                  onClick={() => handleEditarSecao('cursos-militares')}>
+                  <PencilLine className="h-4 w-4" /> Editar
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="text-center p-4">Não há cursos militares registrados.</div>
-          )
-        )}
-      </TabsContent>
-      
-      <TabsContent value="cursos-civis" className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Cursos Civis</h3>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => setEditandoCursosCivis(true)}
-          >
-            <Pencil className="h-4 w-4" /> Editar
-          </Button>
-        </div>
-        
-        {editandoCursosCivis ? (
-          <EditarCursoCivil
-            militarId={militarId}
-            cursos={cursosCivis}
-            onCancel={() => setEditandoCursosCivis(false)}
-            onSave={() => {
-              setEditandoCursosCivis(false);
-              onDataChange();
-            }}
-            onDelete={(id) => excluirRegistro(
-              'cursos_civis', 
-              id, 
-              () => {}, 
-              'Curso civil'
-            )}
-          />
-        ) : (
-          cursosCivis.length > 0 ? (
-            <div className="space-y-4">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-2 text-left">Curso</th>
-                    <th className="p-2 text-left">Instituição</th>
-                    <th className="p-2 text-left">Carga Horária</th>
-                    <th className="p-2 text-left">Pontos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cursosCivis.map((curso) => (
-                    <tr key={curso.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{curso.nome}</td>
-                      <td className="p-2">{curso.instituicao}</td>
-                      <td className="p-2">{curso.cargaHoraria}h</td>
-                      <td className="p-2 font-bold">{curso.pontos}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-100">
-                  <tr>
-                    <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                    <td className="p-2 font-bold">{cursosCivis.reduce((sum, curso) => sum + (curso.pontos || 0), 0)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+            {renderCursosMilitares()}
+          </TabsContent>
+          
+          <TabsContent value="cursos-civis">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Cursos Civis</h3>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <PlusCircle className="h-4 w-4" /> Adicionar
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-1"
+                  onClick={() => handleEditarSecao('cursos-civis')}>
+                  <PencilLine className="h-4 w-4" /> Editar
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="text-center p-4">Não há cursos civis registrados.</div>
-          )
-        )}
-      </TabsContent>
-      
-      <TabsContent value="condecoracoes" className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Condecorações</h3>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => setEditandoCondecoracoes(true)}
-          >
-            <Pencil className="h-4 w-4" /> Editar
-          </Button>
-        </div>
-        
-        {editandoCondecoracoes ? (
-          <EditarCondecoracao
-            militarId={militarId}
-            condecoracoes={condecoracoes}
-            onCancel={() => setEditandoCondecoracoes(false)}
-            onSave={() => {
-              setEditandoCondecoracoes(false);
-              onDataChange();
-            }}
-            onDelete={(id) => excluirRegistro(
-              'condecoracoes', 
-              id, 
-              () => {}, 
-              'Condecoração'
-            )}
-          />
-        ) : (
-          condecoracoes.length > 0 ? (
-            <div className="space-y-4">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-2 text-left">Tipo</th>
-                    <th className="p-2 text-left">Descrição</th>
-                    <th className="p-2 text-left">Data</th>
-                    <th className="p-2 text-left">Pontos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {condecoracoes.map((cond) => (
-                    <tr key={cond.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{cond.tipo}</td>
-                      <td className="p-2">{cond.descricao}</td>
-                      <td className="p-2">{cond.dataRecebimento && format(new Date(cond.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
-                      <td className="p-2 font-bold">{cond.pontos}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-100">
-                  <tr>
-                    <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                    <td className="p-2 font-bold">{condecoracoes.reduce((sum, cond) => sum + (cond.pontos || 0), 0)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+            {renderCursosCivis()}
+          </TabsContent>
+          
+          <TabsContent value="condecoracoes">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Condecorações</h3>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <PlusCircle className="h-4 w-4" /> Adicionar
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-1"
+                  onClick={() => handleEditarSecao('condecoracoes')}>
+                  <PencilLine className="h-4 w-4" /> Editar
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="text-center p-4">Não há condecorações registradas.</div>
-          )
-        )}
-      </TabsContent>
-      
-      <TabsContent value="elogios" className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Elogios</h3>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => setEditandoElogios(true)}
-          >
-            <Pencil className="h-4 w-4" /> Editar
-          </Button>
-        </div>
-        
-        {editandoElogios ? (
-          <EditarElogio
-            militarId={militarId}
-            elogios={elogios}
-            onCancel={() => setEditandoElogios(false)}
-            onSave={() => {
-              setEditandoElogios(false);
-              onDataChange();
-            }}
-            onDelete={(id) => excluirRegistro(
-              'elogios', 
-              id, 
-              () => {}, 
-              'Elogio'
-            )}
-          />
-        ) : (
-          elogios.length > 0 ? (
-            <div className="space-y-4">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-2 text-left">Tipo</th>
-                    <th className="p-2 text-left">Descrição</th>
-                    <th className="p-2 text-left">Data</th>
-                    <th className="p-2 text-left">Pontos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {elogios.map((elogio) => (
-                    <tr key={elogio.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{elogio.tipo}</td>
-                      <td className="p-2">{elogio.descricao}</td>
-                      <td className="p-2">{elogio.dataRecebimento && format(new Date(elogio.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
-                      <td className="p-2 font-bold">{elogio.pontos}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-100">
-                  <tr>
-                    <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                    <td className="p-2 font-bold">{elogios.reduce((sum, elogio) => sum + (elogio.pontos || 0), 0)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+            {renderCondecoracoes()}
+          </TabsContent>
+          
+          <TabsContent value="elogios">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Elogios</h3>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <PlusCircle className="h-4 w-4" /> Adicionar
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-1"
+                  onClick={() => handleEditarSecao('elogios')}>
+                  <PencilLine className="h-4 w-4" /> Editar
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="text-center p-4">Não há elogios registrados.</div>
-          )
-        )}
-      </TabsContent>
-      
-      <TabsContent value="punicoes" className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Punições</h3>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => setEditandoPunicoes(true)}
-          >
-            <Pencil className="h-4 w-4" /> Editar
-          </Button>
-        </div>
-        
-        {editandoPunicoes ? (
-          <EditarPunicao
-            militarId={militarId}
-            punicoes={punicoes}
-            onCancel={() => setEditandoPunicoes(false)}
-            onSave={() => {
-              setEditandoPunicoes(false);
-              onDataChange();
-            }}
-            onDelete={(id) => excluirRegistro(
-              'punicoes', 
-              id, 
-              () => {}, 
-              'Punição'
-            )}
-          />
-        ) : (
-          punicoes.length > 0 ? (
-            <div className="space-y-4">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-2 text-left">Tipo</th>
-                    <th className="p-2 text-left">Descrição</th>
-                    <th className="p-2 text-left">Data</th>
-                    <th className="p-2 text-left">Pontos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {punicoes.map((punicao) => (
-                    <tr key={punicao.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{punicao.tipo}</td>
-                      <td className="p-2">{punicao.descricao}</td>
-                      <td className="p-2">{punicao.dataRecebimento && format(new Date(punicao.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
-                      <td className="p-2 font-bold text-red-500">{punicao.pontos}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-100">
-                  <tr>
-                    <td colSpan={3} className="p-2 text-right font-bold">Total:</td>
-                    <td className="p-2 font-bold text-red-500">{punicoes.reduce((sum, punicao) => sum + (punicao.pontos || 0), 0)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+            {renderElogios()}
+          </TabsContent>
+          
+          <TabsContent value="punicoes">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Punições</h3>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <PlusCircle className="h-4 w-4" /> Adicionar
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-1"
+                  onClick={() => handleEditarSecao('punicoes')}>
+                  <PencilLine className="h-4 w-4" /> Editar
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="text-center p-4">Não há punições registradas.</div>
-          )
-        )}
-      </TabsContent>
-    </>
+            {renderPunicoes()}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
+
+export default DadosFormacao;
