@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,12 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { MerecimentoList } from "@/components/merecimento/MerecimentoList";
 import { CriteriosMerecimento } from "@/components/merecimento/CriteriosMerecimento";
-import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
+import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 
-// Tipo que estende Militar com pontuação
+// Type that extends Militar with score
 export type MilitarComPontuacao = Militar & { pontuacao: number };
 
-// Componente para renderizar a lista de militares com pontuação
+// Component to render the list of militares with score
 interface MeritTableProps {
   militares: MilitarComPontuacao[];
   loading: boolean;
@@ -37,7 +36,7 @@ const MeritTable = ({ militares, loading, tipo, titulo }: MeritTableProps) => {
   );
 };
 
-// Hook personalizado para buscar e calcular pontuações
+// Custom hook to fetch and calculate scores
 const useMilitaresPontuacao = () => {
   const [oficiais, setOficiais] = useState<MilitarComPontuacao[]>([]);
   const [pracas, setPracas] = useState<MilitarComPontuacao[]>([]);
@@ -93,7 +92,7 @@ const useMilitaresPontuacao = () => {
   return { oficiais, pracas, loading };
 };
 
-// Função para calcular pontuação de cada militar
+// Function to calculate score for each militar
 const calcularPontuacaoMilitares = (
   militares: any[], 
   cursosMilitares: any[], 
@@ -125,17 +124,19 @@ const calcularPontuacaoMilitares = (
       situacao: toSituacaoMilitar(militar.situacao),
       email: militar.email,
       foto: militar.foto,
+      tipoSanguineo: toTipoSanguineo(militar.tipo_sanguineo),
+      sexo: toSexo(militar.sexo),
       pontuacao
     };
   });
 };
 
-// Função auxiliar para somar pontos
+// Helper function to sum points
 const somaPontos = (items: any[]): number => {
   return items.reduce((acc, item) => acc + (item.pontos || 0), 0);
 };
 
-// Função para separar e ordenar militares por mérito
+// Function to separate and sort militares by merit
 const separarEOrdenarPorMerito = (militaresComPontuacao: MilitarComPontuacao[]) => {
   const oficiaisAtivos = militaresComPontuacao.filter(
     m => (m.quadro === "QOEM" || m.quadro === "QOE") && m.situacao === "ativo"

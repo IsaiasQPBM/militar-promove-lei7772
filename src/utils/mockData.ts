@@ -1,4 +1,3 @@
-
 import { 
   Militar, 
   Promocao, 
@@ -22,7 +21,9 @@ export const mockMilitares: Militar[] = [
     dataInclusao: "2000-03-01",
     dataUltimaPromocao: "2022-12-23",
     situacao: "ativo",
-    email: "erisman@cbmepi.gov.br"
+    email: "erisman@cbmepi.gov.br",
+    tipoSanguineo: "A+",
+    sexo: "Masculino"
   },
   {
     id: "2",
@@ -35,7 +36,9 @@ export const mockMilitares: Militar[] = [
     dataInclusao: "2002-01-15",
     dataUltimaPromocao: "2023-07-18",
     situacao: "ativo",
-    email: "flaubert@cbmepi.gov.br"
+    email: "flaubert@cbmepi.gov.br",
+    tipoSanguineo: "O+",
+    sexo: "Masculino"
   },
   {
     id: "3",
@@ -48,7 +51,9 @@ export const mockMilitares: Militar[] = [
     dataInclusao: "1995-01-10",
     dataUltimaPromocao: "2020-06-15",
     situacao: "ativo",
-    email: "roberto@cbmepi.gov.br"
+    email: "roberto@cbmepi.gov.br",
+    tipoSanguineo: "B+",
+    sexo: "Masculino"
   },
   {
     id: "4",
@@ -61,7 +66,9 @@ export const mockMilitares: Militar[] = [
     dataInclusao: "1990-02-22",
     dataUltimaPromocao: "2018-04-10",
     situacao: "inativo",
-    email: "alberto@cbmepi.gov.br"
+    email: "alberto@cbmepi.gov.br",
+    tipoSanguineo: "AB+",
+    sexo: "Masculino"
   },
   {
     id: "5",
@@ -74,7 +81,9 @@ export const mockMilitares: Militar[] = [
     dataInclusao: "2005-03-15",
     dataUltimaPromocao: "2021-08-12",
     situacao: "ativo",
-    email: "ana@cbmepi.gov.br"
+    email: "ana@cbmepi.gov.br",
+    tipoSanguineo: "A-",
+    sexo: "Feminino"
   },
   {
     id: "6",
@@ -87,7 +96,9 @@ export const mockMilitares: Militar[] = [
     dataInclusao: "1990-06-10",
     dataUltimaPromocao: "2015-10-05",
     situacao: "inativo",
-    email: "joao@cbmepi.gov.br"
+    email: "joao@cbmepi.gov.br",
+    tipoSanguineo: "O-",
+    sexo: "Masculino"
   }
 ];
 

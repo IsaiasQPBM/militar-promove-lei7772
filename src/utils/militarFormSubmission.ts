@@ -10,7 +10,7 @@ export const submitMilitarForm = async (
   values: FormValues,
   navigate: NavigateFunction
 ) => {
-  // Verificar se o quadro deve ser ajustado com base na situação
+  // Check if the quadro should be adjusted based on the situation
   let quadro = values.quadro as QuadroMilitar;
   if (values.situacao === "inativo") {
     if (quadro === "QOEM" || quadro === "QOE") {
@@ -20,7 +20,7 @@ export const submitMilitarForm = async (
     }
   }
   
-  // Verificar disponibilidade de vaga para militares ativos
+  // Check vacancy availability for active militares
   if (values.situacao === "ativo") {
     const { disponivel, mensagem } = await verificarDisponibilidadeVaga(
       values.posto as PostoPatente,
@@ -29,7 +29,7 @@ export const submitMilitarForm = async (
     
     if (!disponivel) {
       toast({
-        title: "Sem vagas disponíveis",
+        title: "No vacancies available",
         description: mensagem,
         variant: "destructive"
       });
@@ -38,7 +38,7 @@ export const submitMilitarForm = async (
   }
   
   try {
-    // Criar militar no banco de dados
+    // Create militar in the database
     const militar = await createMilitar({
       nomeCompleto: values.nomeCompleto,
       nomeGuerra: values.nomeGuerra,
@@ -49,10 +49,12 @@ export const submitMilitarForm = async (
       dataUltimaPromocao: values.dataUltimaPromocao,
       situacao: values.situacao as SituacaoMilitar,
       email: values.email,
-      foto: ""
+      foto: "",
+      tipoSanguineo: values.tipoSanguineo,
+      sexo: values.sexo
     });
 
-    // Determinar para qual página redirecionar
+    // Determine which page to redirect to
     let redirectPath = "/";
     
     if (militar.quadro === "QOEM") {
@@ -75,7 +77,7 @@ export const submitMilitarForm = async (
     };
     
   } catch (error: any) {
-    console.error("Erro ao cadastrar militar:", error);
+    console.error("Error registering militar:", error);
     throw error;
   }
 };

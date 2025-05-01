@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,9 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { MilitarList } from "@/components/antiguidade/MilitarList";
 import { CriteriosAntiguidade } from "@/components/antiguidade/CriteriosAntiguidade";
-import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar } from "@/utils/typeConverters";
+import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 
-// Componente para exibir um grupo de militares em uma tabela
+// Component to display a group of militares in a table
 type MilitarTableProps = {
   militares: Militar[];
   loading: boolean;
@@ -51,7 +50,7 @@ const Antiguidade = () => {
           
         if (error) throw error;
         
-        // Converter os dados do formato do banco para o formato do tipo Militar
+        // Convert data from database format to Militar type format
         const militaresFormatados: Militar[] = data.map(item => ({
           id: item.id,
           nomeCompleto: item.nome,
@@ -63,15 +62,17 @@ const Antiguidade = () => {
           dataUltimaPromocao: item.dataultimapromocao,
           situacao: toSituacaoMilitar(item.situacao),
           email: item.email,
-          foto: item.foto
+          foto: item.foto,
+          tipoSanguineo: toTipoSanguineo(item.tipo_sanguineo),
+          sexo: toSexo(item.sexo)
         }));
         
         setMilitares(militaresFormatados);
       } catch (error) {
-        console.error("Erro ao buscar militares:", error);
+        console.error("Error fetching militares:", error);
         toast({
-          title: "Erro ao carregar dados",
-          description: "Não foi possível carregar os dados dos militares.",
+          title: "Error loading data",
+          description: "Could not load militar data.",
           variant: "destructive"
         });
       } finally {
@@ -82,31 +83,31 @@ const Antiguidade = () => {
     fetchMilitares();
   }, []);
   
-  // Função para ordenar militares por antiguidade
+  // Function to sort militares by seniority
   const ordenarPorAntiguidade = (militares: Militar[]): Militar[] => {
     return [...militares].sort((a, b) => {
-      // Primeiro critério: Data de inclusão (mais antiga primeiro)
+      // First criterion: Date of inclusion (earliest first)
       const dataInclusaoA = new Date(a.dataInclusao).getTime();
       const dataInclusaoB = new Date(b.dataInclusao).getTime();
       if (dataInclusaoA !== dataInclusaoB) {
         return dataInclusaoA - dataInclusaoB;
       }
       
-      // Segundo critério: Data da última promoção (mais antiga primeiro)
+      // Second criterion: Date of last promotion (earliest first)
       const dataPromocaoA = new Date(a.dataUltimaPromocao).getTime();
       const dataPromocaoB = new Date(b.dataUltimaPromocao).getTime();
       if (dataPromocaoA !== dataPromocaoB) {
         return dataPromocaoA - dataPromocaoB;
       }
       
-      // Terceiro critério: Data de nascimento (mais velho primeiro)
+      // Third criterion: Date of birth (oldest first)
       const dataNascimentoA = new Date(a.dataNascimento).getTime();
       const dataNascimentoB = new Date(b.dataNascimento).getTime();
       return dataNascimentoA - dataNascimentoB;
     });
   };
   
-  // Filtrar e preparar dados
+  // Filter and prepare data
   const oficiais = militares.filter(m => 
     (m.quadro === "QOEM" || m.quadro === "QOE") && m.situacao === "ativo"
   );
@@ -115,7 +116,7 @@ const Antiguidade = () => {
     m.quadro === "QPBM" && m.situacao === "ativo"
   );
   
-  // Ordenar por antiguidade
+  // Sort by seniority
   const oficiaisOrdenados = ordenarPorAntiguidade(oficiais);
   const pracasOrdenadas = ordenarPorAntiguidade(pracas);
   
