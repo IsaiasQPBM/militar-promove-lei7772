@@ -7,11 +7,24 @@ interface SidebarLinkProps {
   to: string;
   children: React.ReactNode;
   className?: string;
+  active?: boolean;
+  icon?: React.ReactNode;
+  iconBg?: string;
+  iconShape?: string;
 }
 
-const SidebarLink = ({ to, children, className }: SidebarLinkProps) => {
+const SidebarLink = ({ 
+  to, 
+  children, 
+  className,
+  active,
+  icon,
+  iconBg,
+  iconShape
+}: SidebarLinkProps) => {
   const location = useLocation();
-  const isActive = location.pathname === to;
+  // If active prop isn't provided, determine it from the route
+  const isActive = active !== undefined ? active : location.pathname === to;
   
   return (
     <Link
@@ -24,6 +37,15 @@ const SidebarLink = ({ to, children, className }: SidebarLinkProps) => {
         className
       )}
     >
+      {icon && (
+        <span className={cn(
+          "mr-2 flex items-center justify-center w-5 h-5 rounded-md",
+          iconBg,
+          iconShape === "triangle" ? "clip-path-triangle" : ""
+        )}>
+          {icon}
+        </span>
+      )}
       {children}
     </Link>
   );
