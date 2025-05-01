@@ -199,6 +199,23 @@ const useFichaMilitar = (id: string | undefined) => {
     setPunicoes(punicoesMapeadas);
     return punicoesMapeadas;
   };
+  
+  // Função para recarregar os dados
+  const recarregarDados = useCallback(() => {
+    if (!id) return;
+    
+    Promise.all([
+      buscarCursosMilitares(id),
+      buscarCursosCivis(id),
+      buscarCondecoracoes(id),
+      buscarElogios(id),
+      buscarPunicoes(id)
+    ]).then(() => {
+      console.log("Dados recarregados com sucesso");
+    }).catch((error) => {
+      console.error("Erro ao recarregar dados:", error);
+    });
+  }, [id]);
 
   // Inicialização - carrega dados apenas uma vez
   useEffect(() => {
@@ -218,7 +235,8 @@ const useFichaMilitar = (id: string | undefined) => {
     elogios, 
     punicoes, 
     totalPontos, 
-    loading 
+    loading,
+    recarregarDados 
   };
 };
 
@@ -271,7 +289,8 @@ const FichaMilitar = () => {
     elogios, 
     punicoes, 
     totalPontos, 
-    loading 
+    loading,
+    recarregarDados
   } = useFichaMilitar(id);
   
   if (loading) {
@@ -313,11 +332,13 @@ const FichaMilitar = () => {
             </TabsList>
             
             <DadosFormacao
+              militarId={id || ""}
               cursosMilitares={cursosMilitares}
               cursosCivis={cursosCivis}
               condecoracoes={condecoracoes}
               elogios={elogios}
               punicoes={punicoes}
+              onDataChange={recarregarDados}
             />
           </Tabs>
           

@@ -2,31 +2,30 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PostoPatente, QuadroMilitar } from "@/types";
 
-// Dados da Lei nº 7.772/2022 (simulados)
+// Dados da Lei nº 7.772/2022
 const vagasLei: Record<string, Record<string, number>> = {
   QOEM: {
-    "Coronel": 1,
-    "Tenente-Coronel": 2,
-    "Major": 3,
-    "Capitão": 5,
-    "1º Tenente": 7,
-    "2º Tenente": 10
+    "Coronel": 6, // Atualizado conforme a Lei
+    "Tenente-Coronel": 16, // Atualizado conforme a Lei
+    "Major": 35, // Atualizado conforme a Lei
+    "Capitão": 38, // Atualizado conforme a Lei
+    "1º Tenente": 50, // Atualizado conforme a Lei
+    "2º Tenente": 56 // Atualizado conforme a Lei
   },
   QOE: {
-    "Coronel": 0,
-    "Tenente-Coronel": 1,
-    "Major": 2,
-    "Capitão": 3,
-    "1º Tenente": 5,
-    "2º Tenente": 8
+    "Tenente-Coronel": 2, // Atualizado conforme a Lei
+    "Major": 2, // Atualizado conforme a Lei
+    "Capitão": 2, // Atualizado conforme a Lei
+    "1º Tenente": 2, // Atualizado conforme a Lei
+    "2º Tenente": 2 // Atualizado conforme a Lei
   },
   QPBM: {
-    "Subtenente": 8,
-    "1º Sargento": 15,
-    "2º Sargento": 20,
-    "3º Sargento": 30,
-    "Cabo": 40,
-    "Soldado": 60
+    "Subtenente": 63, // Atualizado conforme a Lei
+    "1º Sargento": 102, // Atualizado conforme a Lei
+    "2º Sargento": 130, // Atualizado conforme a Lei
+    "3º Sargento": 150, // Atualizado conforme a Lei
+    "Cabo": 240, // Atualizado conforme a Lei
+    "Soldado": 428 // Atualizado conforme a Lei
   },
   QORR: {},
   QPRR: {}
@@ -150,4 +149,15 @@ export const calcularVagasDisponiveis = async (): Promise<Record<string, Record<
     console.error("Erro ao calcular vagas disponíveis:", error);
     throw error;
   }
+};
+
+// Função para obter o número total de vagas da Lei por quadro
+export const obterTotalVagasLei = (): Record<string, number> => {
+  const totais: Record<string, number> = {};
+  
+  Object.keys(vagasLei).forEach(quadro => {
+    totais[quadro] = Object.values(vagasLei[quadro]).reduce((sum, num) => sum + num, 0);
+  });
+  
+  return totais;
 };
