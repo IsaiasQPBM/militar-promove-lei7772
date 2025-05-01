@@ -1,61 +1,43 @@
 
 import React from 'react';
-import { 
-  ChevronDown, 
-  ChevronUp,
-  Users,
-  UserCircle,
-  Award,
-  ClipboardList,
-  BookOpen,
-  BarChart 
-} from 'lucide-react';
+import { Users, UserCircle, UserPlus, FileDown, Calendar, Award, Scale, BookOpen, ClipboardList, ChevronDown, ChevronUp, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SidebarLink from './SidebarLink';
 
 interface SidebarSectionProps {
   title: string;
-  icon?: React.ReactNode;
-  isOpen?: boolean;
-  toggleOpen?: () => void;
+  icon: React.ReactNode;
+  isOpen: boolean;
+  toggleOpen: () => void;
   children?: React.ReactNode;
 }
 
-const SidebarSection = ({
+const SidebarSection: React.FC<SidebarSectionProps> = ({
   title,
   icon,
-  isOpen = true, // Default to open if not controlled externally
-  toggleOpen = () => {}, // No-op function as default
+  isOpen,
+  toggleOpen,
   children
-}: SidebarSectionProps) => {
-  // If isOpen and toggleOpen are not provided, we'll manage state internally
-  const [internalIsOpen, setInternalIsOpen] = React.useState(isOpen);
-  
-  // Use either the external or internal state
-  const open = toggleOpen === (() => {}) ? internalIsOpen : isOpen;
-  const handleToggle = toggleOpen === (() => {}) 
-    ? () => setInternalIsOpen(prev => !prev) 
-    : toggleOpen;
-
+}) => {
   return (
     <div className="border-b border-gray-200 pb-1">
       <Button
         variant="ghost"
         className="flex w-full justify-between p-2 text-gray-700 hover:bg-gray-100"
-        onClick={handleToggle}
+        onClick={toggleOpen}
         size="sm"
       >
         <div className="flex items-center gap-2">
           {icon}
           <span className="font-medium">{title}</span>
         </div>
-        {open ? (
+        {isOpen ? (
           <ChevronUp className="h-4 w-4 text-gray-500" />
         ) : (
           <ChevronDown className="h-4 w-4 text-gray-500" />
         )}
       </Button>
-      {open && (
+      {isOpen && (
         <div className="flex flex-col gap-1">{children}</div>
       )}
     </div>
@@ -138,7 +120,7 @@ export const QuadroVagasSection: React.FC<{
   );
 };
 
-// Componente para a seção de legislação
+// Componente para a se
 export const LegislacaoSection: React.FC<{
   isOpen: boolean;
   toggleOpen: () => void;
@@ -171,5 +153,3 @@ export const DashboardSection: React.FC<{
     </SidebarSection>
   );
 };
-
-export default SidebarSection;
