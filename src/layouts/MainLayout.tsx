@@ -2,13 +2,13 @@
 import { useEffect, PropsWithChildren } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Sidebar from '@/components/sidebar';
 
 const MainLayout = ({ children }: PropsWithChildren) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { isMobile } = useMobile();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     if (!isAuthenticated) {

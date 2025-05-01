@@ -9,85 +9,34 @@ import { PlusCircle, PencilLine } from "lucide-react";
 
 interface DadosFormacaoProps {
   militarId: string;
+  cursosMilitares: CursoMilitar[];
+  cursosCivis: CursoCivil[];
+  condecoracoes: Condecoracao[];
+  elogios: Elogio[];
+  punicoes: Punicao[];
+  onDataChange: () => void;
 }
 
-const DadosFormacao = ({ militarId }: DadosFormacaoProps) => {
+const DadosFormacao = ({ 
+  militarId, 
+  cursosMilitares,
+  cursosCivis,
+  condecoracoes,
+  elogios,
+  punicoes,
+  onDataChange 
+}: DadosFormacaoProps) => {
   const [activeTab, setActiveTab] = useState("cursos-militares");
-  const [cursosMilitares, setCursosMilitares] = useState<CursoMilitar[]>([]);
-  const [cursosCivis, setCursosCivis] = useState<CursoCivil[]>([]);
-  const [condecoracoes, setCondecoracoes] = useState<Condecoracao[]>([]);
-  const [elogios, setElogios] = useState<Elogio[]>([]);
-  const [punicoes, setPunicoes] = useState<Punicao[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
-  
-  useEffect(() => {
-    const fetchDadosFormacao = async () => {
-      setLoadingData(true);
-      
-      try {
-        // Fetch cursos militares
-        const { data: cursosMilitaresData, error: cursosMilitaresError } = await supabase
-          .from("cursos_militares")
-          .select("*")
-          .eq("militar_id", militarId);
-        
-        if (cursosMilitaresError) throw cursosMilitaresError;
-        setCursosMilitares(cursosMilitaresData || []);
-        
-        // Fetch cursos civis
-        const { data: cursosCivisData, error: cursosCivisError } = await supabase
-          .from("cursos_civis")
-          .select("*")
-          .eq("militar_id", militarId);
-        
-        if (cursosCivisError) throw cursosCivisError;
-        setCursosCivis(cursosCivisData || []);
-        
-        // Fetch condecorações
-        const { data: condecoracoesData, error: condecoracoesError } = await supabase
-          .from("condecoracoes")
-          .select("*")
-          .eq("militar_id", militarId);
-        
-        if (condecoracoesError) throw condecoracoesError;
-        setCondecoracoes(condecoracoesData || []);
-        
-        // Fetch elogios
-        const { data: elogiosData, error: elogiosError } = await supabase
-          .from("elogios")
-          .select("*")
-          .eq("militar_id", militarId);
-        
-        if (elogiosError) throw elogiosError;
-        setElogios(elogiosData || []);
-        
-        // Fetch punições
-        const { data: punicoesData, error: punicoesError } = await supabase
-          .from("punicoes")
-          .select("*")
-          .eq("militar_id", militarId);
-        
-        if (punicoesError) throw punicoesError;
-        setPunicoes(punicoesData || []);
-        
-      } catch (error) {
-        console.error("Erro ao carregar dados de formação:", error);
-      } finally {
-        setLoadingData(false);
-      }
-    };
-    
-    if (militarId) {
-      fetchDadosFormacao();
-    }
-  }, [militarId]);
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleEditarSecao = (secao: string) => {
     console.log(`Editar seção ${secao}`);
+    // Aqui será implementada a lógica para abrir modal de edição
+    // ou navegação para página de edição
   };
   
   const renderCursosMilitares = () => {
-    if (loadingData) return <p>Carregando...</p>;
+    if (isLoading) return <p>Carregando...</p>;
     
     if (cursosMilitares.length === 0) {
       return <p className="text-gray-500">Nenhum curso militar registrado.</p>;
@@ -110,7 +59,7 @@ const DadosFormacao = ({ militarId }: DadosFormacaoProps) => {
   };
   
   const renderCursosCivis = () => {
-    if (loadingData) return <p>Carregando...</p>;
+    if (isLoading) return <p>Carregando...</p>;
     
     if (cursosCivis.length === 0) {
       return <p className="text-gray-500">Nenhum curso civil registrado.</p>;
@@ -133,7 +82,7 @@ const DadosFormacao = ({ militarId }: DadosFormacaoProps) => {
   };
   
   const renderCondecoracoes = () => {
-    if (loadingData) return <p>Carregando...</p>;
+    if (isLoading) return <p>Carregando...</p>;
     
     if (condecoracoes.length === 0) {
       return <p className="text-gray-500">Nenhuma condecoração registrada.</p>;
@@ -158,7 +107,7 @@ const DadosFormacao = ({ militarId }: DadosFormacaoProps) => {
   };
   
   const renderElogios = () => {
-    if (loadingData) return <p>Carregando...</p>;
+    if (isLoading) return <p>Carregando...</p>;
     
     if (elogios.length === 0) {
       return <p className="text-gray-500">Nenhum elogio registrado.</p>;
@@ -183,7 +132,7 @@ const DadosFormacao = ({ militarId }: DadosFormacaoProps) => {
   };
   
   const renderPunicoes = () => {
-    if (loadingData) return <p>Carregando...</p>;
+    if (isLoading) return <p>Carregando...</p>;
     
     if (punicoes.length === 0) {
       return <p className="text-gray-500">Nenhuma punição registrada.</p>;
@@ -208,102 +157,87 @@ const DadosFormacao = ({ militarId }: DadosFormacaoProps) => {
   };
   
   return (
-    <Card>
-      <CardHeader className="bg-gray-100">
-        <CardTitle>Ficha de Conceito do Militar</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 grid grid-cols-5 max-w-full">
-            <TabsTrigger value="cursos-militares">Cursos Militares</TabsTrigger>
-            <TabsTrigger value="cursos-civis">Cursos Civis</TabsTrigger>
-            <TabsTrigger value="condecoracoes">Condecorações</TabsTrigger>
-            <TabsTrigger value="elogios">Elogios</TabsTrigger>
-            <TabsTrigger value="punicoes">Punições</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="cursos-militares">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Cursos Militares</h3>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  <PlusCircle className="h-4 w-4" /> Adicionar
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1"
-                  onClick={() => handleEditarSecao('cursos-militares')}>
-                  <PencilLine className="h-4 w-4" /> Editar
-                </Button>
-              </div>
-            </div>
-            {renderCursosMilitares()}
-          </TabsContent>
-          
-          <TabsContent value="cursos-civis">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Cursos Civis</h3>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  <PlusCircle className="h-4 w-4" /> Adicionar
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1"
-                  onClick={() => handleEditarSecao('cursos-civis')}>
-                  <PencilLine className="h-4 w-4" /> Editar
-                </Button>
-              </div>
-            </div>
-            {renderCursosCivis()}
-          </TabsContent>
-          
-          <TabsContent value="condecoracoes">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Condecorações</h3>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  <PlusCircle className="h-4 w-4" /> Adicionar
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1"
-                  onClick={() => handleEditarSecao('condecoracoes')}>
-                  <PencilLine className="h-4 w-4" /> Editar
-                </Button>
-              </div>
-            </div>
-            {renderCondecoracoes()}
-          </TabsContent>
-          
-          <TabsContent value="elogios">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Elogios</h3>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  <PlusCircle className="h-4 w-4" /> Adicionar
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1"
-                  onClick={() => handleEditarSecao('elogios')}>
-                  <PencilLine className="h-4 w-4" /> Editar
-                </Button>
-              </div>
-            </div>
-            {renderElogios()}
-          </TabsContent>
-          
-          <TabsContent value="punicoes">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Punições</h3>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  <PlusCircle className="h-4 w-4" /> Adicionar
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1"
-                  onClick={() => handleEditarSecao('punicoes')}>
-                  <PencilLine className="h-4 w-4" /> Editar
-                </Button>
-              </div>
-            </div>
-            {renderPunicoes()}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+    <>
+      <TabsContent value="cursos-militares">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Cursos Militares</h3>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <PlusCircle className="h-4 w-4" /> Adicionar
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-1"
+              onClick={() => handleEditarSecao('cursos-militares')}>
+              <PencilLine className="h-4 w-4" /> Editar
+            </Button>
+          </div>
+        </div>
+        {renderCursosMilitares()}
+      </TabsContent>
+      
+      <TabsContent value="cursos-civis">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Cursos Civis</h3>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <PlusCircle className="h-4 w-4" /> Adicionar
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-1"
+              onClick={() => handleEditarSecao('cursos-civis')}>
+              <PencilLine className="h-4 w-4" /> Editar
+            </Button>
+          </div>
+        </div>
+        {renderCursosCivis()}
+      </TabsContent>
+      
+      <TabsContent value="condecoracoes">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Condecorações</h3>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <PlusCircle className="h-4 w-4" /> Adicionar
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-1"
+              onClick={() => handleEditarSecao('condecoracoes')}>
+              <PencilLine className="h-4 w-4" /> Editar
+            </Button>
+          </div>
+        </div>
+        {renderCondecoracoes()}
+      </TabsContent>
+      
+      <TabsContent value="elogios">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Elogios</h3>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <PlusCircle className="h-4 w-4" /> Adicionar
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-1"
+              onClick={() => handleEditarSecao('elogios')}>
+              <PencilLine className="h-4 w-4" /> Editar
+            </Button>
+          </div>
+        </div>
+        {renderElogios()}
+      </TabsContent>
+      
+      <TabsContent value="punicoes">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Punições</h3>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <PlusCircle className="h-4 w-4" /> Adicionar
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-1"
+              onClick={() => handleEditarSecao('punicoes')}>
+              <PencilLine className="h-4 w-4" /> Editar
+            </Button>
+          </div>
+        </div>
+        {renderPunicoes()}
+      </TabsContent>
+    </>
   );
 };
 

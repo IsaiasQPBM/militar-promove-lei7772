@@ -10,8 +10,8 @@ import {
   TrendingUp
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { SidebarLink } from "./SidebarLink";
-import { SidebarSection } from "./SidebarSection";
+import SidebarLink from "./SidebarLink";
+import SidebarSection from "./SidebarSection";
 
 export const Sidebar = () => {
   const location = useLocation();
@@ -144,3 +144,5 @@ export const Sidebar = () => {
     </div>
   );
 };
+
+export default Sidebar;
