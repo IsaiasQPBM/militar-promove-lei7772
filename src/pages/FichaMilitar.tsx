@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Militar, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
@@ -9,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DadosPessoais } from "@/components/fichaMilitar/DadosPessoais";
-import { DadosFormacao } from "@/components/fichaMilitar/DadosFormacao";
+import DadosFormacao from "@/components/fichaMilitar/DadosFormacao";
 import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 import LoaderComponent from "@/components/editarMilitar/LoaderComponent";
 

@@ -7,11 +7,12 @@ import {
   LogOut,
   Star,
   Users,
-  TrendingUp
+  TrendingUp,
+  BookOpen
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { SidebarLink } from "./SidebarLink";
-import { SidebarSection } from "./SidebarSection";
+import SidebarLink from "./SidebarLink";
+import SidebarSection from "./SidebarSection";
 
 export const Sidebar = () => {
   const location = useLocation();
@@ -127,7 +128,7 @@ export const Sidebar = () => {
           <SidebarLink 
             to="/legislacao" 
             active={isActive("/legislacao")}
-            icon={<FileText className="h-5 w-5" />}
+            icon={<BookOpen className="h-5 w-5" />}
           >
             Lei 7.772 DE 04/04/2022
           </SidebarLink>
@@ -144,3 +145,5 @@ export const Sidebar = () => {
     </div>
   );
 };
+
+export default Sidebar;

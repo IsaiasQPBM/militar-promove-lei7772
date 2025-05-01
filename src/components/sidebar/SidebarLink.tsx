@@ -1,62 +1,54 @@
 
-import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useLocation } from 'react-router-dom';
 
 interface SidebarLinkProps {
   to: string;
-  active: boolean;
-  children: ReactNode;
-  icon: ReactNode;
+  children: React.ReactNode;
+  className?: string;
+  active?: boolean;
+  icon?: React.ReactNode;
   iconBg?: string;
-  iconShape?: "circle" | "triangle";
+  iconShape?: string;
 }
 
-export const SidebarLink = ({ 
+const SidebarLink = ({ 
   to, 
-  active, 
   children, 
-  icon, 
-  iconBg, 
-  iconShape = "circle" 
+  className,
+  active,
+  icon,
+  iconBg,
+  iconShape
 }: SidebarLinkProps) => {
-  const renderIcon = () => {
-    if (!iconBg) {
-      return <div className="w-5">{icon}</div>;
-    }
-    
-    if (iconShape === "triangle") {
-      return (
-        <div 
-          className={cn("flex items-center justify-center", iconBg)} 
-          style={{ 
-            clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)", 
-            width: "20px", 
-            height: "20px" 
-          }}
-        >
-          {icon}
-        </div>
-      );
-    }
-    
-    return (
-      <div className={cn("rounded-full p-0.5 flex items-center justify-center", iconBg)}>
-        {icon}
-      </div>
-    );
-  };
+  const location = useLocation();
+  // If active prop isn't provided, determine it from the route
+  const isActive = active !== undefined ? active : location.pathname === to;
   
   return (
-    <Link 
+    <Link
       to={to}
       className={cn(
-        "flex items-center space-x-2 px-4 py-2 rounded-md transition-colors",
-        active ? "bg-cbmepi-darkPurple" : "hover:bg-cbmepi-lightPurple"
+        "flex items-center p-2 pl-9 text-sm rounded-lg",
+        isActive 
+          ? "bg-gray-200 text-gray-900 font-medium" 
+          : "text-gray-700 hover:bg-gray-100",
+        className
       )}
     >
-      {renderIcon()}
-      <span className="text-sm font-medium">{children}</span>
+      {icon && (
+        <span className={cn(
+          "mr-2 flex items-center justify-center w-5 h-5 rounded-md",
+          iconBg,
+          iconShape === "triangle" ? "clip-path-triangle" : ""
+        )}>
+          {icon}
+        </span>
+      )}
+      {children}
     </Link>
   );
 };
+
+export default SidebarLink;

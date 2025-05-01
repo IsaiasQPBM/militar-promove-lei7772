@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import MainLayout from "@/layouts/MainLayout";
 import Index from '@/pages/Index';
 import Dashboard from "@/pages/Dashboard";
 import Login from '@/pages/Login';
@@ -32,109 +33,145 @@ function AppRoutes() {
       
       <Route path="/" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <Dashboard />
+          <MainLayout>
+            <Dashboard />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/dashboard" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <Dashboard />
+          <MainLayout>
+            <Dashboard />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/oficiais/estado-maior" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <QuadroOficiais quadro="QOEM" titulo="Quadro de Oficiais do Estado-Maior" />
+          <MainLayout>
+            <QuadroOficiais quadro="QOEM" titulo="Quadro de Oficiais do Estado-Maior" />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/oficiais/especialistas" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <QuadroOficiais quadro="QOE" titulo="Quadro de Oficiais Especialistas" />
+          <MainLayout>
+            <QuadroOficiais quadro="QOE" titulo="Quadro de Oficiais Especialistas" />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/oficiais/reserva" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <QuadroOficiais quadro="QORR" titulo="Quadro de Oficiais da Reserva Remunerada" />
+          <MainLayout>
+            <QuadroOficiais quadro="QORR" titulo="Quadro de Oficiais da Reserva Remunerada" />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/pracas/ativos" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <QuadroPracas quadro="QPBM" titulo="Quadro de Praças Bombeiros Militar" />
+          <MainLayout>
+            <QuadroPracas quadro="QPBM" titulo="Quadro de Praças Bombeiros Militar" />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/pracas/reserva" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <QuadroPracas quadro="QPRR" titulo="Quadro de Praças da Reserva Remunerada" />
+          <MainLayout>
+            <QuadroPracas quadro="QPRR" titulo="Quadro de Praças da Reserva Remunerada" />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/cadastro/militar" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <CadastroMilitar />
+          <MainLayout>
+            <CadastroMilitar />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/militar/:id/editar" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <EditarMilitar />
+          <MainLayout>
+            <EditarMilitar />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/militar/:id" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <FichaMilitar />
+          <MainLayout>
+            <FichaMilitar />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/militar/:id/promocoes" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <HistoricoPromocoes />
+          <MainLayout>
+            <HistoricoPromocoes />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/importar/militares" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <ImportarMilitares />
+          <MainLayout>
+            <ImportarMilitares />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/antiguidade" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <Antiguidade />
+          <MainLayout>
+            <Antiguidade />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/merecimento" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <Merecimento />
+          <MainLayout>
+            <Merecimento />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/gestao/promocoes" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <GestaoPromocoes />
+          <MainLayout>
+            <GestaoPromocoes />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/legislacao" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <Legislacao />
+          <MainLayout>
+            <Legislacao />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/fixacao-vagas" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <FixacaoVagas />
+          <MainLayout>
+            <FixacaoVagas />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
       <Route path="/proximos-promocao" element={
         <ProtectedRoute isAuth={isAuthenticated}>
-          <ProximosPromocao />
+          <MainLayout>
+            <ProximosPromocao />
+          </MainLayout>
         </ProtectedRoute>
       } />
       
