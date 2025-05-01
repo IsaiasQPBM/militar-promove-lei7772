@@ -1,19 +1,15 @@
 
-import React from "react";
+import React from 'react';
 
-interface LoaderProps {
+interface LoaderComponentProps {
   message?: string;
-  className?: string;
 }
 
-const LoaderComponent: React.FC<LoaderProps> = ({ 
-  message = "Carregando...", 
-  className = "h-64" 
-}) => {
+const LoaderComponent: React.FC<LoaderComponentProps> = ({ message = "Carregando..." }) => {
   return (
-    <div className={`flex justify-center items-center ${className}`}>
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple mr-3"></div>
-      <p>{message}</p>
+    <div className="flex flex-col justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cbmepi-purple"></div>
+      <span className="mt-2 text-gray-600">{message}</span>
     </div>
   );
 };

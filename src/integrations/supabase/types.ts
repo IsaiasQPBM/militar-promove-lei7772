@@ -218,7 +218,9 @@ export type Database = {
           nomeguerra: string | null
           posto: string | null
           quadro: string | null
+          sexo: string
           situacao: string | null
+          tipo_sanguineo: string
           unidade: string | null
         }
         Insert: {
@@ -233,7 +235,9 @@ export type Database = {
           nomeguerra?: string | null
           posto?: string | null
           quadro?: string | null
+          sexo: string
           situacao?: string | null
+          tipo_sanguineo: string
           unidade?: string | null
         }
         Update: {
@@ -248,7 +252,9 @@ export type Database = {
           nomeguerra?: string | null
           posto?: string | null
           quadro?: string | null
+          sexo?: string
           situacao?: string | null
+          tipo_sanguineo?: string
           unidade?: string | null
         }
         Relationships: []

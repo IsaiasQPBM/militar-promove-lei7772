@@ -42,7 +42,9 @@ export const useMilitarData = (id: string | undefined) => {
             dataInclusao: formatDate(militar.dataInclusao),
             dataUltimaPromocao: formatDate(militar.dataUltimaPromocao),
             situacao: militar.situacao,
-            email: militar.email || ""
+            email: militar.email || "",
+            tipoSanguineo: militar.tipoSanguineo || "O+",
+            sexo: militar.sexo || "Masculino"
           });
         }
       } catch (error) {

@@ -36,6 +36,18 @@ export type PostoPatente =
 
 export type SituacaoMilitar = "ativo" | "inativo";
 
+export type TipoSanguineo =
+  | "A+"
+  | "A-"
+  | "B+"
+  | "B-"
+  | "AB+"
+  | "AB-"
+  | "O+"
+  | "O-";
+
+export type Sexo = "Masculino" | "Feminino";
+
 export type CriterioPromocao = 
   | "Antiguidade" 
   | "Merecimento" 
@@ -114,6 +126,8 @@ export interface Militar {
   dataUltimaPromocao: string;
   situacao: SituacaoMilitar;
   email: string;
+  tipoSanguineo: TipoSanguineo;
+  sexo: Sexo;
 }
 
 export interface FichaConceito {

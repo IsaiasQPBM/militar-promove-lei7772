@@ -1,13 +1,15 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Militar, QuadroMilitar, SituacaoMilitar, PostoPatente } from "@/types";
+import { Militar, QuadroMilitar, SituacaoMilitar, PostoPatente, TipoSanguineo, Sexo } from "@/types";
 import { 
   toQuadroMilitar, 
   toPostoPatente, 
   toSituacaoMilitar,
   fromQuadroMilitar,
   fromPostoPatente,
-  fromSituacaoMilitar
+  fromSituacaoMilitar,
+  toTipoSanguineo,
+  toSexo
 } from "@/utils/typeConverters";
 import { verificarDisponibilidadeVaga } from "./qfvService";
 
@@ -24,7 +26,9 @@ const mapDatabaseToMilitar = (data: any): Militar => {
     dataUltimaPromocao: data.dataultimapromocao,
     situacao: toSituacaoMilitar(data.situacao),
     email: data.email,
-    foto: data.foto
+    foto: data.foto,
+    tipoSanguineo: toTipoSanguineo(data.tipo_sanguineo),
+    sexo: toSexo(data.sexo)
   };
 };
 
@@ -58,7 +62,9 @@ export const createMilitar = async (militar: Omit<Militar, "id">) => {
       dataultimapromocao: militar.dataUltimaPromocao,
       situacao: fromSituacaoMilitar(militar.situacao),
       email: militar.email,
-      foto: militar.foto
+      foto: militar.foto,
+      tipo_sanguineo: militar.tipoSanguineo,
+      sexo: militar.sexo
     })
     .select()
     .single();
@@ -88,6 +94,8 @@ export const updateMilitar = async (id: string, militar: Partial<Militar>) => {
   if (militar.situacao !== undefined) updateData.situacao = fromSituacaoMilitar(militar.situacao);
   if (militar.email !== undefined) updateData.email = militar.email;
   if (militar.foto !== undefined) updateData.foto = militar.foto;
+  if (militar.tipoSanguineo !== undefined) updateData.tipo_sanguineo = militar.tipoSanguineo;
+  if (militar.sexo !== undefined) updateData.sexo = militar.sexo;
 
   const { data, error } = await supabase
     .from("militares")

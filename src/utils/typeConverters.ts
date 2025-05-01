@@ -1,5 +1,5 @@
 
-import { QuadroMilitar, PostoPatente, SituacaoMilitar } from "@/types";
+import { QuadroMilitar, PostoPatente, SituacaoMilitar, TipoSanguineo, Sexo } from "@/types";
 
 // Converte string para QuadroMilitar
 export const toQuadroMilitar = (quadro: string | null | undefined): QuadroMilitar => {
@@ -31,6 +31,26 @@ export const toSituacaoMilitar = (situacao: string | null | undefined): Situacao
   }
   // Valor padrão para evitar erros
   return "ativo";
+};
+
+// Converte string para TipoSanguineo
+export const toTipoSanguineo = (tipo: string | null | undefined): TipoSanguineo => {
+  const tiposSanguineos: TipoSanguineo[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  
+  if (tipo && tiposSanguineos.includes(tipo as TipoSanguineo)) {
+    return tipo as TipoSanguineo;
+  }
+  // Valor padrão para evitar erros
+  return "O+";
+};
+
+// Converte string para Sexo
+export const toSexo = (sexo: string | null | undefined): Sexo => {
+  if (sexo === "Masculino" || sexo === "Feminino") {
+    return sexo as Sexo;
+  }
+  // Valor padrão para evitar erros
+  return "Masculino";
 };
 
 // Funções para garantir que os tipos estão corretos ao enviar para o banco

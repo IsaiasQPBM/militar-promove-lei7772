@@ -64,6 +64,16 @@ export const DadosPessoais = ({ militar }: DadosPessoaisProps) => {
             <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
             <p className="font-semibold">{militar.email}</p>
           </div>
+          
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Tipo Sanguíneo</h3>
+            <p className="font-semibold">{militar.tipoSanguineo}</p>
+          </div>
+          
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Sexo</h3>
+            <p className="font-semibold">{militar.sexo}</p>
+          </div>
         </div>
       </div>
     </CardContent>
