@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import LoaderComponent from "@/components/editarMilitar/LoaderComponent";
 import { QuadroMilitar } from "@/types";
-import { obterTotalVagasLei } from "@/services/qfvService";
 
 // Definição do tipo de dados para o QFV
 interface QFVData {
@@ -31,32 +30,32 @@ const QuadroFixacaoVagas = () => {
   });
   const [activeTab, setActiveTab] = useState<string>("QOEM");
   const [loading, setLoading] = useState(true);
-  const [totais, setTotais] = useState<Record<string, { vagasLei: number; vagasOcupadas: number; vagasDisponiveis: number }>>({});
 
-  // Dados da Lei nº 7.772/2022 (conforme anexo da Lei)
+  // Dados da Lei nº 7.772/2022 (simulados)
   const vagasLei = {
     QOEM: {
-      "Coronel": 6,
-      "Tenente-Coronel": 16,
-      "Major": 35,
-      "Capitão": 38,
-      "1º Tenente": 50,
-      "2º Tenente": 56
+      "Coronel": 1,
+      "Tenente-Coronel": 2,
+      "Major": 3,
+      "Capitão": 5,
+      "1º Tenente": 7,
+      "2º Tenente": 10
     },
     QOE: {
-      "Tenente-Coronel": 2,
+      "Coronel": 0,
+      "Tenente-Coronel": 1,
       "Major": 2,
-      "Capitão": 2,
-      "1º Tenente": 2,
-      "2º Tenente": 2
+      "Capitão": 3,
+      "1º Tenente": 5,
+      "2º Tenente": 8
     },
     QPBM: {
-      "Subtenente": 63,
-      "1º Sargento": 102,
-      "2º Sargento": 130,
-      "3º Sargento": 150,
-      "Cabo": 240,
-      "Soldado": 428
+      "Subtenente": 8,
+      "1º Sargento": 15,
+      "2º Sargento": 20,
+      "3º Sargento": 30,
+      "Cabo": 40,
+      "Soldado": 60
     },
     QORR: {},
     QPRR: {}
@@ -70,13 +69,10 @@ const QuadroFixacaoVagas = () => {
         // Buscar todos os militares ativos
         const { data: militares, error } = await supabase
           .from("militares")
-          .select("posto, quadro, situacao");
+          .select("posto, quadro, situacao")
+          .eq("situacao", "ativo");
           
         if (error) throw error;
-        
-        // Separar militares por situação
-        const militaresAtivos = militares.filter(m => m.situacao === "ativo");
-        const militaresReserva = militares.filter(m => m.situacao === "inativo");
         
         // Contar militares por posto e quadro
         const contagem: Record<string, Record<string, number>> = {
@@ -87,7 +83,7 @@ const QuadroFixacaoVagas = () => {
           QPRR: {}
         };
         
-        militaresAtivos.forEach(militar => {
+        militares.forEach(militar => {
           const { posto, quadro } = militar;
           if (posto && quadro) {
             if (!contagem[quadro]) {
@@ -102,27 +98,6 @@ const QuadroFixacaoVagas = () => {
           }
         });
         
-        // Contar militares da reserva por posto e quadro
-        const contagemReserva: Record<string, Record<string, number>> = {
-          QORR: {},
-          QPRR: {}
-        };
-        
-        militaresReserva.forEach(militar => {
-          const { posto, quadro } = militar;
-          if (posto && (quadro === "QORR" || quadro === "QPRR")) {
-            if (!contagemReserva[quadro]) {
-              contagemReserva[quadro] = {};
-            }
-            
-            if (!contagemReserva[quadro][posto]) {
-              contagemReserva[quadro][posto] = 0;
-            }
-            
-            contagemReserva[quadro][posto]++;
-          }
-        });
-        
         // Calcular vagas disponíveis por quadro e posto
         const dadosQFV: Record<QuadroMilitar, QFVData[]> = {
           QOEM: [],
@@ -132,79 +107,50 @@ const QuadroFixacaoVagas = () => {
           QPRR: []
         };
         
-        // Inicializar totais
-        const totaisTemp: Record<string, { vagasLei: number; vagasOcupadas: number; vagasDisponiveis: number }> = {
-          QOEM: { vagasLei: 0, vagasOcupadas: 0, vagasDisponiveis: 0 },
-          QOE: { vagasLei: 0, vagasOcupadas: 0, vagasDisponiveis: 0 },
-          QPBM: { vagasLei: 0, vagasOcupadas: 0, vagasDisponiveis: 0 },
-          QORR: { vagasLei: 0, vagasOcupadas: 0, vagasDisponiveis: 0 },
-          QPRR: { vagasLei: 0, vagasOcupadas: 0, vagasDisponiveis: 0 }
-        };
-        
         // QOEM
         Object.keys(vagasLei.QOEM).forEach(posto => {
           const vagasLeiPosto = vagasLei.QOEM[posto as keyof typeof vagasLei.QOEM] || 0;
           const vagasOcupadas = contagem["QOEM"][posto] || 0;
-          const vagasDisponiveis = Math.max(0, vagasLeiPosto - vagasOcupadas);
           
           dadosQFV.QOEM.push({
             posto,
             vagasLei: vagasLeiPosto,
             vagasOcupadas,
-            vagasDisponiveis
+            vagasDisponiveis: Math.max(0, vagasLeiPosto - vagasOcupadas)
           });
-          
-          // Atualizar totais
-          totaisTemp.QOEM.vagasLei += vagasLeiPosto;
-          totaisTemp.QOEM.vagasOcupadas += vagasOcupadas;
-          totaisTemp.QOEM.vagasDisponiveis += vagasDisponiveis;
         });
         
         // QOE
         Object.keys(vagasLei.QOE).forEach(posto => {
           const vagasLeiPosto = vagasLei.QOE[posto as keyof typeof vagasLei.QOE] || 0;
           const vagasOcupadas = contagem["QOE"][posto] || 0;
-          const vagasDisponiveis = Math.max(0, vagasLeiPosto - vagasOcupadas);
           
           dadosQFV.QOE.push({
             posto,
             vagasLei: vagasLeiPosto,
             vagasOcupadas,
-            vagasDisponiveis
+            vagasDisponiveis: Math.max(0, vagasLeiPosto - vagasOcupadas)
           });
-          
-          // Atualizar totais
-          totaisTemp.QOE.vagasLei += vagasLeiPosto;
-          totaisTemp.QOE.vagasOcupadas += vagasOcupadas;
-          totaisTemp.QOE.vagasDisponiveis += vagasDisponiveis;
         });
         
         // QPBM
         Object.keys(vagasLei.QPBM).forEach(posto => {
           const vagasLeiPosto = vagasLei.QPBM[posto as keyof typeof vagasLei.QPBM] || 0;
           const vagasOcupadas = contagem["QPBM"][posto] || 0;
-          const vagasDisponiveis = Math.max(0, vagasLeiPosto - vagasOcupadas);
           
           dadosQFV.QPBM.push({
             posto,
             vagasLei: vagasLeiPosto,
             vagasOcupadas,
-            vagasDisponiveis
+            vagasDisponiveis: Math.max(0, vagasLeiPosto - vagasOcupadas)
           });
-          
-          // Atualizar totais
-          totaisTemp.QPBM.vagasLei += vagasLeiPosto;
-          totaisTemp.QPBM.vagasOcupadas += vagasOcupadas;
-          totaisTemp.QPBM.vagasDisponiveis += vagasDisponiveis;
         });
         
         // Para os quadros de reserva, mostrar apenas a contagem
         // QORR
-        let totalReservaQORR = 0;
-        const postosQORR = Object.keys(contagemReserva["QORR"] || {});
+        const postosQORR = Object.keys(contagem["QORR"] || {});
         postosQORR.forEach(posto => {
-          const vagasOcupadas = contagemReserva["QORR"][posto] || 0;
-          totalReservaQORR += vagasOcupadas;
+          const vagasOcupadas = contagem["QORR"][posto] || 0;
           
           dadosQFV.QORR.push({
             posto,
@@ -215,11 +161,9 @@ const QuadroFixacaoVagas = () => {
         });
         
         // QPRR
-        let totalReservaQPRR = 0;
-        const postosQPRR = Object.keys(contagemReserva["QPRR"] || {});
+        const postosQPRR = Object.keys(contagem["QPRR"] || {});
         postosQPRR.forEach(posto => {
-          const vagasOcupadas = contagemReserva["QPRR"][posto] || 0;
-          totalReservaQPRR += vagasOcupadas;
+          const vagasOcupadas = contagem["QPRR"][posto] || 0;
           
           dadosQFV.QPRR.push({
             posto,
@@ -229,12 +173,7 @@ const QuadroFixacaoVagas = () => {
           });
         });
         
-        // Atualizar totais para quadros de reserva
-        totaisTemp.QORR.vagasOcupadas = totalReservaQORR;
-        totaisTemp.QPRR.vagasOcupadas = totalReservaQPRR;
-        
         setQFVData(dadosQFV);
-        setTotais(totaisTemp);
         
       } catch (error) {
         console.error("Erro ao carregar dados do QFV:", error);
@@ -303,68 +242,16 @@ const QuadroFixacaoVagas = () => {
                 </TableCell>
               </TableRow>
             )}
-            
-            {/* Linha de total para quadros ativos */}
-            {quadro !== "QORR" && quadro !== "QPRR" && totais[quadro] && (
-              <TableRow className="bg-gray-100 font-bold">
-                <TableCell>TOTAL</TableCell>
-                <TableCell className="text-center">{totais[quadro].vagasLei}</TableCell>
-                <TableCell className="text-center">{totais[quadro].vagasOcupadas}</TableCell>
-                <TableCell className="text-center">{totais[quadro].vagasDisponiveis}</TableCell>
-              </TableRow>
-            )}
-            
-            {/* Linha de total para quadros de reserva */}
-            {(quadro === "QORR" || quadro === "QPRR") && totais[quadro] && dados.length > 0 && (
-              <TableRow className="bg-gray-100 font-bold">
-                <TableCell>TOTAL</TableCell>
-                <TableCell className="text-center">N/A</TableCell>
-                <TableCell className="text-center">{totais[quadro].vagasOcupadas}</TableCell>
-                <TableCell className="text-center">N/A</TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </div>
     );
   };
 
-  // Função para baixar dados como CSV
-  const exportarDadosCSV = () => {
-    let csvContent = "Quadro;Posto;Vagas pela Lei;Vagas Ocupadas;Vagas Disponíveis\r\n";
-    
-    Object.keys(qfvData).forEach(quadro => {
-      const dados = [...qfvData[quadro as QuadroMilitar]].sort(ordenarPostos);
-      dados.forEach(item => {
-        const vagasLeiValue = (quadro === "QORR" || quadro === "QPRR") ? "N/A" : item.vagasLei;
-        const vagasDisponiveisValue = (quadro === "QORR" || quadro === "QPRR") ? "N/A" : item.vagasDisponiveis;
-        
-        csvContent += `${quadro};${item.posto};${vagasLeiValue};${item.vagasOcupadas};${vagasDisponiveisValue}\r\n`;
-      });
-      
-      // Adicionar linha de totais
-      if (quadro !== "QORR" && quadro !== "QPRR" && totais[quadro]) {
-        csvContent += `${quadro};TOTAL;${totais[quadro].vagasLei};${totais[quadro].vagasOcupadas};${totais[quadro].vagasDisponiveis}\r\n`;
-      } else if ((quadro === "QORR" || quadro === "QPRR") && totais[quadro]) {
-        csvContent += `${quadro};TOTAL;N/A;${totais[quadro].vagasOcupadas};N/A\r\n`;
-      }
-    });
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `quadro_fixacao_vagas_${new Date().toISOString().slice(0, 10)}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Quadro de Fixação de Vagas (QFV) - Lei nº 7.772/2022</h1>
+        <h1 className="text-2xl font-bold">Quadro de Fixação de Vagas (QFV)</h1>
         <div className="flex space-x-2">
           <Button
             variant="outline"
@@ -377,80 +264,18 @@ const QuadroFixacaoVagas = () => {
           <Button
             variant="outline"
             className="flex items-center gap-2"
-            onClick={exportarDadosCSV}
+            onClick={() => {
+              // Funcionalidade para exportar os dados
+              toast({
+                title: "Exportação não implementada",
+                description: "A funcionalidade de exportação será implementada em uma versão futura."
+              });
+            }}
           >
             <Download className="h-4 w-4" />
             Exportar Dados
           </Button>
         </div>
-      </div>
-      
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="bg-blue-600 text-white py-3">
-            <CardTitle className="text-center">Oficiais</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="text-center space-y-2">
-              <div className="text-4xl font-bold">{totais.QOEM?.vagasLei + totais.QOE?.vagasLei || 0}</div>
-              <div className="text-sm text-gray-500">Vagas Totais pela Lei</div>
-            </div>
-            <div className="grid grid-cols-2 mt-4 gap-4">
-              <div className="text-center p-3 bg-gray-100 rounded-md">
-                <div className="text-lg font-bold">{totais.QOEM?.vagasOcupadas + totais.QOE?.vagasOcupadas || 0}</div>
-                <div className="text-xs">Vagas Ocupadas</div>
-              </div>
-              <div className="text-center p-3 bg-gray-100 rounded-md">
-                <div className="text-lg font-bold">{totais.QOEM?.vagasDisponiveis + totais.QOE?.vagasDisponiveis || 0}</div>
-                <div className="text-xs">Vagas Disponíveis</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="bg-red-600 text-white py-3">
-            <CardTitle className="text-center">Praças</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="text-center space-y-2">
-              <div className="text-4xl font-bold">{totais.QPBM?.vagasLei || 0}</div>
-              <div className="text-sm text-gray-500">Vagas Totais pela Lei</div>
-            </div>
-            <div className="grid grid-cols-2 mt-4 gap-4">
-              <div className="text-center p-3 bg-gray-100 rounded-md">
-                <div className="text-lg font-bold">{totais.QPBM?.vagasOcupadas || 0}</div>
-                <div className="text-xs">Vagas Ocupadas</div>
-              </div>
-              <div className="text-center p-3 bg-gray-100 rounded-md">
-                <div className="text-lg font-bold">{totais.QPBM?.vagasDisponiveis || 0}</div>
-                <div className="text-xs">Vagas Disponíveis</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="bg-green-600 text-white py-3">
-            <CardTitle className="text-center">Reserva</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="text-center space-y-2">
-              <div className="text-4xl font-bold">{totais.QORR?.vagasOcupadas + totais.QPRR?.vagasOcupadas || 0}</div>
-              <div className="text-sm text-gray-500">Total na Reserva</div>
-            </div>
-            <div className="grid grid-cols-2 mt-4 gap-4">
-              <div className="text-center p-3 bg-gray-100 rounded-md">
-                <div className="text-lg font-bold">{totais.QORR?.vagasOcupadas || 0}</div>
-                <div className="text-xs">Oficiais (QORR)</div>
-              </div>
-              <div className="text-center p-3 bg-gray-100 rounded-md">
-                <div className="text-lg font-bold">{totais.QPRR?.vagasOcupadas || 0}</div>
-                <div className="text-xs">Praças (QPRR)</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
       
       <Card>

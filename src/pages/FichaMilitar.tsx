@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Militar, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
@@ -8,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DadosPessoais } from "@/components/fichaMilitar/DadosPessoais";
-import DadosFormacao from "@/components/fichaMilitar/DadosFormacao";
+import { DadosFormacao } from "@/components/fichaMilitar/DadosFormacao";
 import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 import LoaderComponent from "@/components/editarMilitar/LoaderComponent";
 
@@ -198,23 +199,6 @@ const useFichaMilitar = (id: string | undefined) => {
     setPunicoes(punicoesMapeadas);
     return punicoesMapeadas;
   };
-  
-  // Função para recarregar os dados
-  const recarregarDados = useCallback(() => {
-    if (!id) return;
-    
-    Promise.all([
-      buscarCursosMilitares(id),
-      buscarCursosCivis(id),
-      buscarCondecoracoes(id),
-      buscarElogios(id),
-      buscarPunicoes(id)
-    ]).then(() => {
-      console.log("Dados recarregados com sucesso");
-    }).catch((error) => {
-      console.error("Erro ao recarregar dados:", error);
-    });
-  }, [id]);
 
   // Inicialização - carrega dados apenas uma vez
   useEffect(() => {
@@ -234,8 +218,7 @@ const useFichaMilitar = (id: string | undefined) => {
     elogios, 
     punicoes, 
     totalPontos, 
-    loading,
-    recarregarDados 
+    loading 
   };
 };
 
@@ -288,8 +271,7 @@ const FichaMilitar = () => {
     elogios, 
     punicoes, 
     totalPontos, 
-    loading,
-    recarregarDados
+    loading 
   } = useFichaMilitar(id);
   
   if (loading) {
@@ -331,13 +313,11 @@ const FichaMilitar = () => {
             </TabsList>
             
             <DadosFormacao
-              militarId={id || ""}
               cursosMilitares={cursosMilitares}
               cursosCivis={cursosCivis}
               condecoracoes={condecoracoes}
               elogios={elogios}
               punicoes={punicoes}
-              onDataChange={recarregarDados}
             />
           </Tabs>
           
