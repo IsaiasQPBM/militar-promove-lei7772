@@ -10,9 +10,6 @@ import { formSchema, FormValues } from "@/utils/militarValidation";
 import { QuadroMilitar, PostoPatente, SituacaoMilitar } from "@/types";
 import { updateMilitar } from "@/services/militarService";
 import { verificarDisponibilidadeVaga } from "@/services/qfvService";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 // Form Components
@@ -20,6 +17,8 @@ import DadosPessoais from "@/components/militar/DadosPessoais";
 import DatasImportantes from "@/components/militar/DatasImportantes";
 import SituacaoEmail from "@/components/militar/SituacaoEmail";
 import FormNavigation from "@/components/military/FormNavigation";
+import PhotoUpload from "@/components/militar/PhotoUpload";
+import { usePhotoUpload } from "@/hooks/usePhotoUpload";
 
 interface MilitarFormProps {
   militarData: FormValues | null;
@@ -31,8 +30,14 @@ const MilitarForm = ({ militarData, militarId, isLoading }: MilitarFormProps) =>
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("dados-pessoais");
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  
+  const { 
+    photoPreview, 
+    photoFile, 
+    setPhotoPreview, 
+    setPhotoFile, 
+    uploadPhoto 
+  } = usePhotoUpload(militarData?.foto || null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -58,10 +63,9 @@ const MilitarForm = ({ militarData, militarId, isLoading }: MilitarFormProps) =>
         setPhotoPreview(militarData.foto);
       }
     }
-  }, [militarData, form]);
+  }, [militarData, form, setPhotoPreview]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handlePhotoChange = (file: File | null) => {
     if (!file) return;
     
     setPhotoFile(file);
@@ -72,44 +76,6 @@ const MilitarForm = ({ militarData, militarId, isLoading }: MilitarFormProps) =>
       setPhotoPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-  };
-
-  const uploadPhoto = async (): Promise<string | null> => {
-    if (!photoFile) {
-      return photoPreview; // Return existing photo URL if no new photo
-    }
-
-    try {
-      // Create a unique filename
-      const fileExt = photoFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `militares/${fileName}`;
-      
-      // Upload the file
-      const { error: uploadError } = await supabase.storage
-        .from('photos')
-        .upload(filePath, photoFile);
-
-      if (uploadError) {
-        console.error('Erro ao fazer upload da foto:', uploadError);
-        toast({
-          title: "Erro ao fazer upload da foto",
-          description: "Não foi possível fazer o upload da foto.",
-          variant: "destructive"
-        });
-        return null;
-      }
-
-      // Get the public URL
-      const { data } = supabase.storage
-        .from('photos')
-        .getPublicUrl(filePath);
-
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Erro ao processar foto:', error);
-      return null;
-    }
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -222,30 +188,11 @@ const MilitarForm = ({ militarData, militarId, isLoading }: MilitarFormProps) =>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Photo Upload Section */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="relative">
-            <Avatar className="w-24 h-24">
-              {photoPreview ? (
-                <AvatarImage src={photoPreview} alt="Foto do militar" />
-              ) : (
-                <AvatarFallback className="bg-gray-200 text-gray-600">
-                  {militarData?.nomeGuerra?.substring(0, 2) || "BM"}
-                </AvatarFallback>
-              )}
-              <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1 cursor-pointer">
-                <Camera className="h-4 w-4" />
-                <input 
-                  id="photo-upload" 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleFileChange} 
-                  className="hidden" 
-                />
-              </label>
-            </Avatar>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">Clique no ícone para {photoPreview ? "alterar" : "adicionar"} foto</p>
-        </div>
+        <PhotoUpload 
+          photoPreview={photoPreview} 
+          onChange={handlePhotoChange}
+          initialName={militarData?.nomeGuerra}
+        />
         
         <Tabs 
           value={activeTab} 
