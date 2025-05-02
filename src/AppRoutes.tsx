@@ -18,6 +18,7 @@ import EditarMilitar from "./pages/EditarMilitar";
 import HistoricoPromocoes from "./pages/HistoricoPromocoes";
 import GestaoPromocoes from "./pages/GestaoPromocoes";
 import ImportarMilitares from "./pages/ImportarMilitares";
+import Index from "./pages/Index";
 
 const AppRoutes = () => {
   return (
@@ -25,7 +26,8 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<Index />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="oficiais/estado-maior" element={<QuadroOficiais tipo="QOEM" />} />
         <Route path="oficiais/especialistas" element={<QuadroOficiais tipo="QOE" />} />
         <Route path="oficiais/reserva" element={<QuadroOficiais tipo="QORR" />} />
