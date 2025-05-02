@@ -10,6 +10,9 @@ interface PhotoUploadProps {
 }
 
 const PhotoUpload = ({ photoPreview, onChange, initialName = "BM" }: PhotoUploadProps) => {
+  // Display appropriate initials if no photo is available
+  const initials = initialName ? initialName.substring(0, 2).toUpperCase() : "BM";
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -25,7 +28,7 @@ const PhotoUpload = ({ photoPreview, onChange, initialName = "BM" }: PhotoUpload
             <AvatarImage src={photoPreview} alt="Foto do militar" />
           ) : (
             <AvatarFallback className="bg-gray-200 text-gray-600">
-              {initialName?.substring(0, 2) || "BM"}
+              {initials}
             </AvatarFallback>
           )}
           <label htmlFor="photo-upload" className="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1 cursor-pointer">

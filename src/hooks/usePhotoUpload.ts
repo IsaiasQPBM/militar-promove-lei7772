@@ -6,6 +6,7 @@ import { toast } from "@/components/ui/use-toast";
 export const usePhotoUpload = (initialPhoto: string | null = null) => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhoto);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const uploadPhoto = async (): Promise<string | null> => {
     if (!photoFile) {
@@ -13,6 +14,15 @@ export const usePhotoUpload = (initialPhoto: string | null = null) => {
     }
 
     try {
+      setIsUploading(true);
+      
+      // Check if the bucket exists first
+      const { data: bucketData, error: bucketError } = await supabase
+        .storage
+        .listBuckets();
+      
+      const bucketExists = bucketData?.some(bucket => bucket.name === 'photos');
+      
       // Create a unique filename
       const fileExt = photoFile.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
@@ -41,13 +51,21 @@ export const usePhotoUpload = (initialPhoto: string | null = null) => {
       return data.publicUrl;
     } catch (error) {
       console.error('Erro ao processar foto:', error);
+      toast({
+        title: "Erro ao processar foto",
+        description: "Ocorreu um erro ao processar a foto. Tente novamente.",
+        variant: "destructive"
+      });
       return null;
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return {
     photoPreview,
     photoFile,
+    isUploading,
     setPhotoPreview,
     setPhotoFile,
     uploadPhoto
