@@ -47,11 +47,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
       });
+      
       if (error) throw error;
+      
+      // Success toast only if no error
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Bem-vindo ao Sistema de Promoções",
+      });
     } catch (error: any) {
       toast({
         title: "Erro ao entrar",
-        description: error.message,
+        description: error.message || "Ocorreu um erro ao tentar fazer login.",
         variant: "destructive"
       });
       throw error;
@@ -69,7 +76,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       });
+      
       if (error) throw error;
+      
       toast({
         title: "Conta criada com sucesso!",
         description: "Verifique seu email para confirmar seu cadastro."
@@ -77,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       toast({
         title: "Erro ao criar conta",
-        description: error.message,
+        description: error.message || "Ocorreu um erro ao tentar criar sua conta.",
         variant: "destructive"
       });
       throw error;
@@ -88,10 +97,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Clear session and user state on sign out
+      setSession(null);
+      setUser(null);
     } catch (error: any) {
       toast({
         title: "Erro ao sair",
-        description: error.message,
+        description: error.message || "Ocorreu um erro ao tentar sair.",
         variant: "destructive"
       });
       throw error;

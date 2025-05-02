@@ -30,7 +30,7 @@ const Login = () => {
       await signIn(email, password);
       // Redirect happens automatically via the isAuthenticated check
     } catch (error: any) {
-      setError(error.message);
+      setError(error.message || "Erro ao fazer login. Verifique suas credenciais.");
     } finally {
       setIsSubmitting(false);
     }
