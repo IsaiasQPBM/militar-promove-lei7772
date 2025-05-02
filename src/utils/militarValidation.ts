@@ -24,7 +24,8 @@ export const formSchema = z.object({
   }),
   sexo: z.enum(["Masculino", "Feminino"], {
     message: "Selecione o sexo"
-  })
+  }),
+  foto: z.string().nullable().optional()
 });
 
 export type FormValues = z.infer<typeof formSchema>;

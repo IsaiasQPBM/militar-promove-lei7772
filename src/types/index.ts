@@ -9,11 +9,14 @@ export interface User {
 }
 
 export type QuadroMilitar = 
-  | "QOEM" // Estado-Maior
-  | "QOE"  // Especialistas
-  | "QORR" // Reserva Remunerada para Oficiais
-  | "QPBM" // Praças
-  | "QPRR" // Reserva Remunerada para Praças
+  | "QOEM"    // Estado-Maior
+  | "QOE"     // Especialistas
+  | "QOBM-S"  // Saúde
+  | "QOBM-E"  // Engenheiros
+  | "QOBM-C"  // Complementares
+  | "QORR"    // Reserva Remunerada para Oficiais
+  | "QPBM"    // Praças
+  | "QPRR"    // Reserva Remunerada para Praças
   ;
 
 export type TipoQuadro = "oficiais" | "praças" | "reserva";

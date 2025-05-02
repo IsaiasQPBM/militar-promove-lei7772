@@ -14,7 +14,8 @@ interface QuadroPostoSelectProps {
 
 const QuadroPostoSelect = ({ form, selectedQuadro, setSelectedQuadro }: QuadroPostoSelectProps) => {
   const getPostoOptions = () => {
-    if (selectedQuadro === "QOEM" || selectedQuadro === "QOE" || selectedQuadro === "QORR") {
+    if (selectedQuadro === "QOEM" || selectedQuadro === "QOE" || selectedQuadro === "QOBM-S" || 
+        selectedQuadro === "QOBM-E" || selectedQuadro === "QOBM-C" || selectedQuadro === "QORR") {
       return [
         { value: "Coronel", label: "Coronel" },
         { value: "Tenente-Coronel", label: "Tenente-Coronel" },
@@ -67,6 +68,9 @@ const QuadroPostoSelect = ({ form, selectedQuadro, setSelectedQuadro }: QuadroPo
               <SelectContent>
                 <SelectItem value="QOEM">QOEM - Estado-Maior</SelectItem>
                 <SelectItem value="QOE">QOE - Especialistas</SelectItem>
+                <SelectItem value="QOBM-S">QOBM-S - Saúde</SelectItem>
+                <SelectItem value="QOBM-E">QOBM-E - Engenheiros</SelectItem>
+                <SelectItem value="QOBM-C">QOBM-C - Complementares</SelectItem>
                 <SelectItem value="QORR">QORR - Reserva Remunerada (Oficiais)</SelectItem>
                 <SelectItem value="QPBM">QPBM - Praças</SelectItem>
                 <SelectItem value="QPRR">QPRR - Reserva Remunerada (Praças)</SelectItem>

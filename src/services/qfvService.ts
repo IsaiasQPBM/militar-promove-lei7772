@@ -2,16 +2,45 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PostoPatente, QuadroMilitar } from "@/types";
 
-// Dados da Lei nº 7.772/2022 (simulados)
+// Dados da Lei nº 7.772/2022
 const vagasLei: Record<string, Record<string, number>> = {
+  // I – QUADRO DE OFICIAIS BOMBEIROS MILITAR COMBATENTES
   QOEM: {
-    "Coronel": 1,
-    "Tenente-Coronel": 2,
-    "Major": 3,
-    "Capitão": 5,
-    "1º Tenente": 7,
-    "2º Tenente": 10
+    "Coronel": 6,
+    "Tenente-Coronel": 16,
+    "Major": 35,
+    "Capitão": 38,
+    "1º Tenente": 50,
+    "2º Tenente": 56
   },
+  // II – QUADRO DE OFICIAIS BOMBEIROS MILITAR DE SAÚDE
+  "QOBM-S": {
+    "Coronel": 0,
+    "Tenente-Coronel": 1,
+    "Major": 1,
+    "Capitão": 2,
+    "1º Tenente": 2,
+    "2º Tenente": 6
+  },
+  // III – QUADRO DE OFICIAIS BOMBEIROS MILITAR ENGENHEIROS
+  "QOBM-E": {
+    "Coronel": 0,
+    "Tenente-Coronel": 2,
+    "Major": 2,
+    "Capitão": 2,
+    "1º Tenente": 2,
+    "2º Tenente": 2
+  },
+  // IV- QUADRO DE OFICIAIS BOMBEIROS MILITAR COMPLEMENTARES
+  "QOBM-C": {
+    "Coronel": 0,
+    "Tenente-Coronel": 0,
+    "Major": 6,
+    "Capitão": 24,
+    "1º Tenente": 36,
+    "2º Tenente": 41
+  },
+  // QOE - Mantendo para compatibilidade com dados existentes
   QOE: {
     "Coronel": 0,
     "Tenente-Coronel": 1,
@@ -20,14 +49,16 @@ const vagasLei: Record<string, Record<string, number>> = {
     "1º Tenente": 5,
     "2º Tenente": 8
   },
+  // V – QUADRO DE PRAÇAS BOMBEIROS MILITAR
   QPBM: {
-    "Subtenente": 8,
-    "1º Sargento": 15,
-    "2º Sargento": 20,
-    "3º Sargento": 30,
-    "Cabo": 40,
-    "Soldado": 60
+    "Subtenente": 63,
+    "1º Sargento": 102,
+    "2º Sargento": 130,
+    "3º Sargento": 150,
+    "Cabo": 240,
+    "Soldado": 428
   },
+  // Quadros de reserva (sem limites)
   QORR: {},
   QPRR: {}
 };
@@ -94,6 +125,9 @@ export const obterContagemMilitares = async (): Promise<Record<string, Record<st
     const contagem: Record<string, Record<string, number>> = {
       QOEM: {},
       QOE: {},
+      "QOBM-S": {},
+      "QOBM-E": {},
+      "QOBM-C": {},
       QORR: {},
       QPBM: {},
       QPRR: {}
@@ -129,6 +163,9 @@ export const calcularVagasDisponiveis = async (): Promise<Record<string, Record<
     const vagasDisponiveis: Record<string, Record<string, number>> = {
       QOEM: {},
       QOE: {},
+      "QOBM-S": {},
+      "QOBM-E": {},
+      "QOBM-C": {},
       QORR: {},
       QPBM: {},
       QPRR: {}
