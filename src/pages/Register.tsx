@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -18,6 +19,7 @@ const Register = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // If already authenticated, redirect to home
   if (isAuthenticated) {
     return <Navigate to="/" />;
   }
@@ -35,9 +37,9 @@ const Register = () => {
 
     try {
       await signUp(email, password, name);
-      navigate("/");
+      navigate("/login");
     } catch (err: any) {
-      setError("Erro ao registrar. Tente novamente.");
+      setError(err.message || "Erro ao registrar. Tente novamente.");
     } finally {
       setIsLoading(false);
     }

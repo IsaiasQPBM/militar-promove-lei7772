@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, Navigate } from "react-router-dom";
@@ -15,6 +16,7 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // If already authenticated, redirect to home
   if (isAuthenticated) {
     return <Navigate to="/" />;
   }
@@ -26,6 +28,7 @@ const Login = () => {
 
     try {
       await signIn(email, password);
+      // Redirect happens automatically via the isAuthenticated check
     } catch (error: any) {
       setError(error.message);
     } finally {

@@ -1,10 +1,10 @@
-// Existing imports
 import './App.css';
 import { lazy, Suspense, useEffect } from 'react';
 import AppRoutes from './AppRoutes';
 import { Toaster } from '@/components/ui/toaster';
 import { createPhotoBucket } from './utils/createStorageBucket';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   // Create photo storage bucket on app initialization
@@ -19,8 +19,10 @@ function App() {
 
   return (
     <BrowserRouter>
-      <AppRoutes />
-      <Toaster />
+      <AuthProvider>
+        <AppRoutes />
+        <Toaster />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
