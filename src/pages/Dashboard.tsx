@@ -28,33 +28,33 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Painel de Controle</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl md:text-2xl font-bold">Painel de Controle</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Bem-vindo ao Sistema de Promoções do Corpo de Bombeiros Militar do Estado do Piauí (SysProm)
         </p>
       </div>
       
       {/* Oficiais Section */}
       <Card>
-        <CardHeader className="bg-cbmepi-purple text-white">
-          <CardTitle>OFICIAIS</CardTitle>
-          <CardDescription className="text-zinc-200">Gerenciamento de Quadros de Oficiais</CardDescription>
+        <CardHeader className="bg-cbmepi-purple text-white py-2 md:py-4">
+          <CardTitle className="text-base md:text-lg">OFICIAIS</CardTitle>
+          <CardDescription className="text-xs md:text-sm text-zinc-200">Gerenciamento de Quadros de Oficiais</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 pt-3 md:pt-6">
           {quadrosOficiais.map((quadro) => (
             <Button
               key={quadro.id}
               variant="outline"
-              className="h-auto p-4 justify-start flex flex-col items-stretch text-left"
+              className="h-auto p-2 md:p-4 justify-start flex flex-col items-stretch text-left"
               onClick={() => navigate(quadro.path)}
             >
               <div className="flex justify-between items-center w-full">
-                <span className="font-semibold">{quadro.name}</span>
+                <span className="font-semibold text-sm md:text-base">{quadro.name}</span>
                 <Badge variant="secondary">{quadro.count}</Badge>
               </div>
-              <span className="text-muted-foreground text-xs mt-2">Clique para gerenciar</span>
+              <span className="text-muted-foreground text-xs mt-1 md:mt-2">Clique para gerenciar</span>
             </Button>
           ))}
         </CardContent>
@@ -62,23 +62,23 @@ const Dashboard = () => {
       
       {/* Praças Section */}
       <Card>
-        <CardHeader className="bg-cbmepi-purple text-white">
-          <CardTitle>PRAÇAS</CardTitle>
-          <CardDescription className="text-zinc-200">Gerenciamento de Quadros de Praças</CardDescription>
+        <CardHeader className="bg-cbmepi-purple text-white py-2 md:py-4">
+          <CardTitle className="text-base md:text-lg">PRAÇAS</CardTitle>
+          <CardDescription className="text-xs md:text-sm text-zinc-200">Gerenciamento de Quadros de Praças</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 pt-3 md:pt-6">
           {quadrosPracas.map((quadro) => (
             <Button
               key={quadro.id}
               variant="outline"
-              className="h-auto p-4 justify-start flex flex-col items-stretch text-left"
+              className="h-auto p-2 md:p-4 justify-start flex flex-col items-stretch text-left"
               onClick={() => navigate(quadro.path)}
             >
               <div className="flex justify-between items-center w-full">
-                <span className="font-semibold">{quadro.name}</span>
+                <span className="font-semibold text-sm md:text-base">{quadro.name}</span>
                 <Badge variant="secondary">{quadro.count}</Badge>
               </div>
-              <span className="text-muted-foreground text-xs mt-2">Clique para gerenciar</span>
+              <span className="text-muted-foreground text-xs mt-1 md:mt-2">Clique para gerenciar</span>
             </Button>
           ))}
         </CardContent>
@@ -86,16 +86,16 @@ const Dashboard = () => {
       
       {/* Outros Quadros */}
       <Card>
-        <CardHeader className="bg-cbmepi-purple text-white">
-          <CardTitle>OUTROS QUADROS</CardTitle>
-          <CardDescription className="text-zinc-200">Quadros Funcionais e Legislação</CardDescription>
+        <CardHeader className="bg-cbmepi-purple text-white py-2 md:py-4">
+          <CardTitle className="text-base md:text-lg">OUTROS QUADROS</CardTitle>
+          <CardDescription className="text-xs md:text-sm text-zinc-200">Quadros Funcionais e Legislação</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-6">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 pt-3 md:pt-6">
           {outrosQuadros.map((quadro) => (
             <Button
               key={quadro.id}
               variant="outline"
-              className="h-auto p-4"
+              className="h-auto p-2 md:p-4 text-xs md:text-sm"
               onClick={() => navigate(quadro.path)}
             >
               {quadro.name}

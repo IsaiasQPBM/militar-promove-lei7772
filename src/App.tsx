@@ -1,5 +1,6 @@
+
 import './App.css';
-import { lazy, Suspense, useEffect } from 'react';
+import { useEffect } from 'react';
 import AppRoutes from './AppRoutes';
 import { Toaster } from '@/components/ui/toaster';
 import { createPhotoBucket } from './utils/createStorageBucket';
@@ -18,12 +19,14 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-        <Toaster />
-      </AuthProvider>
-    </BrowserRouter>
+    <div className="h-screen w-full overflow-hidden">
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+          <Toaster />
+        </AuthProvider>
+      </BrowserRouter>
+    </div>
   );
 }
 
