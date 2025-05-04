@@ -41,9 +41,9 @@ const useFichaMilitar = (id: string | undefined) => {
       militarId: curso.militar_id,
       nome: curso.nome,
       tipo: (curso.tipo as CursoMilitarTipo) || "Especialização",
-      instituicao: curso.instituicao,
-      cargaHoraria: curso.cargahoraria,
-      pontos: curso.pontos,
+      instituicao: curso.instituicao || "",
+      cargaHoraria: curso.cargahoraria || 0,
+      pontos: curso.pontos || 0,
       anexo: curso.anexo
     }));
     
@@ -64,9 +64,9 @@ const useFichaMilitar = (id: string | undefined) => {
       militarId: curso.militar_id,
       nome: curso.nome,
       tipo: (curso.tipo as CursoCivilTipo) || "Superior",
-      instituicao: curso.instituicao,
-      cargaHoraria: curso.cargahoraria,
-      pontos: curso.pontos,
+      instituicao: curso.instituicao || "",
+      cargaHoraria: curso.cargahoraria || 0,
+      pontos: curso.pontos || 0,
       anexo: curso.anexo
     }));
     

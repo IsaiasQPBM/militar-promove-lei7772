@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, FichaConceito, CursoMilitarTipo, FaltaAproveitamento } from "@/types";
 
@@ -30,10 +29,16 @@ export const getCursosMilitares = async (militarId: string) => {
 
   if (error) throw error;
 
-  // Transform the data to include tipo with a default value if it's missing
+  // Transform the data to map database fields to our application types
   return data.map(curso => ({
-    ...curso,
-    tipo: curso.tipo || "Especialização" // Add default value if tipo is missing
+    id: curso.id,
+    militarId: curso.militar_id,
+    nome: curso.nome,
+    tipo: (curso.tipo || "Especialização") as CursoMilitarTipo,
+    instituicao: curso.instituicao || "",
+    cargaHoraria: curso.cargahoraria || 0,
+    pontos: curso.pontos || 0,
+    anexo: curso.anexo
   }));
 };
 
@@ -65,10 +70,16 @@ export const getCursosCivis = async (militarId: string) => {
 
   if (error) throw error;
   
-  // Transform the data to include tipo with a default value if it's missing
+  // Transform the data to map database fields to our application types
   return data.map(curso => ({
-    ...curso,
-    tipo: curso.tipo || "Superior" // Add default value if tipo is missing
+    id: curso.id,
+    militarId: curso.militar_id,
+    nome: curso.nome,
+    tipo: (curso.tipo || "Superior") as CursoCivil["tipo"],
+    instituicao: curso.instituicao || "",
+    cargaHoraria: curso.cargahoraria || 0,
+    pontos: curso.pontos || 0,
+    anexo: curso.anexo
   }));
 };
 

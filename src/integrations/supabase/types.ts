@@ -60,6 +60,7 @@ export type Database = {
           militar_id: string | null
           nome: string
           pontos: number | null
+          tipo: string | null
         }
         Insert: {
           anexo?: string | null
@@ -70,6 +71,7 @@ export type Database = {
           militar_id?: string | null
           nome: string
           pontos?: number | null
+          tipo?: string | null
         }
         Update: {
           anexo?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           militar_id?: string | null
           nome?: string
           pontos?: number | null
+          tipo?: string | null
         }
         Relationships: [
           {
@@ -101,6 +104,7 @@ export type Database = {
           militar_id: string | null
           nome: string
           pontos: number | null
+          tipo: string | null
         }
         Insert: {
           anexo?: string | null
@@ -111,6 +115,7 @@ export type Database = {
           militar_id?: string | null
           nome: string
           pontos?: number | null
+          tipo?: string | null
         }
         Update: {
           anexo?: string | null
@@ -121,6 +126,7 @@ export type Database = {
           militar_id?: string | null
           nome?: string
           pontos?: number | null
+          tipo?: string | null
         }
         Relationships: [
           {
