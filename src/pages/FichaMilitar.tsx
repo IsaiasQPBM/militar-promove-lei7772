@@ -1,7 +1,6 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Militar, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
+import { Militar, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, CursoMilitarTipo, CursoCivilTipo } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -104,7 +103,8 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
-      tipo: curso.tipo || "Outro" as CursoMilitarTipo, // Cast to CursoMilitarTipo
+      // Use default of "Especialização" if tipo doesn't exist in the database
+      tipo: (curso.tipo as CursoMilitarTipo) || "Especialização",
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,
@@ -127,7 +127,8 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
-      tipo: curso.tipo || "Superior" as CursoCivil["tipo"], // Use indexed access to get the type
+      // Use default of "Superior" if tipo doesn't exist in the database
+      tipo: (curso.tipo as CursoCivilTipo) || "Superior",
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,

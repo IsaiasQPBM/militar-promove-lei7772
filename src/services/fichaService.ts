@@ -5,7 +5,15 @@ import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, FichaConceito,
 export const addCursoMilitar = async (curso: Omit<CursoMilitar, "id">) => {
   const { data, error } = await supabase
     .from("cursos_militares")
-    .insert([curso])
+    .insert([{
+      militar_id: curso.militarId,
+      nome: curso.nome,
+      tipo: curso.tipo,
+      instituicao: curso.instituicao,
+      cargahoraria: curso.cargaHoraria,
+      pontos: curso.pontos,
+      anexo: curso.anexo
+    }])
     .select()
     .single();
 
@@ -27,7 +35,15 @@ export const getCursosMilitares = async (militarId: string) => {
 export const addCursoCivil = async (curso: Omit<CursoCivil, "id">) => {
   const { data, error } = await supabase
     .from("cursos_civis")
-    .insert([curso])
+    .insert([{
+      militar_id: curso.militarId,
+      nome: curso.nome,
+      tipo: curso.tipo,
+      instituicao: curso.instituicao,
+      cargahoraria: curso.cargaHoraria,
+      pontos: curso.pontos,
+      anexo: curso.anexo
+    }])
     .select()
     .single();
 
@@ -139,7 +155,7 @@ export const getFichaConceito = async (militarId: string) => {
   return data;
 };
 
-// Faltas de Aproveitamento - Database table doesn't exist yet, so let's modify the functions to handle this differently
+// Faltas de Aproveitamento - Handle as mock data since the table doesn't exist yet
 export const addFaltaAproveitamento = async (falta: { militar_id: string, descricao: string, pontos: number }) => {
   // Since the database table doesn't exist, we'll handle this differently
   // This is a placeholder until you create the actual table

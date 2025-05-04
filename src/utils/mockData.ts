@@ -1,3 +1,4 @@
+
 import { 
   Militar, 
   Promocao, 
@@ -5,7 +6,10 @@ import {
   CursoCivil,
   Condecoracao,
   Elogio,
-  Punicao 
+  Punicao,
+  CursoMilitarTipo,
+  CursoCivilTipo,
+  CondecoracaoTipo
 } from "@/types";
 
 // Mock militares data
@@ -144,7 +148,7 @@ export const mockCursosMilitares: CursoMilitar[] = [
     id: "1",
     militarId: "abc123",
     nome: "Curso de Operações de Resgate",
-    tipo: "Especialização", // Add the required tipo property
+    tipo: "Especialização",
     instituicao: "Academia de Bombeiros Militar",
     cargaHoraria: 120,
     pontos: 2.5,
@@ -154,7 +158,7 @@ export const mockCursosMilitares: CursoMilitar[] = [
     id: "2",
     militarId: "abc123",
     nome: "Curso de Combate a Incêndios Florestais",
-    tipo: "Especialização", // Add the required tipo property
+    tipo: "Especialização",
     instituicao: "Centro de Treinamento de Bombeiros",
     cargaHoraria: 80,
     pontos: 1.5,
@@ -168,7 +172,7 @@ export const mockCursosCivis: CursoCivil[] = [
     id: "1",
     militarId: "abc123",
     nome: "Engenharia de Segurança do Trabalho",
-    tipo: "Superior", // Add the required tipo property
+    tipo: "Superior",
     instituicao: "Universidade Federal",
     cargaHoraria: 3600,
     pontos: 1.5,
@@ -178,7 +182,7 @@ export const mockCursosCivis: CursoCivil[] = [
     id: "2",
     militarId: "abc123",
     nome: "MBA em Gestão de Crises",
-    tipo: "Especialização", // Add the required tipo property
+    tipo: "Especialização",
     instituicao: "Faculdade de Administração",
     cargaHoraria: 420,
     pontos: 2.0,
@@ -191,7 +195,7 @@ export const mockCondecoracoes: Condecoracao[] = [
   {
     id: "1",
     militarId: "abc123",
-    tipo: "Concedida pelo Governo Federal", // Use a valid CondecoracaoTipo value
+    tipo: "Concedida pelo Governo Federal",
     descricao: "Medalha de Mérito por salvamento em incêndio",
     dataRecebimento: "10/05/2022",
     pontos: 0.5,
@@ -200,7 +204,7 @@ export const mockCondecoracoes: Condecoracao[] = [
   {
     id: "2",
     militarId: "abc123",
-    tipo: "Concedida Pelo CBMEPI", // Use a valid CondecoracaoTipo value
+    tipo: "Concedida Pelo CBMEPI",
     descricao: "Honra ao Mérito por tempo de serviço",
     dataRecebimento: "15/08/2023",
     pontos: 0.2,
