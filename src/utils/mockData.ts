@@ -141,21 +141,23 @@ export const mockPromocoes: Promocao[] = [
 // Mock cursos militares
 export const mockCursosMilitares: CursoMilitar[] = [
   {
-    id: "cm1",
-    militarId: "1",
-    nome: "Curso de Formação de Oficiais",
+    id: "1",
+    militarId: "abc123",
+    nome: "Curso de Operações de Resgate",
+    tipo: "Especialização", // Add the required tipo property
     instituicao: "Academia de Bombeiros Militar",
-    cargaHoraria: 3600,
-    pontos: 4.0,
+    cargaHoraria: 120,
+    pontos: 2.5,
     anexo: null
   },
   {
-    id: "cm2",
-    militarId: "1",
-    nome: "Curso de Aperfeiçoamento de Oficiais",
-    instituicao: "Academia de Bombeiros Militar",
-    cargaHoraria: 1200,
-    pontos: 3.0,
+    id: "2",
+    militarId: "abc123",
+    nome: "Curso de Combate a Incêndios Florestais",
+    tipo: "Especialização", // Add the required tipo property
+    instituicao: "Centro de Treinamento de Bombeiros",
+    cargaHoraria: 80,
+    pontos: 1.5,
     anexo: null
   }
 ];
@@ -163,20 +165,22 @@ export const mockCursosMilitares: CursoMilitar[] = [
 // Mock cursos civis
 export const mockCursosCivis: CursoCivil[] = [
   {
-    id: "cc1",
-    militarId: "1",
-    nome: "Direito",
-    instituicao: "Universidade Federal do Piauí",
+    id: "1",
+    militarId: "abc123",
+    nome: "Engenharia de Segurança do Trabalho",
+    tipo: "Superior", // Add the required tipo property
+    instituicao: "Universidade Federal",
     cargaHoraria: 3600,
-    pontos: 3.0,
+    pontos: 1.5,
     anexo: null
   },
   {
-    id: "cc2",
-    militarId: "1",
-    nome: "Especialização em Gestão Pública",
-    instituicao: "Universidade Estadual do Piauí",
-    cargaHoraria: 480,
+    id: "2",
+    militarId: "abc123",
+    nome: "MBA em Gestão de Crises",
+    tipo: "Especialização", // Add the required tipo property
+    instituicao: "Faculdade de Administração",
+    cargaHoraria: 420,
     pontos: 2.0,
     anexo: null
   }
@@ -185,12 +189,21 @@ export const mockCursosCivis: CursoCivil[] = [
 // Mock condecorações
 export const mockCondecoracoes: Condecoracao[] = [
   {
-    id: "cond1",
-    militarId: "1",
-    tipo: "Medalha de Mérito Operacional",
-    descricao: "Por serviços prestados em operações especiais",
+    id: "1",
+    militarId: "abc123",
+    tipo: "Concedida pelo Governo Federal", // Use a valid CondecoracaoTipo value
+    descricao: "Medalha de Mérito por salvamento em incêndio",
+    dataRecebimento: "10/05/2022",
     pontos: 0.5,
-    dataRecebimento: "2021-05-10",
+    anexo: null
+  },
+  {
+    id: "2",
+    militarId: "abc123",
+    tipo: "Concedida Pelo CBMEPI", // Use a valid CondecoracaoTipo value
+    descricao: "Honra ao Mérito por tempo de serviço",
+    dataRecebimento: "15/08/2023",
+    pontos: 0.2,
     anexo: null
   }
 ];

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Card, 
@@ -165,6 +164,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
         id: Date.now().toString(),
         militarId,
         nome: data.nome,
+        tipo: "Outro", // Default to "Outro" as a valid CursoMilitarTipo
         instituicao: data.instituicao,
         cargaHoraria: data.cargaHoraria,
         pontos: data.pontos,
@@ -196,6 +196,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
         id: Date.now().toString(),
         militarId,
         nome: data.nome,
+        tipo: "Superior", // Default to "Superior" as a valid CursoCivilTipo
         instituicao: data.instituicao,
         cargaHoraria: data.cargaHoraria,
         pontos: data.pontos,
@@ -223,10 +224,11 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   const adicionarCondecoracao = async (data: z.infer<typeof condecoracaoSchema>) => {
     try {
       // Create a new condecoracao object with required properties
+      // Cast the tipo to a valid CondecoracaoTipo
       const novaCondecoracao: Condecoracao = {
         id: Date.now().toString(),
         militarId,
-        tipo: data.tipo,
+        tipo: data.tipo as Condecoracao["tipo"], // Cast to the appropriate type
         descricao: data.descricao,
         dataRecebimento: data.dataRecebimento,
         pontos: data.pontos,

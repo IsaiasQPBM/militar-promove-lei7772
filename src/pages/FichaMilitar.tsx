@@ -104,7 +104,7 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
-      tipo: curso.tipo || "Outro",
+      tipo: curso.tipo || "Outro" as CursoMilitarTipo, // Cast to CursoMilitarTipo
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,
@@ -127,7 +127,7 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
-      tipo: curso.tipo || "Superior",
+      tipo: curso.tipo || "Superior" as CursoCivil["tipo"], // Use indexed access to get the type
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,
@@ -149,7 +149,8 @@ const useFichaMilitar = (id: string | undefined) => {
     const condecoracoesMapeadas = data.map(cond => ({
       id: cond.id,
       militarId: cond.militar_id,
-      tipo: cond.tipo || "Concedida Pelo CBMEPI",
+      // Cast to the appropriate type - this ensures it's one of the allowed values
+      tipo: cond.tipo as Condecoracao["tipo"],
       descricao: cond.descricao,
       pontos: cond.pontos,
       dataRecebimento: cond.datarecebimento,

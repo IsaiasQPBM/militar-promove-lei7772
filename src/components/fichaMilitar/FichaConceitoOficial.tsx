@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PontuacaoLei5461, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
@@ -116,14 +115,13 @@ export const FichaConceitoOficial = ({
         }
       });
       
-      // Processar condecorações
+      // Processar condecorações - Fix the type comparison issue
       const tiposCondecoracoes = condecoracoes.reduce((acc, cond) => {
         if (cond.tipo === "Concedida pelo Governo Federal" || 
             cond.tipo === "Reconhecido pelo CBMEPI") {
           acc.governoFederal++;
         } 
-        else if (cond.tipo === "Concedida pelo Governo Estadual" || 
-                 cond.tipo === "Reconhecido pelo CBMEPI") {
+        else if (cond.tipo === "Concedida pelo Governo Estadual") {
           acc.governoEstadual++;
         }
         else if (cond.tipo === "Concedida Pelo CBMEPI") {

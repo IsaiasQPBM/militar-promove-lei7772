@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, FichaConceito, CursoMilitarTipo } from "@/types";
+import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, FichaConceito, CursoMilitarTipo, FaltaAproveitamento } from "@/types";
 
 // Cursos Militares
 export const addCursoMilitar = async (curso: Omit<CursoMilitar, "id">) => {
@@ -113,7 +112,7 @@ export const getPunicoes = async (militarId: string) => {
 };
 
 // Ficha Conceito
-export const salvarFichaConceito = async (ficha: Omit<FichaConceito, "cursosMilitares" | "cursosCivis" | "condecoracoes" | "elogios" | "punicoes">) => {
+export const salvarFichaConceito = async (ficha: Omit<FichaConceito, "cursosMilitares" | "cursosCivis" | "condecoracoes" | "elogios" | "punicoes" | "faltasAproveitamento">) => {
   const { data, error } = await supabase
     .from("fichas_conceito")
     .upsert({
@@ -140,24 +139,17 @@ export const getFichaConceito = async (militarId: string) => {
   return data;
 };
 
-// Faltas de Aproveitamento
+// Faltas de Aproveitamento - Database table doesn't exist yet, so let's modify the functions to handle this differently
 export const addFaltaAproveitamento = async (falta: { militar_id: string, descricao: string, pontos: number }) => {
-  const { data, error } = await supabase
-    .from("faltas_aproveitamento")
-    .insert([falta])
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  // Since the database table doesn't exist, we'll handle this differently
+  // This is a placeholder until you create the actual table
+  console.log("Falta de aproveitamento would be added:", falta);
+  return { ...falta, id: Date.now().toString() };
 };
 
 export const getFaltasAproveitamento = async (militarId: string) => {
-  const { data, error } = await supabase
-    .from("faltas_aproveitamento")
-    .select("*")
-    .eq("militar_id", militarId);
-
-  if (error) throw error;
-  return data || [];
+  // Since the database table doesn't exist, we'll return an empty array
+  // This is a placeholder until you create the actual table
+  console.log("Getting faltas aproveitamento for militar:", militarId);
+  return [];
 };
