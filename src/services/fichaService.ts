@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, FichaConceito, CursoMilitarTipo, FaltaAproveitamento } from "@/types";
 
@@ -28,7 +29,12 @@ export const getCursosMilitares = async (militarId: string) => {
     .eq("militar_id", militarId);
 
   if (error) throw error;
-  return data;
+
+  // Transform the data to include tipo with a default value if it's missing
+  return data.map(curso => ({
+    ...curso,
+    tipo: curso.tipo || "Especialização" // Add default value if tipo is missing
+  }));
 };
 
 // Cursos Civis
@@ -49,6 +55,21 @@ export const addCursoCivil = async (curso: Omit<CursoCivil, "id">) => {
 
   if (error) throw error;
   return data;
+};
+
+export const getCursosCivis = async (militarId: string) => {
+  const { data, error } = await supabase
+    .from("cursos_civis")
+    .select("*")
+    .eq("militar_id", militarId);
+
+  if (error) throw error;
+  
+  // Transform the data to include tipo with a default value if it's missing
+  return data.map(curso => ({
+    ...curso,
+    tipo: curso.tipo || "Superior" // Add default value if tipo is missing
+  }));
 };
 
 // Condecorações
