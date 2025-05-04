@@ -58,6 +58,40 @@ export type CriterioPromocao =
   | "Post-mortem" 
   | "Em ressarcimento de preterição";
 
+// Tipos de cursos militares conforme a Lei 5461
+export type CursoMilitarTipo =
+  | "Especialização"
+  | "CSBM"
+  | "CFSD"
+  | "CHC"
+  | "CHSGT"
+  | "CAS"
+  | "CHO"
+  | "CFO"
+  | "CAO"
+  | "Outro";
+
+// Tipos de cursos civis conforme a Lei 5461
+export type CursoCivilTipo =
+  | "Superior"
+  | "Especialização"
+  | "Mestrado"
+  | "Doutorado";
+
+// Tipos de condecorações conforme a Lei 5461
+export type CondecoracaoTipo =
+  | "Concedida pelo Governo Federal"
+  | "Reconhecido pelo CBMEPI"
+  | "Concedida pelo Governo Estadual"
+  | "Reconhecido pelo CBMEPI"
+  | "Concedida Pelo CBMEPI";
+
+// Tipos de elogios conforme a Lei 5461
+export type ElogioTipo = "Individual" | "Coletivo";
+
+// Tipos de punições conforme a Lei 5461
+export type PunicaoTipo = "Repreensão" | "Detenção" | "Prisão";
+
 export interface Promocao {
   id: string;
   militarId: string;
@@ -71,6 +105,7 @@ export interface CursoMilitar {
   id: string;
   militarId: string;
   nome: string;
+  tipo: CursoMilitarTipo;
   instituicao: string;
   cargaHoraria: number;
   pontos: number;
@@ -81,6 +116,7 @@ export interface CursoCivil {
   id: string;
   militarId: string;
   nome: string;
+  tipo: CursoCivilTipo;
   instituicao: string;
   cargaHoraria: number;
   pontos: number;
@@ -90,7 +126,7 @@ export interface CursoCivil {
 export interface Condecoracao {
   id: string;
   militarId: string;
-  tipo: string;
+  tipo: CondecoracaoTipo;
   descricao: string;
   pontos: number;
   dataRecebimento: string;
@@ -100,7 +136,7 @@ export interface Condecoracao {
 export interface Elogio {
   id: string;
   militarId: string;
-  tipo: "Individual" | "Coletivo";
+  tipo: ElogioTipo;
   descricao: string;
   pontos: number;
   dataRecebimento: string;
@@ -110,11 +146,18 @@ export interface Elogio {
 export interface Punicao {
   id: string;
   militarId: string;
-  tipo: "Repreensão" | "Detenção" | "Prisão";
+  tipo: PunicaoTipo;
   descricao: string;
   pontos: number;
   dataRecebimento: string;
   anexo: string | null;
+}
+
+export interface FaltaAproveitamento {
+  id: string;
+  militarId: string;
+  descricao: string;
+  pontos: number;
 }
 
 export interface Militar {
@@ -141,5 +184,47 @@ export interface FichaConceito {
   condecoracoes: Condecoracao[];
   elogios: Elogio[];
   punicoes: Punicao[];
+  faltasAproveitamento: FaltaAproveitamento[];
   totalPontos: number;
+}
+
+export interface PontuacaoLei5461 {
+  // Valores positivos
+  tempoServicoQuadro: { quantidade: number; valor: number; pontosPositivos: number; pontosNegativos: number };
+  cursosMilitares: {
+    especializacao: { quantidade: number; valor: 2.5; pontosPositivos: number; pontosNegativos: number };
+    csbm: { quantidade: number; valor: 4.0; pontosPositivos: number; pontosNegativos: number };
+    cfsd: { quantidade: number; valor: 0.5; pontosPositivos: number; pontosNegativos: number };
+    chc: { quantidade: number; valor: 0.75; pontosPositivos: number; pontosNegativos: number };
+    chsgt: { quantidade: number; valor: 1.0; pontosPositivos: number; pontosNegativos: number };
+    cas: { quantidade: number; valor: 1.25; pontosPositivos: number; pontosNegativos: number };
+    cho: { quantidade: number; valor: 1.5; pontosPositivos: number; pontosNegativos: number };
+    cfo: { quantidade: number; valor: 1.75; pontosPositivos: number; pontosNegativos: number };
+    cao: { quantidade: number; valor: 3.0; pontosPositivos: number; pontosNegativos: number };
+    csbm2: { quantidade: number; valor: 2.5; pontosPositivos: number; pontosNegativos: number };
+  };
+  cursosCivis: {
+    superior: { quantidade: number; valor: 1.5; pontosPositivos: number; pontosNegativos: number };
+    especializacao: { quantidade: number; valor: 2.0; pontosPositivos: number; pontosNegativos: number };
+    mestrado: { quantidade: number; valor: 3.0; pontosPositivos: number; pontosNegativos: number };
+    doutorado: { quantidade: number; valor: 4.0; pontosPositivos: number; pontosNegativos: number };
+  };
+  condecoracoes: {
+    governoFederal: { quantidade: number; valor: 0.5; pontosPositivos: number; pontosNegativos: number };
+    governoEstadual: { quantidade: number; valor: 0.3; pontosPositivos: number; pontosNegativos: number };
+    cbmepi: { quantidade: number; valor: 0.2; pontosPositivos: number; pontosNegativos: number };
+  };
+  elogios: {
+    individual: { quantidade: number; valor: 0.15; pontosPositivos: number; pontosNegativos: number };
+    coletivo: { quantidade: number; valor: 0.10; pontosPositivos: number; pontosNegativos: number };
+  };
+  // Valores negativos
+  punicoes: {
+    repreensao: { quantidade: number; valor: 0.5; pontosPositivos: number; pontosNegativos: number };
+    detencao: { quantidade: number; valor: 1.0; pontosPositivos: number; pontosNegativos: number };
+    prisao: { quantidade: number; valor: 2.0; pontosPositivos: number; pontosNegativos: number };
+  };
+  faltaAproveitamentoCursos: { quantidade: number; valor: 5.0; pontosPositivos: number; pontosNegativos: number };
+  
+  somaTotal: number;
 }

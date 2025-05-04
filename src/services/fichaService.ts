@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
+import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, FichaConceito, CursoMilitarTipo } from "@/types";
 
 // Cursos Militares
 export const addCursoMilitar = async (curso: Omit<CursoMilitar, "id">) => {
@@ -110,4 +110,54 @@ export const getPunicoes = async (militarId: string) => {
 
   if (error) throw error;
   return data;
+};
+
+// Ficha Conceito
+export const salvarFichaConceito = async (ficha: Omit<FichaConceito, "cursosMilitares" | "cursosCivis" | "condecoracoes" | "elogios" | "punicoes">) => {
+  const { data, error } = await supabase
+    .from("fichas_conceito")
+    .upsert({
+      militar_id: ficha.militarId,
+      temposervicoquadro: ficha.tempoServicoQuadro,
+      totalpontos: ficha.totalPontos
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getFichaConceito = async (militarId: string) => {
+  const { data, error } = await supabase
+    .from("fichas_conceito")
+    .select("*")
+    .eq("militar_id", militarId)
+    .single();
+
+  if (error && error.code !== "PGRST116") throw error; // PGRST116 is "no rows returned"
+  
+  return data;
+};
+
+// Faltas de Aproveitamento
+export const addFaltaAproveitamento = async (falta: { militar_id: string, descricao: string, pontos: number }) => {
+  const { data, error } = await supabase
+    .from("faltas_aproveitamento")
+    .insert([falta])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getFaltasAproveitamento = async (militarId: string) => {
+  const { data, error } = await supabase
+    .from("faltas_aproveitamento")
+    .select("*")
+    .eq("militar_id", militarId);
+
+  if (error) throw error;
+  return data || [];
 };

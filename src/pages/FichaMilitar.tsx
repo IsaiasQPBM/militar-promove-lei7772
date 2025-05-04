@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DadosPessoais } from "@/components/fichaMilitar/DadosPessoais";
 import { DadosFormacao } from "@/components/fichaMilitar/DadosFormacao";
+import { FichaConceitoOficial } from "@/components/fichaMilitar/FichaConceitoOficial";
 import { toQuadroMilitar, toPostoPatente, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 import LoaderComponent from "@/components/editarMilitar/LoaderComponent";
 
@@ -23,6 +24,7 @@ const useFichaMilitar = (id: string | undefined) => {
   const [punicoes, setPunicoes] = useState<Punicao[]>([]);
   const [totalPontos, setTotalPontos] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("dados-formacao");
   
   // Using useCallback to memoize the function and prevent re-renders
   const calcularTotalPontos = useCallback(() => {
@@ -102,6 +104,7 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
+      tipo: curso.tipo || "Outro",
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,
@@ -124,6 +127,7 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
+      tipo: curso.tipo || "Superior",
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,
@@ -145,7 +149,7 @@ const useFichaMilitar = (id: string | undefined) => {
     const condecoracoesMapeadas = data.map(cond => ({
       id: cond.id,
       militarId: cond.militar_id,
-      tipo: cond.tipo,
+      tipo: cond.tipo || "Concedida Pelo CBMEPI",
       descricao: cond.descricao,
       pontos: cond.pontos,
       dataRecebimento: cond.datarecebimento,
@@ -217,8 +221,10 @@ const useFichaMilitar = (id: string | undefined) => {
     condecoracoes, 
     elogios, 
     punicoes, 
-    totalPontos, 
-    loading 
+    totalPontos,
+    loading,
+    activeTab,
+    setActiveTab
   };
 };
 
@@ -271,7 +277,9 @@ const FichaMilitar = () => {
     elogios, 
     punicoes, 
     totalPontos, 
-    loading 
+    loading,
+    activeTab,
+    setActiveTab
   } = useFichaMilitar(id);
   
   if (loading) {
@@ -281,6 +289,9 @@ const FichaMilitar = () => {
   if (!militar) {
     return <div className="flex justify-center items-center h-64">Militar não encontrado.</div>;
   }
+  
+  // Verificar se o militar é um oficial
+  const isOficial = ["Coronel", "Tenente-Coronel", "Major", "Capitão", "1º Tenente", "2º Tenente"].includes(militar.posto);
   
   return (
     <div className="space-y-6">
@@ -303,27 +314,49 @@ const FichaMilitar = () => {
           <CardTitle>Ficha de Conceito do Militar</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <Tabs defaultValue="cursos-militares" className="w-full">
-            <TabsList className="grid grid-cols-5 w-full">
-              <TabsTrigger value="cursos-militares">Cursos Militares</TabsTrigger>
-              <TabsTrigger value="cursos-civis">Cursos Civis</TabsTrigger>
-              <TabsTrigger value="condecoracoes">Condecorações</TabsTrigger>
-              <TabsTrigger value="elogios">Elogios</TabsTrigger>
-              <TabsTrigger value="punicoes">Punições</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="dados-formacao">Dados de Formação</TabsTrigger>
+              {isOficial && <TabsTrigger value="ficha-lei-5461">Ficha Lei 5461</TabsTrigger>}
             </TabsList>
             
-            <DadosFormacao
-              cursosMilitares={cursosMilitares}
-              cursosCivis={cursosCivis}
-              condecoracoes={condecoracoes}
-              elogios={elogios}
-              punicoes={punicoes}
-            />
+            <TabsContent value="dados-formacao" className="p-0">
+              <Tabs defaultValue="cursos-militares" className="w-full">
+                <TabsList className="grid grid-cols-5 w-full">
+                  <TabsTrigger value="cursos-militares">Cursos Militares</TabsTrigger>
+                  <TabsTrigger value="cursos-civis">Cursos Civis</TabsTrigger>
+                  <TabsTrigger value="condecoracoes">Condecorações</TabsTrigger>
+                  <TabsTrigger value="elogios">Elogios</TabsTrigger>
+                  <TabsTrigger value="punicoes">Punições</TabsTrigger>
+                </TabsList>
+                
+                <DadosFormacao
+                  cursosMilitares={cursosMilitares}
+                  cursosCivis={cursosCivis}
+                  condecoracoes={condecoracoes}
+                  elogios={elogios}
+                  punicoes={punicoes}
+                />
+              </Tabs>
+              
+              <Separator />
+              
+              <ResumoPontos totalPontos={totalPontos} />
+            </TabsContent>
+            
+            {isOficial && (
+              <TabsContent value="ficha-lei-5461" className="p-0">
+                <FichaConceitoOficial
+                  militarId={id || ""}
+                  cursosMilitares={cursosMilitares}
+                  cursosCivis={cursosCivis}
+                  condecoracoes={condecoracoes}
+                  elogios={elogios}
+                  punicoes={punicoes}
+                />
+              </TabsContent>
+            )}
           </Tabs>
-          
-          <Separator />
-          
-          <ResumoPontos totalPontos={totalPontos} />
         </CardContent>
       </Card>
     </div>
