@@ -103,8 +103,8 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
-      // Use default of "Especialização" if tipo doesn't exist in the database
-      tipo: (curso.tipo as CursoMilitarTipo) || "Especialização",
+      // Add the tipo property with a default value if it doesn't exist
+      tipo: curso.tipo as CursoMilitarTipo || "Especialização",
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,
@@ -127,8 +127,8 @@ const useFichaMilitar = (id: string | undefined) => {
       id: curso.id,
       militarId: curso.militar_id,
       nome: curso.nome,
-      // Use default of "Superior" if tipo doesn't exist in the database
-      tipo: (curso.tipo as CursoCivilTipo) || "Superior",
+      // Add the tipo property with a default value if it doesn't exist
+      tipo: curso.tipo as CursoCivilTipo || "Superior",
       instituicao: curso.instituicao,
       cargaHoraria: curso.cargahoraria,
       pontos: curso.pontos,

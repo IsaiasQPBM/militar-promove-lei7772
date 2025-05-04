@@ -51,16 +51,6 @@ export const addCursoCivil = async (curso: Omit<CursoCivil, "id">) => {
   return data;
 };
 
-export const getCursosCivis = async (militarId: string) => {
-  const { data, error } = await supabase
-    .from("cursos_civis")
-    .select("*")
-    .eq("militar_id", militarId);
-
-  if (error) throw error;
-  return data;
-};
-
 // Condecorações
 export const addCondecoracao = async (condecoracao: Omit<Condecoracao, "id">) => {
   const { data, error } = await supabase
