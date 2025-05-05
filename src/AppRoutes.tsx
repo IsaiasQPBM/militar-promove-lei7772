@@ -39,9 +39,13 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <ProtectedRoute><MainLayout /></ProtectedRoute>,
+    element: <MainLayout />,
     errorElement: <NotFound />,
     children: [
+      {
+        path: "",
+        element: <Dashboard />
+      },
       {
         path: "dashboard",
         element: <Dashboard />

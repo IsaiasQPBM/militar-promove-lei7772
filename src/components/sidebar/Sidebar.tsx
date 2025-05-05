@@ -8,7 +8,9 @@ import {
   Star,
   Users,
   TrendingUp,
-  Upload
+  Upload,
+  UserPlus,
+  Settings
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarLink } from "./SidebarLink";
@@ -125,6 +127,16 @@ export function Sidebar() {
           </SidebarLink>
         </SidebarSection>
         
+        <SidebarSection title="PROMOÇÕES">
+          <SidebarLink 
+            to="/gestao-promocoes" 
+            active={isActive("/gestao-promocoes")}
+            icon={<Settings className="h-5 w-5" />}
+          >
+            Gestão de Promoções
+          </SidebarLink>
+        </SidebarSection>
+        
         <SidebarSection title="LEGISLAÇÃO">
           <SidebarLink 
             to="/legislacao" 
@@ -135,11 +147,11 @@ export function Sidebar() {
           </SidebarLink>
         </SidebarSection>
         
-        <SidebarSection title="Militares">
+        <SidebarSection title="CADASTRO">
           <SidebarLink 
             to="/cadastro-militar" 
             active={isActive("/cadastro-militar")}
-            icon={<Users className="h-5 w-5" />}
+            icon={<UserPlus className="h-5 w-5" />}
           >
             Cadastrar Militar
           </SidebarLink>
@@ -155,29 +167,13 @@ export function Sidebar() {
           <SidebarLink 
             to="/importar-militares-ai" 
             active={isActive("/importar-militares-ai")}
-            icon={<Upload className="h-4 w-4" />}
+            icon={<Upload className="h-5 w-5" />}
           >
             Importar com IA
           </SidebarLink>
-          
-          <SidebarLink 
-            to="/quadro-oficiais" 
-            active={isActive("/quadro-oficiais")}
-            icon={<Users className="h-5 w-5" />}
-          >
-            Quadro de Oficiais
-          </SidebarLink>
-          
-          <SidebarLink 
-            to="/quadro-pracas" 
-            active={isActive("/quadro-pracas")}
-            icon={<Users className="h-5 w-5" />}
-          >
-            Quadro de Praças
-          </SidebarLink>
         </SidebarSection>
         
-        <SidebarSection title="Documentos">
+        <SidebarSection title="DOCUMENTOS">
           <SidebarLink 
             to="/modelo-documentos" 
             active={isActive("/modelo-documentos")}
