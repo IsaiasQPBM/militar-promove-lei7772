@@ -5,10 +5,11 @@ import { Militar } from "@/types";
 export const mockMilitares: Militar[] = [
   {
     id: "1",
+    nomeCompleto: "José Erisman de Sousa",
+    nome: "José Erisman de Sousa", // Added this field
+    nomeGuerra: "Erisman",
     quadro: "QOE",
     posto: "Major",
-    nomeCompleto: "José Erisman de Sousa",
-    nomeGuerra: "Erisman",
     foto: "https://api.dicebear.com/7.x/initials/svg?seed=Erisman",
     dataNascimento: "1980-05-12",
     dataInclusao: "2000-03-01",
@@ -20,10 +21,11 @@ export const mockMilitares: Militar[] = [
   },
   {
     id: "2",
+    nomeCompleto: "Flaubert Rocha Vieira",
+    nome: "Flaubert Rocha Vieira", // Added this field
+    nomeGuerra: "Flaubert",
     quadro: "QOE",
     posto: "Major",
-    nomeCompleto: "Flaubert Rocha Vieira",
-    nomeGuerra: "Flaubert",
     foto: "https://api.dicebear.com/7.x/initials/svg?seed=Flaubert",
     dataNascimento: "1982-07-23",
     dataInclusao: "2002-01-15",
@@ -35,10 +37,11 @@ export const mockMilitares: Militar[] = [
   },
   {
     id: "3",
+    nomeCompleto: "Roberto Carlos Sousa",
+    nome: "Roberto Carlos Sousa", // Added this field
+    nomeGuerra: "Roberto",
     quadro: "QOEM",
     posto: "Coronel",
-    nomeCompleto: "Roberto Carlos Sousa",
-    nomeGuerra: "Roberto",
     foto: "https://api.dicebear.com/7.x/initials/svg?seed=Roberto",
     dataNascimento: "1975-03-10",
     dataInclusao: "1995-01-10",
@@ -50,10 +53,11 @@ export const mockMilitares: Militar[] = [
   },
   {
     id: "4",
+    nomeCompleto: "Carlos Alberto Pereira",
+    nome: "Carlos Alberto Pereira", // Added this field
+    nomeGuerra: "Alberto",
     quadro: "QORR",
     posto: "Tenente-Coronel",
-    nomeCompleto: "Carlos Alberto Pereira",
-    nomeGuerra: "Alberto",
     foto: "https://api.dicebear.com/7.x/initials/svg?seed=Alberto",
     dataNascimento: "1968-11-20",
     dataInclusao: "1990-02-22",
@@ -65,10 +69,11 @@ export const mockMilitares: Militar[] = [
   },
   {
     id: "5",
+    nomeCompleto: "Ana Maria da Silva",
+    nome: "Ana Maria da Silva", // Added this field
+    nomeGuerra: "Ana",
     quadro: "QPBM",
     posto: "1º Sargento",
-    nomeCompleto: "Ana Maria da Silva",
-    nomeGuerra: "Ana",
     foto: "https://api.dicebear.com/7.x/initials/svg?seed=Ana",
     dataNascimento: "1985-09-05",
     dataInclusao: "2005-03-15",
@@ -80,10 +85,11 @@ export const mockMilitares: Militar[] = [
   },
   {
     id: "6",
+    nomeCompleto: "João Paulo Ferreira",
+    nome: "João Paulo Ferreira", // Added this field
+    nomeGuerra: "João",
     quadro: "QPRR",
     posto: "Subtenente",
-    nomeCompleto: "João Paulo Ferreira",
-    nomeGuerra: "João",
     foto: "https://api.dicebear.com/7.x/initials/svg?seed=João",
     dataNascimento: "1970-02-28",
     dataInclusao: "1990-06-10",

@@ -5,12 +5,11 @@ import { Elogio, Punicao } from "@/types";
 export const mockElogios: Elogio[] = [
   {
     id: "e1",
-    militarId: "1",
+    militar_id: "1",
     tipo: "Individual",
     descricao: "Por desempenho excepcional no resgate em desabamento",
     pontos: 0.15,
-    dataRecebimento: "2022-08-22",
-    anexo: null
+    datarecebimento: "2022-08-22"
   }
 ];
 

@@ -41,6 +41,7 @@ export const submitMilitarForm = async (
   try {
     // Create militar in the database
     const militar = await createMilitar({
+      nome: values.nomeCompleto, // Add this field
       nomeCompleto: values.nomeCompleto,
       nomeGuerra: values.nomeGuerra,
       posto: values.posto as PostoPatente,

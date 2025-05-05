@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -131,6 +130,7 @@ const ImportarMilitaresAI = () => {
         
         // Chama a função de criação de militar
         await createMilitar({
+          nome: militar.nome, // Add the nome field
           nomeCompleto: militar.nome,
           nomeGuerra: militar.nome.split(' ')[0],
           posto: militar.posto as PostoPatente,

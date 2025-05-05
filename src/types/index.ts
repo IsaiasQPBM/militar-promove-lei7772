@@ -131,15 +131,14 @@ export type SituacaoMilitar = "ativo" | "inativo";
 
 export type TipoSanguineo = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
 
-// Modify Sexo type to include display values to avoid type errors
+// Define Sexo to include both code values and display values
 export type Sexo = "M" | "F" | "Masculino" | "Feminino";
-export type SexoDisplay = "Masculino" | "Feminino";
 
-// Updated to make nome, nomeCompleto, and nomeGuerra consistent
+// Updated Militar interface to better handle the relationship between nome and nomeCompleto
 export interface Militar {
   id: string;
-  nome: string; // Original nome from database - required
-  nomeCompleto: string; // Same as nome for UI consistency
+  nome?: string; // Making this optional since nomeCompleto is used in its place
+  nomeCompleto: string; // Required - this is the main name field used in UI
   nomeGuerra: string;
   posto: PostoPatente;
   quadro: QuadroMilitar;
@@ -163,3 +162,6 @@ export interface Promocao {
   cargo?: string; // Optional field for UI
   anexoDocumento?: string; // Optional field for UI
 }
+
+// Type for MerecimentoList component
+export type MilitarComPontuacao = Militar & { pontuacao: number };

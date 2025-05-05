@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -114,6 +115,7 @@ const calcularPontuacaoMilitares = (
 
     return {
       id: militar.id,
+      nome: militar.nome, // Keep the nome field
       nomeCompleto: militar.nome,
       nomeGuerra: militar.nomeguerra,
       posto: toPostoPatente(militar.posto),

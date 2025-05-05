@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -75,9 +74,6 @@ export const useFormSubmission = (militarId: string, militarData: FormValues | n
         }
       }
 
-      // Use the sexo value directly since our Sexo type now includes "Masculino"/"Feminino"
-      const sexoFormatado: Sexo = values.sexo;
-      
       // Atualizar o militar no banco de dados
       await updateMilitar(militarId, {
         nome: values.nomeCompleto,
@@ -92,7 +88,7 @@ export const useFormSubmission = (militarId: string, militarData: FormValues | n
         email: values.email,
         foto: photoUrl,
         tipoSanguineo: values.tipoSanguineo,
-        sexo: sexoFormatado
+        sexo: values.sexo
       });
       
       toast({
