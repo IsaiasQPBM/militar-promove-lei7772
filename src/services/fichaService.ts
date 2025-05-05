@@ -42,6 +42,27 @@ export const getCursosMilitares = async (militarId: string) => {
   }));
 };
 
+// Bulk add cursos militares
+export const addCursosMilitaresBulk = async (cursos: Omit<CursoMilitar, "id">[]) => {
+  if (!cursos.length) return [];
+  
+  const { data, error } = await supabase
+    .from("cursos_militares")
+    .insert(cursos.map(curso => ({
+      militar_id: curso.militarId,
+      nome: curso.nome,
+      tipo: curso.tipo,
+      instituicao: curso.instituicao,
+      cargahoraria: curso.cargaHoraria,
+      pontos: curso.pontos,
+      anexo: curso.anexo
+    })))
+    .select();
+
+  if (error) throw error;
+  return data;
+};
+
 // Cursos Civis
 export const addCursoCivil = async (curso: Omit<CursoCivil, "id">) => {
   const { data, error } = await supabase
@@ -83,6 +104,27 @@ export const getCursosCivis = async (militarId: string) => {
   }));
 };
 
+// Bulk add cursos civis
+export const addCursosCivisBulk = async (cursos: Omit<CursoCivil, "id">[]) => {
+  if (!cursos.length) return [];
+  
+  const { data, error } = await supabase
+    .from("cursos_civis")
+    .insert(cursos.map(curso => ({
+      militar_id: curso.militarId,
+      nome: curso.nome,
+      tipo: curso.tipo,
+      instituicao: curso.instituicao,
+      cargahoraria: curso.cargaHoraria,
+      pontos: curso.pontos,
+      anexo: curso.anexo
+    })))
+    .select();
+
+  if (error) throw error;
+  return data;
+};
+
 // Condecorações
 export const addCondecoracao = async (condecoracao: Omit<Condecoracao, "id">) => {
   const { data, error } = await supabase
@@ -100,6 +142,19 @@ export const getCondecoracoes = async (militarId: string) => {
     .from("condecoracoes")
     .select("*")
     .eq("militar_id", militarId);
+
+  if (error) throw error;
+  return data;
+};
+
+// Bulk add condecorações
+export const addCondecoracoesBulk = async (condecoracoes: Omit<Condecoracao, "id">[]) => {
+  if (!condecoracoes.length) return [];
+  
+  const { data, error } = await supabase
+    .from("condecoracoes")
+    .insert(condecoracoes)
+    .select();
 
   if (error) throw error;
   return data;
@@ -127,6 +182,19 @@ export const getElogios = async (militarId: string) => {
   return data;
 };
 
+// Bulk add elogios
+export const addElogiosBulk = async (elogios: Omit<Elogio, "id">[]) => {
+  if (!elogios.length) return [];
+  
+  const { data, error } = await supabase
+    .from("elogios")
+    .insert(elogios)
+    .select();
+
+  if (error) throw error;
+  return data;
+};
+
 // Punições
 export const addPunicao = async (punicao: Omit<Punicao, "id">) => {
   const { data, error } = await supabase
@@ -144,6 +212,19 @@ export const getPunicoes = async (militarId: string) => {
     .from("punicoes")
     .select("*")
     .eq("militar_id", militarId);
+
+  if (error) throw error;
+  return data;
+};
+
+// Bulk add punições
+export const addPunicoesBulk = async (punicoes: Omit<Punicao, "id">[]) => {
+  if (!punicoes.length) return [];
+  
+  const { data, error } = await supabase
+    .from("punicoes")
+    .insert(punicoes)
+    .select();
 
   if (error) throw error;
   return data;
@@ -177,7 +258,7 @@ export const getFichaConceito = async (militarId: string) => {
   return data;
 };
 
-// Faltas de Aproveitamento - Handle as mock data since the table doesn't exist yet
+// Faltas de Aproveitamento
 export const addFaltaAproveitamento = async (falta: { militar_id: string, descricao: string, pontos: number }) => {
   // Since the database table doesn't exist, we'll handle this differently
   // This is a placeholder until you create the actual table
@@ -190,4 +271,61 @@ export const getFaltasAproveitamento = async (militarId: string) => {
   // This is a placeholder until you create the actual table
   console.log("Getting faltas aproveitamento for militar:", militarId);
   return [];
+};
+
+// Function to import all data from PDF extraction
+export const importDataFromPDFExtraction = async (militarId: string, extractedData: {
+  cursosMilitares?: Omit<CursoMilitar, "id" | "militarId">[],
+  cursosCivis?: Omit<CursoCivil, "id" | "militarId">[],
+  condecoracoes?: Omit<Condecoracao, "id" | "militarId">[],
+  elogios?: Omit<Elogio, "id" | "militarId">[],
+  punicoes?: Omit<Punicao, "id" | "militarId">[]
+}) => {
+  try {
+    // Prepare data with militarId
+    const cursosMilitares = (extractedData.cursosMilitares || []).map(curso => ({
+      ...curso,
+      militarId
+    }));
+    
+    const cursosCivis = (extractedData.cursosCivis || []).map(curso => ({
+      ...curso,
+      militarId
+    }));
+    
+    const condecoracoes = (extractedData.condecoracoes || []).map(cond => ({
+      ...cond,
+      militarId
+    }));
+    
+    const elogios = (extractedData.elogios || []).map(elogio => ({
+      ...elogio,
+      militarId
+    }));
+    
+    const punicoes = (extractedData.punicoes || []).map(punicao => ({
+      ...punicao,
+      militarId
+    }));
+    
+    // Execute all imports in parallel
+    const results = await Promise.all([
+      cursosMilitares.length ? addCursosMilitaresBulk(cursosMilitares) : Promise.resolve([]),
+      cursosCivis.length ? addCursosCivisBulk(cursosCivis) : Promise.resolve([]),
+      condecoracoes.length ? addCondecoracoesBulk(condecoracoes) : Promise.resolve([]),
+      elogios.length ? addElogiosBulk(elogios) : Promise.resolve([]),
+      punicoes.length ? addPunicoesBulk(punicoes) : Promise.resolve([])
+    ]);
+    
+    return {
+      cursosMilitares: results[0],
+      cursosCivis: results[1],
+      condecoracoes: results[2],
+      elogios: results[3],
+      punicoes: results[4]
+    };
+  } catch (error) {
+    console.error("Erro ao importar dados do PDF:", error);
+    throw error;
+  }
 };

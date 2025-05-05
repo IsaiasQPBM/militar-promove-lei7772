@@ -23,7 +23,8 @@ const FichaMilitar = () => {
     totalPontos, 
     loading,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    refreshData,
   } = useFichaMilitar(id);
   
   if (loading) {
@@ -97,6 +98,7 @@ const FichaMilitar = () => {
                   condecoracoes={condecoracoes}
                   elogios={elogios}
                   punicoes={punicoes}
+                  onDataImported={refreshData}
                 />
               </TabsContent>
             )}

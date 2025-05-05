@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,10 +33,10 @@ export const TabelaFichaConceitoOficial = ({
     subcategory: string, 
     value: number
   ) => {
-    const newPontuacao = { ...pontuacao };
+    const newPontuacao = JSON.parse(JSON.stringify(pontuacao)) as PontuacaoLei5461;
     
     // @ts-ignore - Dynamic access
-    if (newPontuacao[category] && newPontuacao[category][subcategory]) {
+    if (newPontuacao[category] && newPontuacao[category][subcategory] !== undefined) {
       // @ts-ignore - Dynamic access
       newPontuacao[category][subcategory].quantidade = value;
       
@@ -126,14 +125,6 @@ export const TabelaFichaConceitoOficial = ({
     }
   };
   
-  const maxValues = {
-    tempoServicoQuadro: 5,
-    cursosMilitares: 5,
-    cursosCivis: 10,
-    condecoracoes: 1,
-    elogios: 0.25
-  };
-  
   const getRowClassName = (category: string) => {
     return category === "punicoes" || category === "faltaAproveitamentoCursos" 
       ? "bg-red-50" 
@@ -210,7 +201,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "tempoServicoQuadro", 
                       "quantidade",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -244,7 +235,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "especializacao",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -271,7 +262,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "csbm",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -295,7 +286,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "cfsd",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -319,7 +310,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "chc",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -343,7 +334,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "chsgt",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -367,7 +358,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "cas",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -391,7 +382,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "cho",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -415,7 +406,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "cfo",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -439,7 +430,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "cao",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -463,7 +454,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosMilitares",
                       "csbm2",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -507,7 +498,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosCivis",
                       "superior",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -532,7 +523,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosCivis",
                       "especializacao",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -556,7 +547,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosCivis",
                       "mestrado",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -580,7 +571,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "cursosCivis",
                       "doutorado",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -609,7 +600,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "condecoracoes",
                       "governoFederal",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -636,7 +627,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "condecoracoes",
                       "governoEstadual",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -660,7 +651,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "condecoracoes",
                       "cbmepi",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -689,7 +680,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "elogios",
                       "individual",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -716,7 +707,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "elogios",
                       "coletivo",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -745,7 +736,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "punicoes",
                       "repreensao",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -770,7 +761,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "punicoes",
                       "detencao",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -794,7 +785,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "punicoes",
                       "prisao",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />
@@ -822,7 +813,7 @@ export const TabelaFichaConceitoOficial = ({
                     onChange={(e) => handleQuantidadeChange(
                       "faltaAproveitamentoCursos",
                       "quantidade",
-                      parseFloat(e.target.value) || 0
+                      parseInt(e.target.value) || 0
                     )}
                     className="h-10 text-center border-0"
                   />

@@ -194,6 +194,34 @@ const useFichaMilitar = (id: string | undefined) => {
     }
   }, [id]);
 
+  // Função para atualizar os dados
+  const refreshData = useCallback(async () => {
+    if (!id) return;
+    
+    try {
+      // Apenas recarregar os dados relacionados, não o militar principal
+      await Promise.all([
+        buscarCursosMilitares(id),
+        buscarCursosCivis(id),
+        buscarCondecoracoes(id),
+        buscarElogios(id),
+        buscarPunicoes(id)
+      ]);
+      
+      toast({
+        title: "Dados atualizados",
+        description: "Os dados da ficha foram atualizados com sucesso."
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar dados:", error);
+      toast({
+        title: "Erro ao atualizar dados",
+        description: "Não foi possível atualizar os dados do militar.",
+        variant: "destructive"
+      });
+    }
+  }, [id]);
+
   // Inicialização - carrega dados apenas uma vez
   useEffect(() => {
     buscarDadosMilitar();
@@ -214,7 +242,8 @@ const useFichaMilitar = (id: string | undefined) => {
     totalPontos,
     loading,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    refreshData
   };
 };
 
