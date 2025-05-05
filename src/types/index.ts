@@ -134,10 +134,13 @@ export type TipoSanguineo = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "
 // Define Sexo to include both code values and display values
 export type Sexo = "M" | "F" | "Masculino" | "Feminino";
 
+// Add the SexoDisplay type that was missing
+export type SexoDisplay = "Masculino" | "Feminino";
+
 // Updated Militar interface to better handle the relationship between nome and nomeCompleto
 export interface Militar {
   id: string;
-  nome?: string; // Making this optional since nomeCompleto is used in its place
+  nome: string; // This is required to match database schema
   nomeCompleto: string; // Required - this is the main name field used in UI
   nomeGuerra: string;
   posto: PostoPatente;
