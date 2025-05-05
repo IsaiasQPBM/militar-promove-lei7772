@@ -10,7 +10,9 @@ import {
   TrendingUp,
   Upload,
   UserPlus,
-  Settings
+  Settings,
+  Import,
+  User
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarLink } from "./SidebarLink";
@@ -55,30 +57,6 @@ export function Sidebar() {
           >
             QORR - Reserva Remunerada
           </SidebarLink>
-          
-          <SidebarLink 
-            to="/fixacao-vagas" 
-            active={isActive("/fixacao-vagas")}
-            icon={<FileText className="h-5 w-5" />}
-          >
-            QFV - Fixação de Vagas
-          </SidebarLink>
-          
-          <SidebarLink 
-            to="/antiguidade" 
-            active={isActive("/antiguidade")}
-            icon={<Clock className="h-5 w-5" />}
-          >
-            QAA - Antiguidade
-          </SidebarLink>
-          
-          <SidebarLink 
-            to="/merecimento" 
-            active={isActive("/merecimento")}
-            icon={<Award className="h-5 w-5" />}
-          >
-            QFM - Merecimento
-          </SidebarLink>
         </SidebarSection>
         
         <SidebarSection title="PRAÇAS">
@@ -101,7 +79,9 @@ export function Sidebar() {
           >
             QPRR - Reserva Remunerada
           </SidebarLink>
-          
+        </SidebarSection>
+        
+        <SidebarSection title="QUADROS">
           <SidebarLink 
             to="/fixacao-vagas" 
             active={isActive("/fixacao-vagas")}
@@ -131,7 +111,7 @@ export function Sidebar() {
           <SidebarLink 
             to="/gestao-promocoes" 
             active={isActive("/gestao-promocoes")}
-            icon={<Settings className="h-5 w-5" />}
+            icon={<Award className="h-5 w-5" />}
           >
             Gestão de Promoções
           </SidebarLink>
@@ -159,7 +139,7 @@ export function Sidebar() {
           <SidebarLink 
             to="/importar-militares" 
             active={isActive("/importar-militares")}
-            icon={<Upload className="h-5 w-5" />}
+            icon={<Import className="h-5 w-5" />}
           >
             Importar Militares
           </SidebarLink>

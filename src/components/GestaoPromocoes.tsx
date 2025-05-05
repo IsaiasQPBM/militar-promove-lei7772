@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Award } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { Militar } from "@/types";
+import { Militar, CriterioPromocao } from "@/types";
 import { calcularPrevisaoIndividual, PrevisaoPromocao } from "@/utils/promocaoUtils";
 import TabelaPromocoes from "./TabelaPromocoes";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,14 +32,22 @@ const GestaoPromocoes: React.FC = () => {
         if (error) throw error;
         
         if (militaresData && militaresData.length > 0) {
-          const militaresFormatados = militaresData.map(m => ({
-            ...m,
+          const militaresFormatados: Militar[] = militaresData.map(m => ({
             id: m.id,
             nome: m.nome,
+            nomeGuerra: m.nomeguerra || m.nome,
+            nomeCompleto: m.nome,
             posto: m.posto,
             quadro: m.quadro,
             dataUltimaPromocao: m.dataultimapromocao,
-            situacao: m.situacao
+            dataInclusao: m.data_ingresso,
+            dataNascimento: m.datanascimento,
+            tipoSanguineo: m.tipo_sanguineo || "Não informado",
+            situacao: m.situacao,
+            email: m.email,
+            foto: m.foto,
+            sexo: m.sexo,
+            unidade: m.unidade
           }));
           
           setMilitares(militaresFormatados);
@@ -86,7 +94,7 @@ const GestaoPromocoes: React.FC = () => {
       // Criar registro de promoção no banco de dados
       await createPromocao({
         militarId: previsao.militarId,
-        criterio: previsao.criterio,
+        criterio: previsao.criterio as CriterioPromocao,
         dataPromocao: new Date().toISOString()
       });
       

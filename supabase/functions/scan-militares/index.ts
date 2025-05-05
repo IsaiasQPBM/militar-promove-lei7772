@@ -7,6 +7,69 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Define a document model/format for military personnel data
+const modelDocumentStructure = {
+  pessoal: {
+    nome: "Nome Completo do Militar",
+    nomeGuerra: "Nome de Guerra",
+    matricula: "Matrícula",
+    posto: "Posto ou Graduação",
+    quadro: "Código do Quadro (QOEM, QOE, QORR, QPBM, QPRR)",
+    dataNascimento: "AAAA-MM-DD",
+    dataIngresso: "AAAA-MM-DD",
+    dataUltimaPromocao: "AAAA-MM-DD",
+    situacao: "ativo ou inativo",
+    tipoSanguineo: "A+, A-, B+, B-, AB+, AB-, O+, O-",
+    sexo: "M ou F",
+    unidade: "Unidade de Lotação",
+    email: "email@exemplo.com",
+  },
+  formacao: {
+    cursosMilitares: [
+      {
+        nome: "Nome do Curso",
+        tipo: "Especialização, CSBM, CFSD, etc",
+        instituicao: "Nome da Instituição",
+        cargaHoraria: "Carga horária em horas",
+        pontos: "Pontuação do curso"
+      }
+    ],
+    cursosCivis: [
+      {
+        nome: "Nome do Curso",
+        tipo: "Superior, Especialização, Mestrado, Doutorado",
+        instituicao: "Nome da Instituição",
+        cargaHoraria: "Carga horária em horas",
+        pontos: "Pontuação do curso"
+      }
+    ],
+    condecoracoes: [
+      {
+        tipo: "Governo Federal, Governo Estadual, CBMEPI",
+        descricao: "Descrição da condecoração",
+        dataRecebimento: "AAAA-MM-DD",
+        pontos: "Pontuação da condecoração"
+      }
+    ],
+    elogios: [
+      {
+        tipo: "Individual, Coletivo",
+        descricao: "Descrição do elogio",
+        dataRecebimento: "AAAA-MM-DD",
+        pontos: "Pontuação do elogio"
+      }
+    ],
+    punicoes: [
+      {
+        tipo: "Repreensão, Detenção, Prisão",
+        descricao: "Descrição da punição",
+        dataRecebimento: "AAAA-MM-DD",
+        pontos: "Pontuação negativa da punição"
+      }
+    ]
+  }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -21,6 +84,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: "URL do arquivo é obrigatória",
+          modelDocument: modelDocumentStructure // Return the model structure for reference
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -91,7 +155,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: "Arquivo processado com sucesso", 
-        processedData 
+        processedData,
+        modelDocument: modelDocumentStructure // Include the model structure in the response
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -102,7 +167,10 @@ serve(async (req) => {
     console.error("Erro ao processar arquivo:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        modelDocument: modelDocumentStructure // Include the model structure even in error responses
+      }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,

@@ -7,6 +7,94 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Define a document model/format for importing data to military files
+const modelDocumentStructure = {
+  pessoal: {
+    nome: "Nome Completo do Militar",
+    nomeGuerra: "Nome de Guerra",
+    matricula: "Matrícula",
+    posto: "Posto ou Graduação",
+    quadro: "Código do Quadro (QOEM, QOE, QORR, QPBM, QPRR)",
+    dataNascimento: "AAAA-MM-DD",
+    tipoSanguineo: "A+, A-, B+, B-, AB+, AB-, O+, O-",
+    sexo: "M ou F",
+  },
+  formacao: {
+    cursosMilitares: [
+      {
+        nome: "Nome do Curso",
+        tipo: "Especialização, CSBM, CFSD, etc",
+        instituicao: "Nome da Instituição",
+        cargaHoraria: "Carga horária em horas"
+      }
+    ],
+    cursosCivis: [
+      {
+        nome: "Nome do Curso",
+        tipo: "Superior, Especialização, Mestrado, Doutorado",
+        instituicao: "Nome da Instituição",
+        cargaHoraria: "Carga horária em horas"
+      }
+    ],
+    condecoracoes: [
+      {
+        tipo: "Governo Federal, Governo Estadual, CBMEPI",
+        descricao: "Descrição da condecoração",
+        dataRecebimento: "AAAA-MM-DD"
+      }
+    ],
+    elogios: [
+      {
+        tipo: "Individual, Coletivo",
+        descricao: "Descrição do elogio",
+        dataRecebimento: "AAAA-MM-DD"
+      }
+    ],
+    punicoes: [
+      {
+        tipo: "Repreensão, Detenção, Prisão",
+        descricao: "Descrição da punição",
+        dataRecebimento: "AAAA-MM-DD"
+      }
+    ],
+    fichaConceitoLei5461: {
+      tempoServicoQuadro: "Tempo (em anos) no posto atual",
+      cursosMilitares: {
+        especializacao: "Quantidade",
+        csbm: "Quantidade",
+        cfsd: "Quantidade",
+        chc: "Quantidade",
+        chsgt: "Quantidade",
+        cas: "Quantidade",
+        cho: "Quantidade",
+        cfo: "Quantidade",
+        cao: "Quantidade"
+      },
+      cursosCivis: {
+        superior: "Quantidade",
+        especializacao: "Quantidade",
+        mestrado: "Quantidade",
+        doutorado: "Quantidade"
+      },
+      condecoracoes: {
+        governoFederal: "Quantidade",
+        governoEstadual: "Quantidade",
+        cbmepi: "Quantidade"
+      },
+      elogios: {
+        individual: "Quantidade",
+        coletivo: "Quantidade"
+      },
+      punicoes: {
+        repreensao: "Quantidade",
+        detencao: "Quantidade",
+        prisao: "Quantidade"
+      },
+      faltaAproveitamentoCursos: "Quantidade"
+    }
+  }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -14,13 +102,14 @@ serve(async (req) => {
   }
 
   try {
-    // Get the request body
+    // Get request data
     const { fileUrl, militarId } = await req.json();
     
-    if (!fileUrl || !militarId) {
+    if (!fileUrl) {
       return new Response(
         JSON.stringify({
-          error: "Faltam dados necessários: fileUrl e militarId são obrigatórios",
+          error: "URL do arquivo é obrigatória",
+          modelDocument: modelDocumentStructure
         }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -38,67 +127,60 @@ serve(async (req) => {
     const fileData = await fetch(fileUrl).then((res) => res.arrayBuffer());
     console.log("Arquivo baixado, tamanho:", fileData.byteLength);
     
-    // Here we would process the PDF file with a PDF parsing library
-    // For now, we'll simulate extracting data based on the file content
+    // In a real implementation, we would process the PDF here
+    // For now, we'll simulate extraction with mock data
     
-    // Melhorado para detectar um conjunto mais amplo de dados
     const extractedData = {
       cursosMilitares: [
         {
-          nome: "Curso de Formação de Oficiais",
-          tipo: "Formação",
-          instituicao: "Academia Militar",
-          cargaHoraria: 3600,
-          pontos: 5.0,
-          dataRecebimento: "2020-06-15"
-        },
-        {
-          nome: "Curso de Aperfeiçoamento de Oficiais",
-          tipo: "Aperfeiçoamento",
-          instituicao: "Escola de Comando",
-          cargaHoraria: 1200,
-          pontos: 3.0,
-          dataRecebimento: "2022-04-20"
+          nome: "Curso de Especialização em Combate a Incêndio",
+          tipo: "Especialização",
+          instituicao: "CBMEPI",
+          cargaHoraria: 120,
+          pontos: 2
         }
       ],
       cursosCivis: [
         {
-          nome: "Especialização em Gestão Pública",
-          tipo: "Especialização",
-          instituicao: "Universidade Federal",
-          cargaHoraria: 360,
-          pontos: 2.5,
-          dataRecebimento: "2021-12-10"
+          nome: "Administração Pública",
+          tipo: "Superior",
+          instituicao: "UFPI",
+          cargaHoraria: 3600,
+          pontos: 1.5
         }
       ],
       condecoracoes: [
         {
-          tipo: "Mérito Pessoal",
-          descricao: "Medalha por Serviços Relevantes",
-          pontos: 1.5,
-          dataRecebimento: "2023-02-15"
+          tipo: "CBMEPI",
+          descricao: "Medalha por Tempo de Serviço",
+          dataRecebimento: "2022-05-15",
+          pontos: 0.2
         }
       ],
       elogios: [
         {
           tipo: "Individual",
-          descricao: "Elogio por bravura em salvamento",
-          pontos: 1.0,
-          dataRecebimento: "2023-05-10"
+          descricao: "Desempenho exemplar durante operação de resgate",
+          dataRecebimento: "2023-01-10",
+          pontos: 0.15
         }
       ],
-      punicoes: []
+      fichaConceitoLei5461: {
+        tempoServicoQuadro: 3,
+        cursosMilitares: {
+          especializacao: 2,
+          csbm: 1
+        },
+        pontosTotal: 8.5
+      }
     };
-
-    // Here you would insert the extracted data into the database
-    // For each course, condecoration, etc. in extractedData
-    console.log("Processando dados extraídos para o militar ID:", militarId);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "PDF processado com sucesso", 
-        extractedData 
+        message: "Arquivo processado com sucesso", 
+        extractedData,
+        modelDocument: modelDocumentStructure
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -106,10 +188,13 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Erro ao processar PDF:", error);
+    console.error("Erro ao processar arquivo:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        modelDocument: modelDocumentStructure
+      }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
