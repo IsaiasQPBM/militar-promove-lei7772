@@ -8,11 +8,10 @@ import {
 } from "@/components/ui/card";
 import { Award } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { Militar, CriterioPromocao, PostoPatente, QuadroMilitar } from "@/types";
+import { Militar } from "@/types";
 import { calcularPrevisaoIndividual, PrevisaoPromocao } from "@/utils/promocaoUtils";
 import TabelaPromocoes from "./TabelaPromocoes";
 import { supabase } from "@/integrations/supabase/client";
-import { createPromocao } from "@/services/promocaoService";
 import { toPostoPatente, toQuadroMilitar, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 
 const GestaoPromocoes: React.FC = () => {
@@ -88,67 +87,12 @@ const GestaoPromocoes: React.FC = () => {
     setPrevisoes(previsoes);
   };
   
-  const handlePromover = async (previsao: PrevisaoPromocao) => {
-    if (!previsao.proximoPosto) return;
-    
-    try {
-      // Criar registro de promoção no banco de dados
-      await createPromocao({
-        militarId: previsao.militarId,
-        criterio: previsao.criterio as CriterioPromocao,
-        dataPromocao: new Date().toISOString()
-      });
-      
-      // Atualizar o militar no banco de dados
-      const { error } = await supabase
-        .from("militares")
-        .update({
-          posto: previsao.proximoPosto,
-          dataultimapromocao: new Date().toISOString()
-        })
-        .eq("id", previsao.militarId);
-      
-      if (error) throw error;
-      
-      // Atualizar o estado local
-      setMilitares(prevMilitares => {
-        const newMilitares = prevMilitares.map(militar => {
-          if (militar.id === previsao.militarId && previsao.proximoPosto) {
-            return {
-              ...militar,
-              posto: previsao.proximoPosto as PostoPatente,
-              dataUltimaPromocao: new Date().toISOString()
-            };
-          }
-          return militar;
-        });
-        
-        // Recalcular promoções com dados atualizados
-        calcularPrevisaoPromocoes(newMilitares);
-        return newMilitares;
-      });
-      
-      toast({
-        title: "Promoção realizada",
-        description: `${previsao.nome} foi promovido para ${previsao.proximoPosto}!`,
-        duration: 5000,
-      });
-    } catch (error) {
-      console.error("Erro ao promover militar:", error);
-      toast({
-        title: "Erro na promoção",
-        description: "Não foi possível realizar a promoção. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-  
   return (
     <Card>
       <CardHeader className="bg-cbmepi-purple text-white">
         <CardTitle className="flex items-center gap-2">
           <Award className="h-5 w-5" />
-          Gestão de Promoções
+          Análise de Elegibilidade para Promoções
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
@@ -159,7 +103,6 @@ const GestaoPromocoes: React.FC = () => {
         ) : (
           <TabelaPromocoes 
             previsoes={previsoes} 
-            onPromover={handlePromover}
           />
         )}
       </CardContent>
