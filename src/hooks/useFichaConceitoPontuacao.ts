@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, PontuacaoLei5461 } from "@/types";
+import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, PontuacaoLei5461, PontuacaoItemType } from "@/types";
 
 interface UseFichaConceitoPontuacaoProps {
   cursosMilitares: CursoMilitar[];
@@ -87,10 +87,10 @@ export const useFichaConceitoPontuacao = ({
       
       // Atualizar quantidade de cursos militares
       Object.keys(tiposCursosMilitares).forEach(tipo => {
-        if (novaPontuacao.cursosMilitares[tipo]) {
-          novaPontuacao.cursosMilitares[tipo].quantidade = tiposCursosMilitares[tipo];
-          novaPontuacao.cursosMilitares[tipo].pontosPositivos = 
-            tiposCursosMilitares[tipo] * novaPontuacao.cursosMilitares[tipo].valor;
+        if (novaPontuacao.cursosMilitares[tipo as keyof typeof novaPontuacao.cursosMilitares]) {
+          const item = novaPontuacao.cursosMilitares[tipo as keyof typeof novaPontuacao.cursosMilitares];
+          item.quantidade = tiposCursosMilitares[tipo as keyof typeof tiposCursosMilitares];
+          item.pontosPositivos = item.quantidade * item.valor;
         }
       });
       
@@ -105,10 +105,10 @@ export const useFichaConceitoPontuacao = ({
       
       // Atualizar quantidade de cursos civis
       Object.keys(tiposCursosCivis).forEach(tipo => {
-        if (novaPontuacao.cursosCivis[tipo]) {
-          novaPontuacao.cursosCivis[tipo].quantidade = tiposCursosCivis[tipo];
-          novaPontuacao.cursosCivis[tipo].pontosPositivos = 
-            tiposCursosCivis[tipo] * novaPontuacao.cursosCivis[tipo].valor;
+        if (novaPontuacao.cursosCivis[tipo as keyof typeof novaPontuacao.cursosCivis]) {
+          const item = novaPontuacao.cursosCivis[tipo as keyof typeof novaPontuacao.cursosCivis];
+          item.quantidade = tiposCursosCivis[tipo as keyof typeof tiposCursosCivis];
+          item.pontosPositivos = item.quantidade * item.valor;
         }
       });
       
@@ -129,10 +129,10 @@ export const useFichaConceitoPontuacao = ({
       
       // Atualizar quantidade de condecorações
       Object.keys(tiposCondecoracoes).forEach(tipo => {
-        if (novaPontuacao.condecoracoes[tipo]) {
-          novaPontuacao.condecoracoes[tipo].quantidade = tiposCondecoracoes[tipo];
-          novaPontuacao.condecoracoes[tipo].pontosPositivos = 
-            tiposCondecoracoes[tipo] * novaPontuacao.condecoracoes[tipo].valor;
+        if (novaPontuacao.condecoracoes[tipo as keyof typeof novaPontuacao.condecoracoes]) {
+          const item = novaPontuacao.condecoracoes[tipo as keyof typeof novaPontuacao.condecoracoes];
+          item.quantidade = tiposCondecoracoes[tipo as keyof typeof tiposCondecoracoes];
+          item.pontosPositivos = item.quantidade * item.valor;
         }
       });
       
@@ -145,10 +145,10 @@ export const useFichaConceitoPontuacao = ({
       
       // Atualizar quantidade de elogios
       Object.keys(tiposElogios).forEach(tipo => {
-        if (novaPontuacao.elogios[tipo]) {
-          novaPontuacao.elogios[tipo].quantidade = tiposElogios[tipo];
-          novaPontuacao.elogios[tipo].pontosPositivos = 
-            tiposElogios[tipo] * novaPontuacao.elogios[tipo].valor;
+        if (novaPontuacao.elogios[tipo as keyof typeof novaPontuacao.elogios]) {
+          const item = novaPontuacao.elogios[tipo as keyof typeof novaPontuacao.elogios];
+          item.quantidade = tiposElogios[tipo as keyof typeof tiposElogios];
+          item.pontosPositivos = item.quantidade * item.valor;
         }
       });
       
@@ -162,10 +162,10 @@ export const useFichaConceitoPontuacao = ({
       
       // Atualizar quantidade de punições
       Object.keys(tiposPunicoes).forEach(tipo => {
-        if (novaPontuacao.punicoes[tipo]) {
-          novaPontuacao.punicoes[tipo].quantidade = tiposPunicoes[tipo];
-          novaPontuacao.punicoes[tipo].pontosNegativos = 
-            tiposPunicoes[tipo] * novaPontuacao.punicoes[tipo].valor;
+        if (novaPontuacao.punicoes[tipo as keyof typeof novaPontuacao.punicoes]) {
+          const item = novaPontuacao.punicoes[tipo as keyof typeof novaPontuacao.punicoes];
+          item.quantidade = tiposPunicoes[tipo as keyof typeof tiposPunicoes];
+          item.pontosNegativos = item.quantidade * item.valor;
         }
       });
       
@@ -202,10 +202,10 @@ export const useFichaConceitoPontuacao = ({
       
       // Punições
       somaNegativos += Object.values(novaPontuacao.punicoes)
-        .reduce((sum, item) => sum + item.pontosNegativos, 0);
+        .reduce((sum, item) => sum + (item.pontosNegativos || 0), 0);
       
       // Falta de aproveitamento
-      somaNegativos += novaPontuacao.faltaAproveitamentoCursos.pontosNegativos;
+      somaNegativos += novaPontuacao.faltaAproveitamentoCursos.pontosNegativos || 0;
       
       // Atualizar soma total
       novaPontuacao.somaTotal = somaPositivos - somaNegativos;

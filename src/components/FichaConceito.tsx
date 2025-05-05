@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { 
   Card, 
@@ -46,7 +47,7 @@ interface FichaConceitoProps {
 const cursoMilitarSchema = z.object({
   nome: z.string().min(2, "Nome do curso é obrigatório"),
   instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
-  cargaHoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
+  cargahoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
 });
 
@@ -54,7 +55,7 @@ const cursoMilitarSchema = z.object({
 const cursoCivilSchema = z.object({
   nome: z.string().min(2, "Nome do curso é obrigatório"),
   instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
-  cargaHoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
+  cargahoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
 });
 
@@ -62,7 +63,7 @@ const cursoCivilSchema = z.object({
 const condecoracaoSchema = z.object({
   tipo: z.string().min(2, "Tipo de condecoração é obrigatório"),
   descricao: z.string().min(2, "Descrição é obrigatória"),
-  dataRecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
+  datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
     message: "Data inválida. Use o formato DD/MM/AAAA"
   }),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
@@ -72,7 +73,7 @@ const condecoracaoSchema = z.object({
 const elogioSchema = z.object({
   tipo: z.enum(["Individual", "Coletivo"]),
   descricao: z.string().min(2, "Descrição é obrigatória"),
-  dataRecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
+  datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
     message: "Data inválida. Use o formato DD/MM/AAAA"
   }),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
@@ -82,7 +83,7 @@ const elogioSchema = z.object({
 const punicaoSchema = z.object({
   tipo: z.enum(["Repreensão", "Detenção", "Prisão"]),
   descricao: z.string().min(2, "Descrição é obrigatória"),
-  dataRecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
+  datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
     message: "Data inválida. Use o formato DD/MM/AAAA"
   }),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
@@ -107,7 +108,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
     defaultValues: {
       nome: "",
       instituicao: "",
-      cargaHoraria: 0,
+      cargahoraria: 0,
       pontos: 0
     }
   });
@@ -118,7 +119,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
     defaultValues: {
       nome: "",
       instituicao: "",
-      cargaHoraria: 0,
+      cargahoraria: 0,
       pontos: 0
     }
   });
@@ -129,7 +130,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
     defaultValues: {
       tipo: "",
       descricao: "",
-      dataRecebimento: "",
+      datarecebimento: "",
       pontos: 0
     }
   });
@@ -140,7 +141,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
     defaultValues: {
       tipo: "Individual",
       descricao: "",
-      dataRecebimento: "",
+      datarecebimento: "",
       pontos: 0
     }
   });
@@ -151,7 +152,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
     defaultValues: {
       tipo: "Repreensão",
       descricao: "",
-      dataRecebimento: "",
+      datarecebimento: "",
       pontos: 0
     }
   });
@@ -162,13 +163,12 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
       // Create a new curso militar object with required properties
       const novoCurso: CursoMilitar = {
         id: Date.now().toString(),
-        militarId,
+        militar_id: militarId,
         nome: data.nome,
         tipo: "Outro", // Default to "Outro" as a valid CursoMilitarTipo
         instituicao: data.instituicao,
-        cargaHoraria: data.cargaHoraria,
-        pontos: data.pontos,
-        anexo: null
+        cargahoraria: data.cargahoraria,
+        pontos: data.pontos
       };
       
       // Atualizar a lista
@@ -194,13 +194,12 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
       // Create a new curso civil object with required properties
       const novoCurso: CursoCivil = {
         id: Date.now().toString(),
-        militarId,
+        militar_id: militarId,
         nome: data.nome,
         tipo: "Superior", // Default to "Superior" as a valid CursoCivilTipo
         instituicao: data.instituicao,
-        cargaHoraria: data.cargaHoraria,
-        pontos: data.pontos,
-        anexo: null
+        cargahoraria: data.cargahoraria,
+        pontos: data.pontos
       };
       
       // Atualizar a lista
@@ -227,12 +226,11 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
       // Cast the tipo to a valid CondecoracaoTipo
       const novaCondecoracao: Condecoracao = {
         id: Date.now().toString(),
-        militarId,
+        militar_id: militarId,
         tipo: data.tipo as Condecoracao["tipo"], // Cast to the appropriate type
         descricao: data.descricao,
-        dataRecebimento: data.dataRecebimento,
-        pontos: data.pontos,
-        anexo: null
+        datarecebimento: data.datarecebimento,
+        pontos: data.pontos
       };
       
       // Atualizar a lista
@@ -258,12 +256,11 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
       // Create a new elogio object with required properties
       const novoElogio: Elogio = {
         id: Date.now().toString(),
-        militarId,
+        militar_id: militarId,
         tipo: data.tipo,
         descricao: data.descricao,
-        dataRecebimento: data.dataRecebimento,
-        pontos: data.pontos,
-        anexo: null
+        datarecebimento: data.datarecebimento,
+        pontos: data.pontos
       };
       
       // Atualizar a lista
@@ -289,12 +286,11 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
       // Create a new punicao object with required properties
       const novaPunicao: Punicao = {
         id: Date.now().toString(),
-        militarId,
+        militar_id: militarId,
         tipo: data.tipo,
         descricao: data.descricao,
-        dataRecebimento: data.dataRecebimento,
-        pontos: data.pontos,
-        anexo: null
+        datarecebimento: data.datarecebimento,
+        pontos: data.pontos
       };
       
       // Atualizar a lista
@@ -364,7 +360,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={formCursoMilitar.control}
-                      name="cargaHoraria"
+                      name="cargahoraria"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Carga Horária (h)</FormLabel>
@@ -416,7 +412,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                   <div className="font-medium">{curso.nome}</div>
                   <div className="text-sm text-gray-600">{curso.instituicao}</div>
                   <div className="flex justify-between mt-1 text-sm">
-                    <span>Carga Horária: {curso.cargaHoraria}h</span>
+                    <span>Carga Horária: {curso.cargahoraria}h</span>
                     <span>Pontos: {curso.pontos}</span>
                   </div>
                 </div>
@@ -473,7 +469,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={formCursoCivil.control}
-                      name="cargaHoraria"
+                      name="cargahoraria"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Carga Horária (h)</FormLabel>
@@ -525,7 +521,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                   <div className="font-medium">{curso.nome}</div>
                   <div className="text-sm text-gray-600">{curso.instituicao}</div>
                   <div className="flex justify-between mt-1 text-sm">
-                    <span>Carga Horária: {curso.cargaHoraria}h</span>
+                    <span>Carga Horária: {curso.cargahoraria}h</span>
                     <span>Pontos: {curso.pontos}</span>
                   </div>
                 </div>
@@ -583,7 +579,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={formCondecoracao.control}
-                        name="dataRecebimento"
+                        name="datarecebimento"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Data de Recebimento</FormLabel>
@@ -676,7 +672,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={formElogio.control}
-                        name="dataRecebimento"
+                        name="datarecebimento"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Data de Recebimento</FormLabel>
@@ -733,7 +729,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                         <div className="font-medium">{cond.tipo}</div>
                         <div className="text-sm">{cond.descricao}</div>
                         <div className="flex justify-between mt-1 text-sm">
-                          <span>Data: {cond.dataRecebimento}</span>
+                          <span>Data: {cond.datarecebimento}</span>
                           <span>Pontos: {cond.pontos}</span>
                         </div>
                       </div>
@@ -751,7 +747,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                         <div className="font-medium">Elogio {elogio.tipo}</div>
                         <div className="text-sm">{elogio.descricao}</div>
                         <div className="flex justify-between mt-1 text-sm">
-                          <span>Data: {elogio.dataRecebimento}</span>
+                          <span>Data: {elogio.datarecebimento}</span>
                           <span>Pontos: {elogio.pontos}</span>
                         </div>
                       </div>
@@ -820,7 +816,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={formPunicao.control}
-                      name="dataRecebimento"
+                      name="datarecebimento"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Data de Recebimento</FormLabel>
@@ -872,7 +868,7 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
                   <div className="font-medium">Punição: {punicao.tipo}</div>
                   <div className="text-sm">{punicao.descricao}</div>
                   <div className="flex justify-between mt-1 text-sm">
-                    <span>Data: {punicao.dataRecebimento}</span>
+                    <span>Data: {punicao.datarecebimento}</span>
                     <span>Pontos: {punicao.pontos}</span>
                   </div>
                 </div>

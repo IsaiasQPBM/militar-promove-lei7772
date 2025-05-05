@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Award } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { Militar, CriterioPromocao } from "@/types";
+import { Militar, CriterioPromocao, PostoPatente, QuadroMilitar } from "@/types";
 import { calcularPrevisaoIndividual, PrevisaoPromocao } from "@/utils/promocaoUtils";
 import TabelaPromocoes from "./TabelaPromocoes";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,19 +34,19 @@ const GestaoPromocoes: React.FC = () => {
         if (militaresData && militaresData.length > 0) {
           const militaresFormatados: Militar[] = militaresData.map(m => ({
             id: m.id,
-            nome: m.nome,
+            nome: m.nome || "",
             nomeGuerra: m.nomeguerra || m.nome,
             nomeCompleto: m.nome,
-            posto: m.posto,
-            quadro: m.quadro,
-            dataUltimaPromocao: m.dataultimapromocao,
-            dataInclusao: m.data_ingresso,
-            dataNascimento: m.datanascimento,
-            tipoSanguineo: m.tipo_sanguineo || "Não informado",
-            situacao: m.situacao,
-            email: m.email,
+            posto: m.posto as PostoPatente,
+            quadro: m.quadro as QuadroMilitar,
+            dataUltimaPromocao: m.dataultimapromocao || "",
+            dataInclusao: m.data_ingresso || "",
+            dataNascimento: m.datanascimento || "",
+            tipoSanguineo: m.tipo_sanguineo || "O+",
+            situacao: "ativo",
+            email: m.email || "",
             foto: m.foto,
-            sexo: m.sexo,
+            sexo: m.sexo === "Masculino" ? "M" : "F",
             unidade: m.unidade
           }));
           
@@ -115,7 +115,7 @@ const GestaoPromocoes: React.FC = () => {
           if (militar.id === previsao.militarId && previsao.proximoPosto) {
             return {
               ...militar,
-              posto: previsao.proximoPosto,
+              posto: previsao.proximoPosto as PostoPatente,
               dataUltimaPromocao: new Date().toISOString()
             };
           }

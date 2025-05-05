@@ -38,7 +38,7 @@ export const DadosFormacao = ({
                   <tr key={curso.id} className="border-b hover:bg-gray-50">
                     <td className="p-2">{curso.nome}</td>
                     <td className="p-2">{curso.instituicao}</td>
-                    <td className="p-2">{curso.cargaHoraria}h</td>
+                    <td className="p-2">{curso.cargahoraria}h</td>
                     <td className="p-2 font-bold">{curso.pontos}</td>
                   </tr>
                 ))}
@@ -73,7 +73,7 @@ export const DadosFormacao = ({
                   <tr key={curso.id} className="border-b hover:bg-gray-50">
                     <td className="p-2">{curso.nome}</td>
                     <td className="p-2">{curso.instituicao}</td>
-                    <td className="p-2">{curso.cargaHoraria}h</td>
+                    <td className="p-2">{curso.cargahoraria}h</td>
                     <td className="p-2 font-bold">{curso.pontos}</td>
                   </tr>
                 ))}
@@ -108,7 +108,7 @@ export const DadosFormacao = ({
                   <tr key={cond.id} className="border-b hover:bg-gray-50">
                     <td className="p-2">{cond.tipo}</td>
                     <td className="p-2">{cond.descricao}</td>
-                    <td className="p-2">{cond.dataRecebimento && format(new Date(cond.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
+                    <td className="p-2">{cond.datarecebimento && format(new Date(cond.datarecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
                     <td className="p-2 font-bold">{cond.pontos}</td>
                   </tr>
                 ))}
@@ -143,7 +143,7 @@ export const DadosFormacao = ({
                   <tr key={elogio.id} className="border-b hover:bg-gray-50">
                     <td className="p-2">{elogio.tipo}</td>
                     <td className="p-2">{elogio.descricao}</td>
-                    <td className="p-2">{elogio.dataRecebimento && format(new Date(elogio.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
+                    <td className="p-2">{elogio.datarecebimento && format(new Date(elogio.datarecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
                     <td className="p-2 font-bold">{elogio.pontos}</td>
                   </tr>
                 ))}
@@ -178,7 +178,7 @@ export const DadosFormacao = ({
                   <tr key={punicao.id} className="border-b hover:bg-gray-50">
                     <td className="p-2">{punicao.tipo}</td>
                     <td className="p-2">{punicao.descricao}</td>
-                    <td className="p-2">{punicao.dataRecebimento && format(new Date(punicao.dataRecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
+                    <td className="p-2">{punicao.datarecebimento && format(new Date(punicao.datarecebimento), "dd/MM/yyyy", { locale: ptBR })}</td>
                     <td className="p-2 font-bold text-red-500">{punicao.pontos}</td>
                   </tr>
                 ))}

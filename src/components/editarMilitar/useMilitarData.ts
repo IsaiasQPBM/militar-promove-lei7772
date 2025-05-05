@@ -32,6 +32,9 @@ export const useMilitarData = (id: string | undefined) => {
             }
           };
 
+          // Transformar sexo de M/F para Masculino/Feminino para o formulário
+          const sexoDisplay = militar.sexo === "M" ? "Masculino" : "Feminino";
+
           // Preencher o formulário com os dados do militar
           setFormData({
             quadro: militar.quadro,
@@ -43,8 +46,8 @@ export const useMilitarData = (id: string | undefined) => {
             dataUltimaPromocao: formatDate(militar.dataUltimaPromocao),
             situacao: militar.situacao,
             email: militar.email || "",
-            tipoSanguineo: militar.tipoSanguineo || "O+",
-            sexo: militar.sexo || "Masculino"
+            tipoSanguineo: militar.tipoSanguineo,
+            sexo: sexoDisplay
           });
         }
       } catch (error) {

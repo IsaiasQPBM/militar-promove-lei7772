@@ -1,3 +1,4 @@
+
 export interface FichaConceito {
   id: string;
   militar_id: string;
@@ -51,137 +52,48 @@ export interface Punicao {
   pontos: number;
 }
 
+export type PontuacaoItemType = {
+  quantidade: number;
+  valor: number;
+  pontosPositivos: number;
+  pontosNegativos?: number;
+};
+
 export interface PontuacaoLei5461 {
-  tempoServicoQuadro: {
-    quantidade: number;
-    valor: number;
-    pontosPositivos: number;
-  };
+  tempoServicoQuadro: PontuacaoItemType;
   cursosMilitares: {
-    especializacao: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    csbm: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    cfsd: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    chc: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    chsgt: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    cas: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    cho: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    cfo: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    cao: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    csbm2: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
+    especializacao: PontuacaoItemType;
+    csbm: PontuacaoItemType;
+    cfsd: PontuacaoItemType;
+    chc: PontuacaoItemType;
+    chsgt: PontuacaoItemType;
+    cas: PontuacaoItemType;
+    cho: PontuacaoItemType;
+    cfo: PontuacaoItemType;
+    cao: PontuacaoItemType;
+    csbm2: PontuacaoItemType;
   };
   cursosCivis: {
-    superior: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    especializacao: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    mestrado: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    doutorado: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
+    superior: PontuacaoItemType;
+    especializacao: PontuacaoItemType;
+    mestrado: PontuacaoItemType;
+    doutorado: PontuacaoItemType;
   };
   condecoracoes: {
-    governoFederal: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    governoEstadual: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    cbmepi: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
+    governoFederal: PontuacaoItemType;
+    governoEstadual: PontuacaoItemType;
+    cbmepi: PontuacaoItemType;
   };
   elogios: {
-    individual: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
-    coletivo: {
-      quantidade: number;
-      valor: number;
-      pontosPositivos: number;
-    };
+    individual: PontuacaoItemType;
+    coletivo: PontuacaoItemType;
   };
   punicoes: {
-    repreensao: {
-      quantidade: number;
-      valor: number;
-      pontosNegativos: number;
-    };
-    detencao: {
-      quantidade: number;
-      valor: number;
-      pontosNegativos: number;
-    };
-    prisao: {
-      quantidade: number;
-      valor: number;
-      pontosNegativos: number;
-    };
+    repreensao: PontuacaoItemType;
+    detencao: PontuacaoItemType;
+    prisao: PontuacaoItemType;
   };
-  faltaAproveitamentoCursos: {
-    quantidade: number;
-    valor: number;
-    pontosNegativos: number;
-  };
+  faltaAproveitamentoCursos: PontuacaoItemType;
   somaTotal: number;
 }
 
@@ -199,9 +111,24 @@ export type PostoPatente =
   | "Cabo"
   | "Soldado";
 
-export type QuadroMilitar = "QOEM" | "QOE" | "QORR" | "QPBM" | "QPRR";
+export type QuadroMilitar = 
+  | "QOEM" 
+  | "QOE" 
+  | "QOBM-S"
+  | "QOBM-E"
+  | "QOBM-C"
+  | "QORR" 
+  | "QPBM" 
+  | "QPRR";
 
 export type CriterioPromocao = "Antiguidade" | "Merecimento" | "Posto máximo" | "Graduação máxima";
+
+export type SituacaoMilitar = "ativo" | "inativo";
+
+export type TipoSanguineo = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+
+export type Sexo = "M" | "F";
+export type SexoDisplay = "Masculino" | "Feminino";
 
 export interface Militar {
   id: string;
@@ -213,11 +140,11 @@ export interface Militar {
   dataNascimento: string;
   dataInclusao: string;
   dataUltimaPromocao: string;
-  situacao: "ativo" | "inativo";
-  tipoSanguineo: string;
+  situacao: SituacaoMilitar;
+  tipoSanguineo: TipoSanguineo;
   email?: string;
   foto?: string;
-  sexo: "M" | "F";
+  sexo: Sexo;
   unidade?: string;
 }
 
