@@ -1,129 +1,162 @@
 
-import { Routes, Route, createBrowserRouter, RouterProvider } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import MainLayout from "./layouts/MainLayout";
-import NotFound from "./pages/NotFound";
-import QuadroOficiais from "./pages/quadros/QuadroOficiais";
-import QuadroPracas from "./pages/quadros/QuadroPracas";
-import FixacaoVagas from "./pages/FixacaoVagas";
-import Antiguidade from "./pages/Antiguidade";
-import Merecimento from "./pages/Merecimento";
-import Legislacao from "./pages/Legislacao";
-import FichaMilitar from "./pages/FichaMilitar";
-import CadastroMilitar from "./pages/CadastroMilitar";
-import EditarMilitar from "./pages/EditarMilitar";
-import HistoricoPromocoes from "./pages/HistoricoPromocoes";
-import GestaoPromocoes from "./pages/GestaoPromocoes";
-import ImportarMilitares from "./pages/ImportarMilitares";
-import Index from "./pages/Index";
-import ModeloDocumentos from "./pages/ModeloDocumentos";
-import ImportarMilitaresAI from "./pages/ImportarMilitaresAI";
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
 
-// Define element property for ProtectedRoute
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
+// Views
+import DashboardPage from './pages/Dashboard';
+import LoginPage from './pages/Login';
+import RegisterPage from './pages/Register';
+import NotFoundPage from './pages/NotFound';
+import QuadroFixacaoVagasPage from './pages/QuadroFixacaoVagas';
+import CadastroMilitarPage from './pages/CadastroMilitar';
+import EditarMilitarPage from './pages/EditarMilitar';
+import IndexPage from './pages/Index';
+import ModeloDocumentosPage from './pages/ModeloDocumentos';
+import MerecimentoPage from './pages/Merecimento';
+import AntiguidadePage from './pages/Antiguidade';
+import LegislacaoPage from './pages/Legislacao';
+import GestaoPromocoesPage from './pages/GestaoPromocoes';
+import FixacaoVagasPage from './pages/FixacaoVagas';
+import HistoricoPromocoesPage from './pages/HistoricoPromocoes';
+import ImportarMilitaresPage from './pages/ImportarMilitares';
+import FichaMilitarPage from './pages/FichaMilitar';
+import FichaConceitoPage from './pages/FichaConceito';
 
-// Modify the ProtectedRoute usage in the router
-const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: <Login />
-  },
-  {
-    path: "/register",
-    element: <Register />
-  },
-  {
-    path: "/",
-    element: <MainLayout />,
-    errorElement: <NotFound />,
-    children: [
-      {
-        path: "",
-        element: <Dashboard />
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />
-      },
-      {
-        path: "oficiais/estado-maior",
-        element: <QuadroOficiais tipo="QOEM" />
-      },
-      {
-        path: "oficiais/especialistas",
-        element: <QuadroOficiais tipo="QOE" />
-      },
-      {
-        path: "oficiais/reserva",
-        element: <QuadroOficiais tipo="QORR" />
-      },
-      {
-        path: "pracas/ativos",
-        element: <QuadroPracas tipo="QPBM" />
-      },
-      {
-        path: "pracas/reserva",
-        element: <QuadroPracas tipo="QPRR" />
-      },
-      {
-        path: "fixacao-vagas",
-        element: <FixacaoVagas />
-      },
-      {
-        path: "antiguidade",
-        element: <Antiguidade />
-      },
-      {
-        path: "merecimento",
-        element: <Merecimento />
-      },
-      {
-        path: "legislacao",
-        element: <Legislacao />
-      },
-      {
-        path: "militar/:id",
-        element: <FichaMilitar />
-      },
-      {
-        path: "militar/:id/editar",
-        element: <EditarMilitar />
-      },
-      {
-        path: "militar/:id/promocoes",
-        element: <HistoricoPromocoes />
-      },
-      {
-        path: "cadastro-militar",
-        element: <CadastroMilitar />
-      },
-      {
-        path: "importar-militares",
-        element: <ImportarMilitares />
-      },
-      {
-        path: "gestao-promocoes",
-        element: <GestaoPromocoes />
-      },
-      {
-        path: "modelo-documentos",
-        element: <ModeloDocumentos />
-      },
-      {
-        path: "importar-militares-ai",
-        element: <ImportarMilitaresAI />
-      }
-    ]
-  },
-  {
-    path: "*",
-    element: <NotFound />
-  }
-]);
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
 
-export default router;
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <IndexPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <MainLayout>
+            <React.Suspense fallback={<div>Carregando...</div>}>
+              <DashboardPage />
+            </React.Suspense>
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/quadro-fixacao-vagas" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <QuadroFixacaoVagasPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/fixacao-vagas" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <FixacaoVagasPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/cadastro-militar" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <CadastroMilitarPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/editar-militar/:id" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <EditarMilitarPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/merecimento" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <MerecimentoPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/antiguidade" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <AntiguidadePage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/legislacao" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <LegislacaoPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/gestao-promocoes" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <GestaoPromocoesPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/historico-promocoes" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <HistoricoPromocoesPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/modelos-documentos" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <ModeloDocumentosPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/importar-militares" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <ImportarMilitaresPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="/ficha-militar/:id" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <FichaMilitarPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+      
+      <Route path="/ficha-conceito/:id" element={
+        <MainLayout>
+          <React.Suspense fallback={<div>Carregando...</div>}>
+            <FichaConceitoPage />
+          </React.Suspense>
+        </MainLayout>
+      } />
+
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;

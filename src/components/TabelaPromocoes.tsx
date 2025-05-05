@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -38,6 +38,7 @@ const TabelaPromocoes = ({ previsoes }: TabelaPromocoesProps) => {
             <TableHead>Data Possível Promoção</TableHead>
             <TableHead>Tempo Restante</TableHead>
             <TableHead>Critério</TableHead>
+            <TableHead>Pontuação</TableHead>
             <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -61,6 +62,13 @@ const TabelaPromocoes = ({ previsoes }: TabelaPromocoesProps) => {
                 </Badge>
               </TableCell>
               <TableCell>{previsao.criterio}</TableCell>
+              <TableCell>
+                {typeof previsao.pontuacao === 'number' ? (
+                  <Badge variant="outline" className="font-mono">
+                    {previsao.pontuacao.toFixed(2)}
+                  </Badge>
+                ) : "N/A"}
+              </TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

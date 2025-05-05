@@ -12,6 +12,7 @@ export interface PrevisaoPromocao {
   dataProximaPromocao: Date | null;
   tempoRestante: string;
   criterio: string;
+  pontuacao?: number; // Adicionado para integração com a ficha de conceito
 }
 
 // Interface com tempo mínimo para promoções por posto
@@ -86,7 +87,8 @@ export const calcularPrevisaoIndividual = (militar: Militar): PrevisaoPromocao =
     dataUltimaPromocao,
     dataProximaPromocao,
     tempoRestante,
-    criterio: infoProximaPromocao.criterio
+    criterio: infoProximaPromocao.criterio,
+    pontuacao: 0 // Valor padrão, será atualizado posteriormente
   };
 };
 
