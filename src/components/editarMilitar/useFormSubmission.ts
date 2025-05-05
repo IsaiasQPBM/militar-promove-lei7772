@@ -5,7 +5,7 @@ import { toast } from "@/components/ui/use-toast";
 import { FormValues } from "@/utils/militarValidation";
 import { updateMilitar } from "@/services/militarService";
 import { verificarDisponibilidadeVaga } from "@/services/qfvService";
-import { PostoPatente, QuadroMilitar, Sexo } from "@/types";
+import { PostoPatente, QuadroMilitar, SituacaoMilitar, Sexo } from "@/types";
 import { usePhotoUpload } from "@/hooks/usePhotoUpload";
 
 export const useFormSubmission = (militarId: string, militarData: FormValues | null) => {
@@ -47,6 +47,8 @@ export const useFormSubmission = (militarId: string, militarData: FormValues | n
       if (values.situacao === "inativo") {
         if (quadroFinal === "QOEM" || quadroFinal === "QOE") {
           quadroFinal = "QORR";
+        } else if (quadroFinal === "QOBM-S" || quadroFinal === "QOBM-E" || quadroFinal === "QOBM-C") {
+          quadroFinal = "QORR";
         } else if (quadroFinal === "QPBM") {
           quadroFinal = "QPRR";
         }
@@ -73,8 +75,8 @@ export const useFormSubmission = (militarId: string, militarData: FormValues | n
         }
       }
 
-      // Mapear Masculino/Feminino para M/F
-      const sexoFormatado: Sexo = values.sexo === "Masculino" ? "M" : "F";
+      // Use the sexo value directly since our Sexo type now includes "Masculino"/"Feminino"
+      const sexoFormatado: Sexo = values.sexo;
       
       // Atualizar o militar no banco de dados
       await updateMilitar(militarId, {
@@ -86,7 +88,7 @@ export const useFormSubmission = (militarId: string, militarData: FormValues | n
         dataNascimento: values.dataNascimento,
         dataInclusao: values.dataInclusao,
         dataUltimaPromocao: values.dataUltimaPromocao,
-        situacao: values.situacao === "ativo" ? "ativo" : "inativo",
+        situacao: values.situacao as SituacaoMilitar,
         email: values.email,
         foto: photoUrl,
         tipoSanguineo: values.tipoSanguineo,
@@ -105,6 +107,12 @@ export const useFormSubmission = (militarId: string, militarData: FormValues | n
         redirectPath = "/oficiais/estado-maior";
       } else if (quadroFinal === "QOE") {
         redirectPath = "/oficiais/especialistas";
+      } else if (quadroFinal === "QOBM-S") {
+        redirectPath = "/oficiais/saude";
+      } else if (quadroFinal === "QOBM-E") {
+        redirectPath = "/oficiais/engenheiros";
+      } else if (quadroFinal === "QOBM-C") {
+        redirectPath = "/oficiais/complementares";
       } else if (quadroFinal === "QORR") {
         redirectPath = "/oficiais/reserva";
       } else if (quadroFinal === "QPBM") {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,7 +50,7 @@ const ImportarMilitares = () => {
         situacao: "ativo",
         email: "jose.silva@cbm.pi.gov.br",
         tipoSanguineo: "A+",
-        sexo: "Masculino",
+        sexo: "Masculino", // This is valid now with our updated Sexo type
         status: "pendente"
       },
       {
@@ -171,6 +170,7 @@ const ImportarMilitares = () => {
         
         // Chama a função de criação de militar
         await createMilitar({
+          nome: militaresAtualizados[i].nomeCompleto, // Add this field
           nomeCompleto: militaresAtualizados[i].nomeCompleto,
           nomeGuerra: militaresAtualizados[i].nomeGuerra,
           posto: militaresAtualizados[i].posto,

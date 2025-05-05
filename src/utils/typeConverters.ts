@@ -3,7 +3,8 @@ import { QuadroMilitar, PostoPatente, SituacaoMilitar, TipoSanguineo, Sexo } fro
 
 // Converte string para QuadroMilitar
 export const toQuadroMilitar = (quadro: string | null | undefined): QuadroMilitar => {
-  if (quadro === "QOEM" || quadro === "QOE" || quadro === "QORR" || quadro === "QPBM" || quadro === "QPRR") {
+  if (quadro === "QOEM" || quadro === "QOE" || quadro === "QORR" || quadro === "QPBM" || quadro === "QPRR" || 
+      quadro === "QOBM-S" || quadro === "QOBM-E" || quadro === "QOBM-C") {
     return quadro as QuadroMilitar;
   }
   // Valor padrão para evitar erros
@@ -46,11 +47,11 @@ export const toTipoSanguineo = (tipo: string | null | undefined): TipoSanguineo 
 
 // Converte string para Sexo
 export const toSexo = (sexo: string | null | undefined): Sexo => {
-  if (sexo === "Masculino" || sexo === "Feminino") {
+  if (sexo === "M" || sexo === "F" || sexo === "Masculino" || sexo === "Feminino") {
     return sexo as Sexo;
   }
   // Valor padrão para evitar erros
-  return "Masculino";
+  return "M";
 };
 
 // Funções para garantir que os tipos estão corretos ao enviar para o banco

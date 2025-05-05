@@ -131,7 +131,8 @@ export type SituacaoMilitar = "ativo" | "inativo";
 
 export type TipoSanguineo = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
 
-export type Sexo = "M" | "F";
+// Modify Sexo type to include display values to avoid type errors
+export type Sexo = "M" | "F" | "Masculino" | "Feminino";
 export type SexoDisplay = "Masculino" | "Feminino";
 
 // Updated to make nome, nomeCompleto, and nomeGuerra consistent

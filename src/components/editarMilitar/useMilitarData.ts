@@ -4,7 +4,7 @@ import { getMilitarById } from "@/services/militarService";
 import { format } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { FormValues } from "@/utils/militarValidation";
-import { SexoDisplay } from "@/types";
+import { Sexo, SexoDisplay } from "@/types";
 
 export const useMilitarData = (id: string | undefined) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +34,10 @@ export const useMilitarData = (id: string | undefined) => {
           };
 
           // Transformar sexo de M/F para Masculino/Feminino para o formulário
-          const sexoDisplay: SexoDisplay = militar.sexo === "M" ? "Masculino" : "Feminino";
+          let sexoDisplay: SexoDisplay = "Masculino";
+          if (militar.sexo === "F" || militar.sexo === "Feminino") {
+            sexoDisplay = "Feminino";
+          }
 
           // Preencher o formulário com os dados do militar
           setFormData({

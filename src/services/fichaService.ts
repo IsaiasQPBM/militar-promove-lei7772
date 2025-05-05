@@ -49,6 +49,62 @@ export const createOrUpdateFichaConceito = async (militarId: string, totalPontos
   }
 };
 
+// Function to save ficha conceito with tempo de serviço
+export const salvarFichaConceito = async ({ 
+  militarId, 
+  tempoServicoQuadro, 
+  totalPontos 
+}: { 
+  militarId: string; 
+  tempoServicoQuadro: number;
+  totalPontos: number;
+}) => {
+  try {
+    // Check if the ficha already exists
+    const { data: existingFicha, error: fetchError } = await supabase
+      .from("fichas_conceito")
+      .select("id")
+      .eq("militar_id", militarId)
+      .maybeSingle();
+      
+    if (fetchError && fetchError.code !== "PGRST116") {
+      throw fetchError;
+    }
+    
+    if (existingFicha) {
+      // Update existing ficha
+      const { error } = await supabase
+        .from("fichas_conceito")
+        .update({
+          totalpontos: totalPontos,
+          temposervicoquadro: tempoServicoQuadro,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", existingFicha.id);
+        
+      if (error) throw error;
+      return existingFicha.id;
+    } else {
+      // Create new ficha
+      const { data, error } = await supabase
+        .from("fichas_conceito")
+        .insert({
+          militar_id: militarId,
+          totalpontos: totalPontos,
+          temposervicoquadro: tempoServicoQuadro
+        })
+        .select("id")
+        .single();
+        
+      if (error) throw error;
+      return data.id;
+    }
+  } catch (error) {
+    console.error("Error saving ficha conceito:", error);
+    throw error;
+  }
+};
+
 // Function for PDF extraction and import
 export const importDataFromPDFExtraction = async (militarId: string, data: any) => {
   try {

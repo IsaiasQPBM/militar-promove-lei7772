@@ -1,15 +1,19 @@
-
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, PontuacaoLei5461 } from "@/types";
 
-const useFichaConceitoPontuacao = (
-  militarId: string,
-  cursosMilitares: CursoMilitar[],
-  cursosCivis: CursoCivil[],
-  condecoracoes: Condecoracao[],
-  elogios: Elogio[],
-  punicoes: Punicao[]
-) => {
+const useFichaConceitoPontuacao = ({
+  cursosMilitares,
+  cursosCivis,
+  condecoracoes,
+  elogios,
+  punicoes
+}: {
+  cursosMilitares: CursoMilitar[];
+  cursosCivis: CursoCivil[];
+  condecoracoes: Condecoracao[];
+  elogios: Elogio[];
+  punicoes: Punicao[];
+}) => {
   const [pontuacao, setPontuacao] = useState<PontuacaoLei5461 | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -171,8 +175,11 @@ const useFichaConceitoPontuacao = (
         }
       });
 
-      // Calcular soma total de pontos positivos
+      // Calcular soma final
+      pontuacao.somaTotal = 0;
+      
       let totalPositivo = 0;
+      let totalNegativo = 0;
 
       // Somar pontos positivos de cursos militares
       Object.values(pontuacao.cursosMilitares).forEach(item => {
@@ -195,8 +202,6 @@ const useFichaConceitoPontuacao = (
       });
 
       // Calcular soma total de pontos negativos
-      let totalNegativo = 0;
-
       // Somar pontos negativos de punições
       Object.values(pontuacao.punicoes).forEach(item => {
         totalNegativo += item.pontosNegativos || 0;
@@ -213,9 +218,9 @@ const useFichaConceitoPontuacao = (
     };
 
     calcularPontuacao();
-  }, [militarId, cursosMilitares, cursosCivis, condecoracoes, elogios, punicoes]);
+  }, [cursosMilitares, cursosCivis, condecoracoes, elogios, punicoes]);
 
-  return { pontuacao, loading };
+  return { pontuacao, loading, setPontuacao };
 };
 
 export default useFichaConceitoPontuacao;

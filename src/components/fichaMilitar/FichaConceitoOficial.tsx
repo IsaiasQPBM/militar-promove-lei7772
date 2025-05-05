@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
 import { TabelaFichaConceitoOficial } from "./TabelaFichaConceitoOficial";
-import { useFichaConceitoPontuacao } from "@/hooks/useFichaConceitoPontuacao";
+import useFichaConceitoPontuacao from "@/hooks/useFichaConceitoPontuacao";
 import { PDFUploader } from "./PDFUploader";
 
 interface FichaConceitoOficialProps {
@@ -53,11 +53,13 @@ export const FichaConceitoOficial = ({
           </TabsList>
           
           <TabsContent value="pontuacao" className="p-0 mt-4">
-            <TabelaFichaConceitoOficial
-              militarId={militarId}
-              pontuacao={pontuacao}
-              onPontuacaoChange={setPontuacao}
-            />
+            {pontuacao && (
+              <TabelaFichaConceitoOficial
+                militarId={militarId}
+                pontuacao={pontuacao}
+                onPontuacaoChange={setPontuacao}
+              />
+            )}
           </TabsContent>
           
           <TabsContent value="importar" className="p-0 mt-4">
