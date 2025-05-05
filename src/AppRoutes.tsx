@@ -1,4 +1,5 @@
-import { Routes, Route, createBrowserRouter } from "react-router-dom";
+
+import { Routes, Route, createBrowserRouter, RouterProvider } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
@@ -21,6 +22,12 @@ import Index from "./pages/Index";
 import ModeloDocumentos from "./pages/ModeloDocumentos";
 import ImportarMilitaresAI from "./pages/ImportarMilitaresAI";
 
+// Define element property for ProtectedRoute
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+// Modify the ProtectedRoute usage in the router
 const router = createBrowserRouter([
   {
     path: "/login",
@@ -32,7 +39,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <ProtectedRoute element={<MainLayout />} />,
+    element: <ProtectedRoute><MainLayout /></ProtectedRoute>,
     errorElement: <NotFound />,
     children: [
       {

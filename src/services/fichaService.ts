@@ -1,7 +1,13 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
+
+// Interface for saving ficha conceito data
+interface FichaConceitoData {
+  militarId: string;
+  tempoServicoQuadro?: number;
+  totalPontos: number;
+}
 
 // Interface para dados extraídos do PDF
 export interface ExtractedData {
@@ -202,6 +208,48 @@ export const atualizarFichaConceito = async (militarId: string) => {
     return totalPontos;
   } catch (error) {
     console.error("Erro ao atualizar ficha de conceito:", error);
+    throw error;
+  }
+};
+
+// Salvar a ficha de conceito do militar
+export const salvarFichaConceito = async (data: FichaConceitoData) => {
+  try {
+    // Verificar se o militar já tem uma ficha de conceito
+    const { data: fichaExistente } = await supabase
+      .from('fichas_conceito')
+      .select('*')
+      .eq('militar_id', data.militarId)
+      .single();
+    
+    if (fichaExistente) {
+      // Atualizar ficha existente
+      const { error } = await supabase
+        .from('fichas_conceito')
+        .update({
+          temposervicoquadro: data.tempoServicoQuadro || fichaExistente.temposervicoquadro,
+          totalpontos: data.totalPontos,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', fichaExistente.id);
+        
+      if (error) throw error;
+    } else {
+      // Criar nova ficha
+      const { error } = await supabase
+        .from('fichas_conceito')
+        .insert({
+          militar_id: data.militarId,
+          temposervicoquadro: data.tempoServicoQuadro || 0,
+          totalpontos: data.totalPontos,
+        });
+        
+      if (error) throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Erro ao salvar ficha de conceito:", error);
     throw error;
   }
 };

@@ -1,10 +1,10 @@
 
 import './App.css';
 import { useEffect } from 'react';
-import AppRoutes from './AppRoutes';
+import { RouterProvider } from 'react-router-dom';
+import router from './AppRoutes';
 import { Toaster } from '@/components/ui/toaster';
 import { createPhotoBucket } from './utils/createStorageBucket';
-import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
@@ -20,12 +20,10 @@ function App() {
 
   return (
     <div className="h-screen w-full overflow-hidden">
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-          <Toaster />
-        </AuthProvider>
-      </BrowserRouter>
+      <AuthProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </AuthProvider>
     </div>
   );
 }

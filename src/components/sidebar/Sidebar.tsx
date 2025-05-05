@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { 
   FileText, 
@@ -12,6 +13,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarLink } from "./SidebarLink";
 import { SidebarSection } from "./SidebarSection";
+import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const location = useLocation();
@@ -134,19 +136,53 @@ export function Sidebar() {
         </SidebarSection>
         
         <SidebarSection title="Militares">
-          <SidebarLink to="/cadastro-militar">Cadastrar Militar</SidebarLink>
-          <SidebarLink to="/importar-militares">Importar Militares</SidebarLink>
-          <SidebarLink to="/importar-militares-ai">
-            <Upload className="h-4 w-4 mr-2" />
+          <SidebarLink 
+            to="/cadastro-militar" 
+            active={isActive("/cadastro-militar")}
+            icon={<Users className="h-5 w-5" />}
+          >
+            Cadastrar Militar
+          </SidebarLink>
+          
+          <SidebarLink 
+            to="/importar-militares" 
+            active={isActive("/importar-militares")}
+            icon={<Upload className="h-5 w-5" />}
+          >
+            Importar Militares
+          </SidebarLink>
+          
+          <SidebarLink 
+            to="/importar-militares-ai" 
+            active={isActive("/importar-militares-ai")}
+            icon={<Upload className="h-4 w-4" />}
+          >
             Importar com IA
           </SidebarLink>
-          <SidebarLink to="/quadro-oficiais">Quadro de Oficiais</SidebarLink>
-          <SidebarLink to="/quadro-pracas">Quadro de Praças</SidebarLink>
+          
+          <SidebarLink 
+            to="/quadro-oficiais" 
+            active={isActive("/quadro-oficiais")}
+            icon={<Users className="h-5 w-5" />}
+          >
+            Quadro de Oficiais
+          </SidebarLink>
+          
+          <SidebarLink 
+            to="/quadro-pracas" 
+            active={isActive("/quadro-pracas")}
+            icon={<Users className="h-5 w-5" />}
+          >
+            Quadro de Praças
+          </SidebarLink>
         </SidebarSection>
         
         <SidebarSection title="Documentos">
-          <SidebarLink to="/modelo-documentos">
-            <FileText className="h-4 w-4 mr-2" />
+          <SidebarLink 
+            to="/modelo-documentos" 
+            active={isActive("/modelo-documentos")}
+            icon={<FileText className="h-4 w-4" />}
+          >
             Modelos de Documentos
           </SidebarLink>
         </SidebarSection>
