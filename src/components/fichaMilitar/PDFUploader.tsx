@@ -6,7 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { uploadPDF } from "@/services/pdfService";
 import { importDataFromPDFExtraction } from "@/services/fichaService";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PDFUploaderProps {
   militarId: string;
@@ -16,6 +17,7 @@ interface PDFUploaderProps {
 export const PDFUploader = ({ militarId, onDataImported }: PDFUploaderProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -111,19 +113,30 @@ export const PDFUploader = ({ militarId, onDataImported }: PDFUploaderProps) => 
               </span>
             </label>
           </div>
-          
-          <Button 
-            onClick={handleUpload} 
-            disabled={!selectedFile || isUploading}
-            className="w-full"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processando...
-              </>
-            ) : 'Processar e importar dados'}
-          </Button>
+
+          <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
+            <Button 
+              onClick={() => navigate("/modelo-documentos")} 
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Baixar modelo
+            </Button>
+            
+            <Button 
+              onClick={handleUpload} 
+              disabled={!selectedFile || isUploading}
+              className="w-full sm:w-auto"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : 'Processar e importar dados'}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

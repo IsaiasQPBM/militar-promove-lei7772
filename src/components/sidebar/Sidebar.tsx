@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { 
   FileText, 
@@ -7,13 +6,14 @@ import {
   LogOut,
   Star,
   Users,
-  TrendingUp
+  TrendingUp,
+  Upload
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SidebarLink } from "./SidebarLink";
 import { SidebarSection } from "./SidebarSection";
 
-export const Sidebar = () => {
+export function Sidebar() {
   const location = useLocation();
   const { signOut } = useAuth();
 
@@ -22,8 +22,8 @@ export const Sidebar = () => {
   };
   
   return (
-    <div className="w-64 bg-cbmepi-purple text-white overflow-y-auto">
-      <div className="p-4">
+    <div className={cn("pb-12 w-full sm:max-w-[260px]")}>
+      <div className="space-y-4 py-4">
         <SidebarSection title="OFICIAIS">
           <SidebarLink 
             to="/oficiais/estado-maior" 
@@ -133,6 +133,24 @@ export const Sidebar = () => {
           </SidebarLink>
         </SidebarSection>
         
+        <SidebarSection title="Militares">
+          <SidebarLink to="/cadastro-militar">Cadastrar Militar</SidebarLink>
+          <SidebarLink to="/importar-militares">Importar Militares</SidebarLink>
+          <SidebarLink to="/importar-militares-ai">
+            <Upload className="h-4 w-4 mr-2" />
+            Importar com IA
+          </SidebarLink>
+          <SidebarLink to="/quadro-oficiais">Quadro de Oficiais</SidebarLink>
+          <SidebarLink to="/quadro-pracas">Quadro de Praças</SidebarLink>
+        </SidebarSection>
+        
+        <SidebarSection title="Documentos">
+          <SidebarLink to="/modelo-documentos">
+            <FileText className="h-4 w-4 mr-2" />
+            Modelos de Documentos
+          </SidebarLink>
+        </SidebarSection>
+        
         <button 
           onClick={signOut}
           className="w-full flex items-center space-x-2 px-4 py-2 text-white hover:bg-cbmepi-darkPurple rounded-md transition-colors mt-8"
@@ -143,4 +161,4 @@ export const Sidebar = () => {
       </div>
     </div>
   );
-};
+}

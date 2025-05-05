@@ -1,5 +1,4 @@
-
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, createBrowserRouter } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
@@ -19,34 +18,101 @@ import HistoricoPromocoes from "./pages/HistoricoPromocoes";
 import GestaoPromocoes from "./pages/GestaoPromocoes";
 import ImportarMilitares from "./pages/ImportarMilitares";
 import Index from "./pages/Index";
+import ModeloDocumentos from "./pages/ModeloDocumentos";
+import ImportarMilitaresAI from "./pages/ImportarMilitaresAI";
 
-const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-        <Route index element={<Index />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="oficiais/estado-maior" element={<QuadroOficiais tipo="QOEM" />} />
-        <Route path="oficiais/especialistas" element={<QuadroOficiais tipo="QOE" />} />
-        <Route path="oficiais/reserva" element={<QuadroOficiais tipo="QORR" />} />
-        <Route path="pracas/ativos" element={<QuadroPracas tipo="QPBM" />} />
-        <Route path="pracas/reserva" element={<QuadroPracas tipo="QPRR" />} />
-        <Route path="fixacao-vagas" element={<FixacaoVagas />} />
-        <Route path="antiguidade" element={<Antiguidade />} />
-        <Route path="merecimento" element={<Merecimento />} />
-        <Route path="legislacao" element={<Legislacao />} />
-        <Route path="militar/:id" element={<FichaMilitar />} />
-        <Route path="militar/:id/editar" element={<EditarMilitar />} />
-        <Route path="militar/:id/promocoes" element={<HistoricoPromocoes />} />
-        <Route path="cadastro-militar" element={<CadastroMilitar />} />
-        <Route path="importar-militares" element={<ImportarMilitares />} />
-        <Route path="gestao-promocoes" element={<GestaoPromocoes />} />
-      </Route>
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
+const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <Login />
+  },
+  {
+    path: "/register",
+    element: <Register />
+  },
+  {
+    path: "/",
+    element: <ProtectedRoute element={<MainLayout />} />,
+    errorElement: <NotFound />,
+    children: [
+      {
+        path: "dashboard",
+        element: <Dashboard />
+      },
+      {
+        path: "oficiais/estado-maior",
+        element: <QuadroOficiais tipo="QOEM" />
+      },
+      {
+        path: "oficiais/especialistas",
+        element: <QuadroOficiais tipo="QOE" />
+      },
+      {
+        path: "oficiais/reserva",
+        element: <QuadroOficiais tipo="QORR" />
+      },
+      {
+        path: "pracas/ativos",
+        element: <QuadroPracas tipo="QPBM" />
+      },
+      {
+        path: "pracas/reserva",
+        element: <QuadroPracas tipo="QPRR" />
+      },
+      {
+        path: "fixacao-vagas",
+        element: <FixacaoVagas />
+      },
+      {
+        path: "antiguidade",
+        element: <Antiguidade />
+      },
+      {
+        path: "merecimento",
+        element: <Merecimento />
+      },
+      {
+        path: "legislacao",
+        element: <Legislacao />
+      },
+      {
+        path: "militar/:id",
+        element: <FichaMilitar />
+      },
+      {
+        path: "militar/:id/editar",
+        element: <EditarMilitar />
+      },
+      {
+        path: "militar/:id/promocoes",
+        element: <HistoricoPromocoes />
+      },
+      {
+        path: "cadastro-militar",
+        element: <CadastroMilitar />
+      },
+      {
+        path: "importar-militares",
+        element: <ImportarMilitares />
+      },
+      {
+        path: "gestao-promocoes",
+        element: <GestaoPromocoes />
+      },
+      {
+        path: "modelo-documentos",
+        element: <ModeloDocumentos />
+      },
+      {
+        path: "importar-militares-ai",
+        element: <ImportarMilitaresAI />
+      }
+    ]
+  },
+  {
+    path: "*",
+    element: <NotFound />
+  }
+]);
 
-export default AppRoutes;
+export default router;
