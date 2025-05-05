@@ -78,6 +78,7 @@ export const useFormSubmission = (militarId: string, militarData: FormValues | n
       
       // Atualizar o militar no banco de dados
       await updateMilitar(militarId, {
+        nome: values.nomeCompleto,
         nomeCompleto: values.nomeCompleto,
         nomeGuerra: values.nomeGuerra,
         quadro: quadroFinal,

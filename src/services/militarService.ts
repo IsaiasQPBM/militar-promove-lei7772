@@ -17,8 +17,9 @@ import { verificarDisponibilidadeVaga } from "./qfvService";
 const mapDatabaseToMilitar = (data: any): Militar => {
   return {
     id: data.id,
+    nome: data.nome,
     nomeCompleto: data.nome,
-    nomeGuerra: data.nomeguerra,
+    nomeGuerra: data.nomeguerra || data.nome,
     posto: toPostoPatente(data.posto),
     quadro: toQuadroMilitar(data.quadro),
     dataNascimento: data.datanascimento,
@@ -28,7 +29,8 @@ const mapDatabaseToMilitar = (data: any): Militar => {
     email: data.email,
     foto: data.foto,
     tipoSanguineo: toTipoSanguineo(data.tipo_sanguineo),
-    sexo: toSexo(data.sexo)
+    sexo: toSexo(data.sexo),
+    unidade: data.unidade
   };
 };
 
@@ -53,7 +55,7 @@ export const createMilitar = async (militar: Omit<Militar, "id">) => {
   const { data, error } = await supabase
     .from("militares")
     .insert({
-      nome: militar.nomeCompleto,
+      nome: militar.nomeCompleto || militar.nome,
       nomeguerra: militar.nomeGuerra,
       posto: fromPostoPatente(militar.posto),
       quadro: fromQuadroMilitar(militar.quadro),
@@ -85,6 +87,7 @@ export const updateMilitar = async (id: string, militar: Partial<Militar>) => {
   
   // Only map fields that are provided in the update
   if (militar.nomeCompleto !== undefined) updateData.nome = militar.nomeCompleto;
+  if (militar.nome !== undefined) updateData.nome = militar.nome;
   if (militar.nomeGuerra !== undefined) updateData.nomeguerra = militar.nomeGuerra;
   if (militar.posto !== undefined) updateData.posto = fromPostoPatente(militar.posto);
   if (militar.quadro !== undefined) updateData.quadro = fromQuadroMilitar(militar.quadro);

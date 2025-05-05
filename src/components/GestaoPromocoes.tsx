@@ -13,6 +13,7 @@ import { calcularPrevisaoIndividual, PrevisaoPromocao } from "@/utils/promocaoUt
 import TabelaPromocoes from "./TabelaPromocoes";
 import { supabase } from "@/integrations/supabase/client";
 import { createPromocao } from "@/services/promocaoService";
+import { toPostoPatente, toQuadroMilitar, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 
 const GestaoPromocoes: React.FC = () => {
   const [militares, setMilitares] = useState<Militar[]>([]);
@@ -35,18 +36,18 @@ const GestaoPromocoes: React.FC = () => {
           const militaresFormatados: Militar[] = militaresData.map(m => ({
             id: m.id,
             nome: m.nome || "",
-            nomeGuerra: m.nomeguerra || m.nome,
-            nomeCompleto: m.nome,
-            posto: m.posto as PostoPatente,
-            quadro: m.quadro as QuadroMilitar,
+            nomeCompleto: m.nome || "",
+            nomeGuerra: m.nomeguerra || m.nome || "",
+            posto: toPostoPatente(m.posto),
+            quadro: toQuadroMilitar(m.quadro),
             dataUltimaPromocao: m.dataultimapromocao || "",
             dataInclusao: m.data_ingresso || "",
             dataNascimento: m.datanascimento || "",
-            tipoSanguineo: m.tipo_sanguineo || "O+",
-            situacao: "ativo",
+            tipoSanguineo: toTipoSanguineo(m.tipo_sanguineo),
+            situacao: toSituacaoMilitar(m.situacao),
             email: m.email || "",
             foto: m.foto,
-            sexo: m.sexo === "Masculino" ? "M" : "F",
+            sexo: toSexo(m.sexo),
             unidade: m.unidade
           }));
           

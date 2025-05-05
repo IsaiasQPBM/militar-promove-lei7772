@@ -36,15 +36,14 @@ const useFichaMilitar = (id: string | undefined) => {
       
     if (error) throw error;
     
-    const cursosMapeados = data.map(curso => ({
+    const cursosMapeados: CursoMilitar[] = data.map(curso => ({
       id: curso.id,
-      militarId: curso.militar_id,
+      militar_id: curso.militar_id,
       nome: curso.nome,
-      tipo: (curso.tipo as CursoMilitarTipo) || "Especialização",
+      tipo: curso.tipo || "Especialização",
       instituicao: curso.instituicao || "",
-      cargaHoraria: curso.cargahoraria || 0,
-      pontos: curso.pontos || 0,
-      anexo: curso.anexo
+      cargahoraria: curso.cargahoraria || 0,
+      pontos: curso.pontos || 0
     }));
     
     setCursosMilitares(cursosMapeados);
@@ -59,15 +58,14 @@ const useFichaMilitar = (id: string | undefined) => {
       
     if (error) throw error;
     
-    const cursosMapeados = data.map(curso => ({
+    const cursosMapeados: CursoCivil[] = data.map(curso => ({
       id: curso.id,
-      militarId: curso.militar_id,
+      militar_id: curso.militar_id,
       nome: curso.nome,
-      tipo: (curso.tipo as CursoCivilTipo) || "Superior",
+      tipo: curso.tipo || "Superior",
       instituicao: curso.instituicao || "",
-      cargaHoraria: curso.cargahoraria || 0,
-      pontos: curso.pontos || 0,
-      anexo: curso.anexo
+      cargahoraria: curso.cargahoraria || 0,
+      pontos: curso.pontos || 0
     }));
     
     setCursosCivis(cursosMapeados);
@@ -82,14 +80,13 @@ const useFichaMilitar = (id: string | undefined) => {
       
     if (error) throw error;
     
-    const condecoracoesMapeadas = data.map(cond => ({
+    const condecoracoesMapeadas: Condecoracao[] = data.map(cond => ({
       id: cond.id,
-      militarId: cond.militar_id,
-      tipo: cond.tipo as Condecoracao["tipo"],
+      militar_id: cond.militar_id,
+      tipo: cond.tipo,
       descricao: cond.descricao,
       pontos: cond.pontos,
-      dataRecebimento: cond.datarecebimento,
-      anexo: cond.anexo
+      datarecebimento: cond.datarecebimento
     }));
     
     setCondecoracoes(condecoracoesMapeadas);
@@ -104,14 +101,13 @@ const useFichaMilitar = (id: string | undefined) => {
       
     if (error) throw error;
     
-    const elogiosMapeados = data.map(elogio => ({
+    const elogiosMapeados: Elogio[] = data.map(elogio => ({
       id: elogio.id,
-      militarId: elogio.militar_id,
-      tipo: elogio.tipo as "Individual" | "Coletivo",
+      militar_id: elogio.militar_id,
+      tipo: elogio.tipo,
       descricao: elogio.descricao,
       pontos: elogio.pontos,
-      dataRecebimento: elogio.datarecebimento,
-      anexo: elogio.anexo
+      datarecebimento: elogio.datarecebimento
     }));
     
     setElogios(elogiosMapeados);
@@ -126,14 +122,13 @@ const useFichaMilitar = (id: string | undefined) => {
       
     if (error) throw error;
     
-    const punicoesMapeadas = data.map(punicao => ({
+    const punicoesMapeadas: Punicao[] = data.map(punicao => ({
       id: punicao.id,
-      militarId: punicao.militar_id,
-      tipo: punicao.tipo as "Repreensão" | "Detenção" | "Prisão",
+      militar_id: punicao.militar_id,
+      tipo: punicao.tipo,
       descricao: punicao.descricao,
       pontos: punicao.pontos,
-      dataRecebimento: punicao.datarecebimento,
-      anexo: punicao.anexo
+      datarecebimento: punicao.datarecebimento
     }));
     
     setPunicoes(punicoesMapeadas);
@@ -158,8 +153,9 @@ const useFichaMilitar = (id: string | undefined) => {
       if (militarData) {
         setMilitar({
           id: militarData.id,
+          nome: militarData.nome,
           nomeCompleto: militarData.nome,
-          nomeGuerra: militarData.nomeguerra,
+          nomeGuerra: militarData.nomeguerra || militarData.nome,
           posto: toPostoPatente(militarData.posto),
           quadro: toQuadroMilitar(militarData.quadro),
           dataNascimento: militarData.datanascimento,
@@ -169,7 +165,8 @@ const useFichaMilitar = (id: string | undefined) => {
           email: militarData.email,
           foto: militarData.foto,
           tipoSanguineo: toTipoSanguineo(militarData.tipo_sanguineo),
-          sexo: toSexo(militarData.sexo)
+          sexo: toSexo(militarData.sexo),
+          unidade: militarData.unidade
         });
       }
       

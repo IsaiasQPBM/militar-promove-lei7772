@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Card, 
@@ -223,11 +222,10 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   const adicionarCondecoracao = async (data: z.infer<typeof condecoracaoSchema>) => {
     try {
       // Create a new condecoracao object with required properties
-      // Cast the tipo to a valid CondecoracaoTipo
       const novaCondecoracao: Condecoracao = {
         id: Date.now().toString(),
         militar_id: militarId,
-        tipo: data.tipo as Condecoracao["tipo"], // Cast to the appropriate type
+        tipo: data.tipo,
         descricao: data.descricao,
         datarecebimento: data.datarecebimento,
         pontos: data.pontos

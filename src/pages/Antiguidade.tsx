@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,8 +54,9 @@ const Antiguidade = () => {
         // Convert data from database format to Militar type format
         const militaresFormatados: Militar[] = data.map(item => ({
           id: item.id,
+          nome: item.nome,
           nomeCompleto: item.nome,
-          nomeGuerra: item.nomeguerra,
+          nomeGuerra: item.nomeguerra || item.nome,
           posto: toPostoPatente(item.posto),
           quadro: toQuadroMilitar(item.quadro),
           dataNascimento: item.datanascimento,
@@ -64,7 +66,8 @@ const Antiguidade = () => {
           email: item.email,
           foto: item.foto,
           tipoSanguineo: toTipoSanguineo(item.tipo_sanguineo),
-          sexo: toSexo(item.sexo)
+          sexo: toSexo(item.sexo),
+          unidade: item.unidade
         }));
         
         setMilitares(militaresFormatados);

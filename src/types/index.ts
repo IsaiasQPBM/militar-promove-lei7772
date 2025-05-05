@@ -5,6 +5,10 @@ export interface FichaConceito {
   totalpontos: number;
 }
 
+export type CursoMilitarTipo = "Especialização" | "CSBM" | "CFSD" | "CHC" | "CHSGT" | "CAS" | "CHO" | "CFO" | "CAO" | "CSBM2" | "Outro";
+
+export type CursoCivilTipo = "Superior" | "Especialização" | "Mestrado" | "Doutorado" | "Outro";
+
 export interface CursoMilitar {
   id: string;
   militar_id: string;
@@ -130,10 +134,11 @@ export type TipoSanguineo = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "
 export type Sexo = "M" | "F";
 export type SexoDisplay = "Masculino" | "Feminino";
 
+// Updated to make nome, nomeCompleto, and nomeGuerra consistent
 export interface Militar {
   id: string;
-  nome: string;
-  nomeCompleto: string;
+  nome: string; // Original nome from database - required
+  nomeCompleto: string; // Same as nome for UI consistency
   nomeGuerra: string;
   posto: PostoPatente;
   quadro: QuadroMilitar;
@@ -154,4 +159,6 @@ export interface Promocao {
   criterio: CriterioPromocao;
   dataPromocao: string;
   publicada?: boolean;
+  cargo?: string; // Optional field for UI
+  anexoDocumento?: string; // Optional field for UI
 }
