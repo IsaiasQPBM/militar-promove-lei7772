@@ -63,12 +63,12 @@ module.exports = {
           white: "#ffffff"
         },
         sidebar: {
-          DEFAULT: "hsl(var(--sidebar))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          ring: "hsl(var(--sidebar-ring))",
+          DEFAULT: "hsl(var(--sidebar, 240 10% 3.9%))",
+          foreground: "hsl(var(--sidebar-foreground, 0 0% 98%))",
+          border: "hsl(var(--sidebar-border, 240 3.7% 15.9%))",
+          accent: "hsl(var(--sidebar-accent, 240 3.7% 15.9%))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground, 0 0% 98%))",
+          ring: "hsl(var(--sidebar-ring, 240 4.9% 83.9%))",
         },
       },
       borderRadius: {
