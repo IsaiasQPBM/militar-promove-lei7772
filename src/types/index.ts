@@ -1,4 +1,3 @@
-
 export interface FichaConceito {
   id: string;
   militar_id: string;
@@ -17,6 +16,7 @@ export interface CursoMilitar {
   instituicao: string;
   cargahoraria: number;
   pontos: number;
+  anexo?: string;
 }
 
 export interface CursoCivil {
@@ -27,6 +27,7 @@ export interface CursoCivil {
   instituicao: string;
   cargahoraria: number;
   pontos: number;
+  anexo?: string;
 }
 
 export interface Condecoracao {
@@ -36,6 +37,7 @@ export interface Condecoracao {
   descricao: string;
   datarecebimento: string;
   pontos: number;
+  anexo?: string;
 }
 
 export interface Elogio {
@@ -45,6 +47,7 @@ export interface Elogio {
   descricao: string;
   datarecebimento: string;
   pontos: number;
+  anexo?: string;
 }
 
 export interface Punicao {
@@ -54,6 +57,7 @@ export interface Punicao {
   descricao: string;
   datarecebimento: string;
   pontos: number;
+  anexo?: string;
 }
 
 export type PontuacaoItemType = {

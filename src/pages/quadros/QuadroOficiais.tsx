@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, FileEdit, Eye, Plus } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { toPostoPatente, toQuadroMilitar, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
 
 interface QuadroOficiaisProps {
   quadro: string;
@@ -33,8 +34,29 @@ const QuadroOficiais: React.FC<QuadroOficiaisProps> = ({ quadro, titulo }) => {
 
         if (error) throw error;
         
-        setMilitares(data || []);
-        setFilteredMilitares(data || []);
+        if (data) {
+          // Transform the data to match our Militar interface
+          const transformedData: Militar[] = data.map(item => ({
+            id: item.id,
+            nome: item.nome,
+            nomeCompleto: item.nome,
+            nomeGuerra: item.nomeguerra || item.nome,
+            posto: toPostoPatente(item.posto),
+            quadro: toQuadroMilitar(item.quadro),
+            dataNascimento: item.datanascimento || "",
+            dataInclusao: item.data_ingresso || "",
+            dataUltimaPromocao: item.dataultimapromocao || "",
+            situacao: toSituacaoMilitar(item.situacao),
+            tipoSanguineo: toTipoSanguineo(item.tipo_sanguineo),
+            sexo: toSexo(item.sexo),
+            email: item.email,
+            foto: item.foto,
+            unidade: item.unidade
+          }));
+          
+          setMilitares(transformedData);
+          setFilteredMilitares(transformedData);
+        }
       } catch (error) {
         console.error("Erro ao buscar militares:", error);
         toast({
