@@ -1,18 +1,22 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { DadosPessoais } from "@/components/fichaMilitar/DadosPessoais";
-import { DadosFormacao } from "@/components/fichaMilitar/DadosFormacao";
+import { FormacaoCardList } from "@/components/fichaMilitar/FormacaoCardList";
 import { FichaConceitoOficial } from "@/components/fichaMilitar/FichaConceitoOficial";
 import { AcoesNavegacao } from "@/components/fichaMilitar/AcoesNavegacao";
 import { ResumoPontos } from "@/components/fichaMilitar/ResumoPontos";
 import LoaderComponent from "@/components/editarMilitar/LoaderComponent";
 import useFichaMilitar from "@/hooks/useFichaMilitar";
+import { useEffect } from "react";
 
 const FichaMilitar = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const locationState = location.state as { activeTab?: string } | undefined;
+  
   const { 
     militar, 
     cursosMilitares, 
@@ -26,6 +30,13 @@ const FichaMilitar = () => {
     setActiveTab,
     refreshData,
   } = useFichaMilitar(id);
+  
+  // Utilizar o active tab passado na navegação, se existir
+  useEffect(() => {
+    if (locationState?.activeTab) {
+      setActiveTab(locationState.activeTab);
+    }
+  }, [locationState, setActiveTab]);
   
   if (loading) {
     return <LoaderComponent message="Carregando dados do militar..." />;
@@ -65,24 +76,41 @@ const FichaMilitar = () => {
               {isOficial && <TabsTrigger value="ficha-lei-5461">Ficha Lei 5461</TabsTrigger>}
             </TabsList>
             
-            <TabsContent value="dados-formacao" className="p-0">
-              <Tabs defaultValue="cursos-militares" className="w-full">
-                <TabsList className="grid grid-cols-5 w-full">
-                  <TabsTrigger value="cursos-militares">Cursos Militares</TabsTrigger>
-                  <TabsTrigger value="cursos-civis">Cursos Civis</TabsTrigger>
-                  <TabsTrigger value="condecoracoes">Condecorações</TabsTrigger>
-                  <TabsTrigger value="elogios">Elogios</TabsTrigger>
-                  <TabsTrigger value="punicoes">Punições</TabsTrigger>
-                </TabsList>
-                
-                <DadosFormacao
-                  cursosMilitares={cursosMilitares}
-                  cursosCivis={cursosCivis}
-                  condecoracoes={condecoracoes}
-                  elogios={elogios}
-                  punicoes={punicoes}
-                />
-              </Tabs>
+            <TabsContent value="dados-formacao" className="p-4 space-y-6">
+              <FormacaoCardList 
+                militarId={id || ""}
+                tipo="cursos_militares"
+                items={cursosMilitares}
+                onRefresh={refreshData}
+              />
+              
+              <FormacaoCardList 
+                militarId={id || ""}
+                tipo="cursos_civis"
+                items={cursosCivis}
+                onRefresh={refreshData}
+              />
+              
+              <FormacaoCardList 
+                militarId={id || ""}
+                tipo="condecoracoes"
+                items={condecoracoes}
+                onRefresh={refreshData}
+              />
+              
+              <FormacaoCardList 
+                militarId={id || ""}
+                tipo="elogios"
+                items={elogios}
+                onRefresh={refreshData}
+              />
+              
+              <FormacaoCardList 
+                militarId={id || ""}
+                tipo="punicoes"
+                items={punicoes}
+                onRefresh={refreshData}
+              />
               
               <Separator />
               
