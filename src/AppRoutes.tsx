@@ -12,7 +12,6 @@ import QuadroFixacaoVagasPage from './pages/QuadroFixacaoVagas';
 import CadastroMilitarPage from './pages/CadastroMilitar';
 import EditarMilitarPage from './pages/EditarMilitar';
 import IndexPage from './pages/Index';
-import ModeloDocumentosPage from './pages/ModeloDocumentos';
 import MerecimentoPage from './pages/Merecimento';
 import AntiguidadePage from './pages/Antiguidade';
 import LegislacaoPage from './pages/Legislacao';
@@ -21,9 +20,6 @@ import FixacaoVagasPage from './pages/FixacaoVagas';
 import HistoricoPromocoesPage from './pages/HistoricoPromocoes';
 import FichaMilitarPage from './pages/FichaMilitar';
 import FichaConceitoPage from './pages/FichaConceito';
-
-// Components
-import ProtectedRoute from './components/ProtectedRoute';
 
 // Páginas para os quadros de oficiais
 import QuadroOficiais from './pages/quadros/QuadroOficiais';
@@ -47,7 +43,6 @@ const AppRoutes = () => {
         <Route path="gestao-promocoes" element={<GestaoPromocoesPage />} />
         <Route path="historico-promocoes" element={<HistoricoPromocoesPage />} />
         <Route path="historico-promocoes/:id" element={<HistoricoPromocoesPage />} />
-        <Route path="modelos-documentos" element={<ModeloDocumentosPage />} />
         <Route path="ficha-militar/:id" element={<FichaMilitarPage />} />
         <Route path="ficha-conceito/:id" element={<FichaConceitoPage />} />
         

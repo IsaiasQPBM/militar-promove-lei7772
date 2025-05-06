@@ -1,9 +1,16 @@
 
 import { useState, useCallback, useEffect } from "react";
-import { Militar, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, CursoMilitarTipo, CursoCivilTipo } from "@/types";
+import { Militar, CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { toPostoPatente, toQuadroMilitar, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
+import { 
+  fetchCursosMilitares, 
+  fetchCursosCivis, 
+  fetchCondecoracoes, 
+  fetchElogios, 
+  fetchPunicoes 
+} from "@/services/fichaService";
 
 const useFichaMilitar = (id: string | undefined) => {
   const [militar, setMilitar] = useState<Militar | null>(null);
@@ -16,7 +23,7 @@ const useFichaMilitar = (id: string | undefined) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dados-formacao");
   
-  // Using useCallback to memoize the function and prevent re-renders
+  // Cálculo de pontos
   const calcularTotalPontos = useCallback(() => {
     const pontosM = cursosMilitares.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
     const pontosC = cursosCivis.reduce((sum, curso) => sum + (curso.pontos || 0), 0);
@@ -26,114 +33,6 @@ const useFichaMilitar = (id: string | undefined) => {
     
     setTotalPontos(pontosM + pontosC + pontosD + pontosE - pontosP);
   }, [cursosMilitares, cursosCivis, condecoracoes, elogios, punicoes]);
-
-  // Funções auxiliares para buscar dados relacionados
-  const buscarCursosMilitares = async (militarId: string) => {
-    const { data, error } = await supabase
-      .from("cursos_militares")
-      .select("*")
-      .eq("militar_id", militarId);
-      
-    if (error) throw error;
-    
-    const cursosMapeados: CursoMilitar[] = data.map(curso => ({
-      id: curso.id,
-      militar_id: curso.militar_id,
-      nome: curso.nome,
-      tipo: curso.tipo || "Especialização",
-      instituicao: curso.instituicao || "",
-      cargahoraria: curso.cargahoraria || 0,
-      pontos: curso.pontos || 0
-    }));
-    
-    setCursosMilitares(cursosMapeados);
-    return cursosMapeados;
-  };
-
-  const buscarCursosCivis = async (militarId: string) => {
-    const { data, error } = await supabase
-      .from("cursos_civis")
-      .select("*")
-      .eq("militar_id", militarId);
-      
-    if (error) throw error;
-    
-    const cursosMapeados: CursoCivil[] = data.map(curso => ({
-      id: curso.id,
-      militar_id: curso.militar_id,
-      nome: curso.nome,
-      tipo: curso.tipo || "Superior",
-      instituicao: curso.instituicao || "",
-      cargahoraria: curso.cargahoraria || 0,
-      pontos: curso.pontos || 0
-    }));
-    
-    setCursosCivis(cursosMapeados);
-    return cursosMapeados;
-  };
-
-  const buscarCondecoracoes = async (militarId: string) => {
-    const { data, error } = await supabase
-      .from("condecoracoes")
-      .select("*")
-      .eq("militar_id", militarId);
-      
-    if (error) throw error;
-    
-    const condecoracoesMapeadas: Condecoracao[] = data.map(cond => ({
-      id: cond.id,
-      militar_id: cond.militar_id,
-      tipo: cond.tipo,
-      descricao: cond.descricao,
-      pontos: cond.pontos,
-      datarecebimento: cond.datarecebimento
-    }));
-    
-    setCondecoracoes(condecoracoesMapeadas);
-    return condecoracoesMapeadas;
-  };
-
-  const buscarElogios = async (militarId: string) => {
-    const { data, error } = await supabase
-      .from("elogios")
-      .select("*")
-      .eq("militar_id", militarId);
-      
-    if (error) throw error;
-    
-    const elogiosMapeados: Elogio[] = data.map(elogio => ({
-      id: elogio.id,
-      militar_id: elogio.militar_id,
-      tipo: elogio.tipo,
-      descricao: elogio.descricao,
-      pontos: elogio.pontos,
-      datarecebimento: elogio.datarecebimento
-    }));
-    
-    setElogios(elogiosMapeados);
-    return elogiosMapeados;
-  };
-
-  const buscarPunicoes = async (militarId: string) => {
-    const { data, error } = await supabase
-      .from("punicoes")
-      .select("*")
-      .eq("militar_id", militarId);
-      
-    if (error) throw error;
-    
-    const punicoesMapeadas: Punicao[] = data.map(punicao => ({
-      id: punicao.id,
-      militar_id: punicao.militar_id,
-      tipo: punicao.tipo,
-      descricao: punicao.descricao,
-      pontos: punicao.pontos,
-      datarecebimento: punicao.datarecebimento
-    }));
-    
-    setPunicoes(punicoesMapeadas);
-    return punicoesMapeadas;
-  };
 
   // Função para buscar dados do militar
   const buscarDadosMilitar = useCallback(async () => {
@@ -171,13 +70,19 @@ const useFichaMilitar = (id: string | undefined) => {
       }
       
       // Carregar dados relacionados
-      await Promise.all([
-        buscarCursosMilitares(id),
-        buscarCursosCivis(id),
-        buscarCondecoracoes(id),
-        buscarElogios(id),
-        buscarPunicoes(id)
+      const [cursosMil, cursosCiv, cond, elog, pun] = await Promise.all([
+        fetchCursosMilitares(id),
+        fetchCursosCivis(id),
+        fetchCondecoracoes(id),
+        fetchElogios(id),
+        fetchPunicoes(id)
       ]);
+      
+      setCursosMilitares(cursosMil);
+      setCursosCivis(cursosCiv);
+      setCondecoracoes(cond);
+      setElogios(elog);
+      setPunicoes(pun);
       
     } catch (error) {
       console.error("Erro ao buscar dados do militar:", error);
@@ -197,13 +102,19 @@ const useFichaMilitar = (id: string | undefined) => {
     
     try {
       // Apenas recarregar os dados relacionados, não o militar principal
-      await Promise.all([
-        buscarCursosMilitares(id),
-        buscarCursosCivis(id),
-        buscarCondecoracoes(id),
-        buscarElogios(id),
-        buscarPunicoes(id)
+      const [cursosMil, cursosCiv, cond, elog, pun] = await Promise.all([
+        fetchCursosMilitares(id),
+        fetchCursosCivis(id),
+        fetchCondecoracoes(id),
+        fetchElogios(id),
+        fetchPunicoes(id)
       ]);
+      
+      setCursosMilitares(cursosMil);
+      setCursosCivis(cursosCiv);
+      setCondecoracoes(cond);
+      setElogios(elog);
+      setPunicoes(pun);
       
       toast({
         title: "Dados atualizados",
