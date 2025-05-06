@@ -1,6 +1,8 @@
 
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { FileEdit, ListChecks, History } from "lucide-react";
 
 interface AcoesNavegacaoProps {
   id: string;
@@ -12,22 +14,30 @@ export const AcoesNavegacao = ({ id }: AcoesNavegacaoProps) => {
   return (
     <div className="flex space-x-2">
       <Button
-        onClick={() => navigate(`/militar/${id}/editar`)}
         variant="outline"
+        className="flex items-center gap-2"
+        onClick={() => navigate(`/editar-militar/${id}`)}
       >
-        Editar Dados
+        <FileEdit className="h-4 w-4" />
+        <span>Editar Dados</span>
       </Button>
+      
       <Button
-        onClick={() => navigate(`/militar/${id}/promocoes`)}
         variant="outline"
+        className="flex items-center gap-2"
+        onClick={() => navigate(`/ficha-conceito/${id}`)}
       >
-        Histórico de Promoções
+        <ListChecks className="h-4 w-4" />
+        <span>Ficha de Conceito</span>
       </Button>
+      
       <Button
-        onClick={() => navigate(-1)}
         variant="outline"
+        className="flex items-center gap-2"
+        onClick={() => navigate(`/historico-promocoes/${id}`)}
       >
-        Voltar
+        <History className="h-4 w-4" />
+        <span>Histórico de Promoções</span>
       </Button>
     </div>
   );

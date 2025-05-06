@@ -1,846 +1,603 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+
+import React from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { PontuacaoLei5461 } from "@/types";
-import { toast } from "@/components/ui/use-toast";
-import { salvarFichaConceito } from "@/services/fichaService";
+import { obterCriteriosLei5461 } from "@/services/promocaoService";
 
 interface TabelaFichaConceitoOficialProps {
   militarId: string;
   pontuacao: PontuacaoLei5461;
-  onPontuacaoChange: (novaPontuacao: PontuacaoLei5461) => void;
-  readOnly?: boolean;
+  onPontuacaoChange: (pontuacao: PontuacaoLei5461) => void;
 }
 
-export const TabelaFichaConceitoOficial = ({ 
+export function TabelaFichaConceitoOficial({
   militarId,
-  pontuacao, 
-  onPontuacaoChange,
-  readOnly = false 
-}: TabelaFichaConceitoOficialProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  pontuacao,
+  onPontuacaoChange
+}: TabelaFichaConceitoOficialProps) {
+  const criterios = obterCriteriosLei5461();
   
-  const handleQuantidadeChange = (
-    category: keyof PontuacaoLei5461, 
-    subcategory: string, 
-    value: number
+  // Função para atualizar a quantidade em um item específico
+  const atualizarQuantidade = (
+    categoria: keyof PontuacaoLei5461, 
+    item: string, 
+    novaQuantidade: number
   ) => {
-    const newPontuacao = JSON.parse(JSON.stringify(pontuacao)) as PontuacaoLei5461;
+    if (novaQuantidade < 0) novaQuantidade = 0;
     
-    // @ts-ignore - Dynamic access
-    if (newPontuacao[category] && newPontuacao[category][subcategory] !== undefined) {
-      // @ts-ignore - Dynamic access
-      newPontuacao[category][subcategory].quantidade = value;
+    const novaPontuacao = { ...pontuacao };
+    let categoriaAtual: any = novaPontuacao[categoria];
+    
+    if (categoria === "tempoServicoQuadro") {
+      categoriaAtual.quantidade = novaQuantidade;
+      categoriaAtual.pontosPositivos = novaQuantidade * categoriaAtual.valor;
+    } 
+    else if (
+      categoria === "cursosMilitares" || 
+      categoria === "cursosCivis" || 
+      categoria === "condecoracoes" || 
+      categoria === "elogios" || 
+      categoria === "punicoes"
+    ) {
+      categoriaAtual[item].quantidade = novaQuantidade;
       
-      // Calcular os pontos com base na quantidade e valor
-      // @ts-ignore - Dynamic access
-      const valorUnitario = newPontuacao[category][subcategory].valor;
-      
-      // @ts-ignore - Dynamic access
-      if (category === "punicoes" || category === "faltaAproveitamentoCursos") {
-        // Para pontos negativos
-        // @ts-ignore - Dynamic access
-        newPontuacao[category][subcategory].pontosNegativos = value * valorUnitario;
-        // @ts-ignore - Dynamic access
-        newPontuacao[category][subcategory].pontosPositivos = 0;
+      if (categoria === "punicoes") {
+        categoriaAtual[item].pontosNegativos = novaQuantidade * Math.abs(categoriaAtual[item].valor);
       } else {
-        // Para pontos positivos
-        // @ts-ignore - Dynamic access
-        newPontuacao[category][subcategory].pontosPositivos = value * valorUnitario;
-        // @ts-ignore - Dynamic access
-        newPontuacao[category][subcategory].pontosNegativos = 0;
+        categoriaAtual[item].pontosPositivos = novaQuantidade * categoriaAtual[item].valor;
       }
-      
-      // Recalcular soma total
-      let somaPositivos = 0;
-      let somaNegativos = 0;
-      
-      // Tempo de serviço
-      somaPositivos += newPontuacao.tempoServicoQuadro.pontosPositivos;
-      
-      // Cursos militares
-      Object.values(newPontuacao.cursosMilitares).forEach(item => {
-        somaPositivos += item.pontosPositivos;
-      });
-      
-      // Cursos civis
-      Object.values(newPontuacao.cursosCivis).forEach(item => {
-        somaPositivos += item.pontosPositivos;
-      });
-      
-      // Condecorações
-      Object.values(newPontuacao.condecoracoes).forEach(item => {
-        somaPositivos += item.pontosPositivos;
-      });
-      
-      // Elogios
-      Object.values(newPontuacao.elogios).forEach(item => {
-        somaPositivos += item.pontosPositivos;
-      });
-      
-      // Punições
-      Object.values(newPontuacao.punicoes).forEach(item => {
-        somaNegativos += item.pontosNegativos;
-      });
-      
-      // Falta de aproveitamento
-      somaNegativos += newPontuacao.faltaAproveitamentoCursos.pontosNegativos;
-      
-      // Atualizar soma total
-      newPontuacao.somaTotal = somaPositivos - somaNegativos;
-      
-      onPontuacaoChange(newPontuacao);
     }
-  };
-
-  const handleSave = async () => {
-    try {
-      await salvarFichaConceito({
-        militarId,
-        tempoServicoQuadro: pontuacao.tempoServicoQuadro.quantidade,
-        totalPontos: pontuacao.somaTotal
-      });
-      
-      toast({
-        title: "Pontuação salva com sucesso!",
-        description: "A ficha de conceito do oficial foi atualizada."
-      });
-      
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Erro ao salvar ficha de conceito:", error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar a ficha de conceito.",
-        variant: "destructive"
-      });
-    }
+    
+    // Recalcular o total
+    calcularSomaTotal(novaPontuacao);
+    
+    // Atualizar estado
+    onPontuacaoChange(novaPontuacao);
   };
   
-  const getRowClassName = (category: string) => {
-    return category === "punicoes" || category === "faltaAproveitamentoCursos" 
-      ? "bg-red-50" 
-      : "";
+  // Função para calcular a soma total de pontos
+  const calcularSomaTotal = (pontuacaoAtual: PontuacaoLei5461) => {
+    let total = 0;
+    
+    // Tempo de serviço
+    total += pontuacaoAtual.tempoServicoQuadro.pontosPositivos;
+    
+    // Cursos Militares
+    Object.values(pontuacaoAtual.cursosMilitares).forEach(item => {
+      total += item.pontosPositivos;
+    });
+    
+    // Cursos Civis
+    Object.values(pontuacaoAtual.cursosCivis).forEach(item => {
+      total += item.pontosPositivos;
+    });
+    
+    // Condecorações
+    Object.values(pontuacaoAtual.condecoracoes).forEach(item => {
+      total += item.pontosPositivos;
+    });
+    
+    // Elogios
+    Object.values(pontuacaoAtual.elogios).forEach(item => {
+      total += item.pontosPositivos;
+    });
+    
+    // Punições (são pontos negativos)
+    Object.values(pontuacaoAtual.punicoes).forEach(item => {
+      if (item.pontosNegativos) {
+        total -= item.pontosNegativos;
+      }
+    });
+    
+    // Falta de aproveitamento
+    if (pontuacaoAtual.faltaAproveitamentoCursos.pontosNegativos) {
+      total -= pontuacaoAtual.faltaAproveitamentoCursos.pontosNegativos;
+    }
+    
+    pontuacaoAtual.somaTotal = total;
+    return total;
   };
   
   return (
-    <div className="space-y-4">
-      {!readOnly && (
-        <div className="flex justify-end">
-          {isEditing ? (
-            <div className="space-x-2">
-              <Button onClick={handleSave} variant="default">
-                Salvar
-              </Button>
-              <Button onClick={() => setIsEditing(false)} variant="outline">
-                Cancelar
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={() => setIsEditing(true)} variant="outline">
-              Editar
-            </Button>
-          )}
-        </div>
-      )}
-      
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-100">
-              <TableHead className="border" colSpan={2}>
-                <strong>Dados Apurados</strong>
-              </TableHead>
-              <TableHead className="border text-center">
-                <strong>Quantidade</strong>
-              </TableHead>
-              <TableHead className="border text-center">
-                <strong>Valor</strong>
-              </TableHead>
-              <TableHead className="border text-center" colSpan={2}>
-                <strong>Pontos</strong>
-              </TableHead>
-              <TableHead className="border text-center">
-                <strong>Observação</strong>
-              </TableHead>
-            </TableRow>
-            <TableRow className="bg-gray-100">
-              <TableHead className="border"></TableHead>
-              <TableHead className="border"></TableHead>
-              <TableHead className="border"></TableHead>
-              <TableHead className="border"></TableHead>
-              <TableHead className="border text-center">
-                <strong>POSITIVOS</strong>
-              </TableHead>
-              <TableHead className="border text-center">
-                <strong>NEGATIVOS</strong>
-              </TableHead>
-              <TableHead className="border"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {/* Tempo de Serviço no Quadro */}
-            <TableRow>
-              <TableCell className="border" rowSpan={1}>
-                <strong>Tempo de Serviço no Quadro</strong>
-              </TableCell>
-              <TableCell className="border">No Posto atual</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.tempoServicoQuadro.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "tempoServicoQuadro", 
-                      "quantidade",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.tempoServicoQuadro.quantidade
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[30%]">Critério</TableHead>
+            <TableHead className="w-[25%]">Valor por Item</TableHead>
+            <TableHead className="w-[20%]">Quantidade</TableHead>
+            <TableHead className="w-[25%] text-right">Pontos</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {/* Tempo de Serviço */}
+          <TableRow className="bg-gray-50 font-medium">
+            <TableCell colSpan={4}>Tempo de Serviço no Quadro</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Tempo no quadro (meses)</TableCell>
+            <TableCell>0,1 por mês</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.tempoServicoQuadro.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "tempoServicoQuadro", 
+                  "", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.tempoServicoQuadro.valor.toFixed(2)}
-              </TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.tempoServicoQuadro.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border">
-                Pontuação máxima 05 pontos
-              </TableCell>
-            </TableRow>
-            
-            {/* Conclusão de Cursos Militares */}
-            <TableRow>
-              <TableCell className="border" rowSpan={9}>
-                <strong>Conclusão de Cursos Militares</strong>
-              </TableCell>
-              <TableCell className="border">Especialização</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.especializacao.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "especializacao",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.especializacao.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.tempoServicoQuadro.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          
+          {/* Cursos Militares */}
+          <TableRow className="bg-gray-50 font-medium">
+            <TableCell colSpan={4}>Cursos Militares</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Especialização</TableCell>
+            <TableCell>0,5 por curso (máx. 2,0)</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.cursosMilitares.especializacao.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "especializacao", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">2,50</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.especializacao.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border" rowSpan={9}>
-                Pontuação máxima 05 pontos
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CSBM</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.csbm.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "csbm",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.csbm.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.especializacao.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CSBM</TableCell>
+            <TableCell>4,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.csbm.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "csbm", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">4,00</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.csbm.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CFSD</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.cfsd.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "cfsd",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.cfsd.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.csbm.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CFSD</TableCell>
+            <TableCell>3,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.cfsd.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "cfsd", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,50</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.cfsd.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CHC ou adaptação a Cb</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.chc.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "chc",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.chc.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.cfsd.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CHC</TableCell>
+            <TableCell>1,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.chc.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "chc", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,75</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.chc.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CHSGT ou adaptação a Sgt</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.chsgt.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "chsgt",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.chsgt.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.chc.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CHSGT</TableCell>
+            <TableCell>1,5</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.chsgt.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "chsgt", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">1,00</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.chsgt.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CAS</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.cas.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "cas",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.cas.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.chsgt.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CAS</TableCell>
+            <TableCell>2,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.cas.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "cas", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">1,25</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.cas.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CHO</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.cho.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "cho",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.cho.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.cas.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CHO</TableCell>
+            <TableCell>2,5</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.cho.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "cho", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">1,50</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.cho.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CFO</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.cfo.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "cfo",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.cfo.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.cho.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CFO</TableCell>
+            <TableCell>4,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.cfo.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "cfo", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">1,75</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.cfo.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CAO</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.cao.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "cao",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.cao.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.cfo.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CAO</TableCell>
+            <TableCell>3,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.cao.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "cao", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">3,00</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.cao.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">CSBM</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosMilitares.csbm2.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosMilitares",
-                      "csbm2",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosMilitares.csbm2.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.cao.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CSBM2</TableCell>
+            <TableCell>3,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosMilitares.csbm2.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosMilitares", 
+                  "csbm2", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">2,50</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosMilitares.csbm2.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            
-            {/* Instrutor em cursos militares */}
-            <TableRow>
-              <TableCell className="border" rowSpan={1}>
-                <strong>Instrutor em cursos militares</strong>
-              </TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border">
-                Pontuação máxima 10 pontos
-              </TableCell>
-            </TableRow>
-            
-            {/* Conclusão em cursos civis */}
-            <TableRow>
-              <TableCell className="border" rowSpan={4}>
-                <strong>Conclusão em cursos civis</strong>
-              </TableCell>
-              <TableCell className="border">Superior</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosCivis.superior.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosCivis",
-                      "superior",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosCivis.superior.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosMilitares.csbm2.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          
+          {/* Cursos Civis */}
+          <TableRow className="bg-gray-50 font-medium">
+            <TableCell colSpan={4}>Cursos Civis</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Superior</TableCell>
+            <TableCell>1,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosCivis.superior.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosCivis", 
+                  "superior", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">1,50</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosCivis.superior.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border" rowSpan={4}></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">Especialização</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosCivis.especializacao.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosCivis",
-                      "especializacao",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosCivis.especializacao.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosCivis.superior.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Especialização</TableCell>
+            <TableCell>1,0 por curso (máx. 3,0)</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="3" 
+                value={pontuacao.cursosCivis.especializacao.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosCivis", 
+                  "especializacao", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">2,00</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosCivis.especializacao.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">Mestrado</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosCivis.mestrado.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosCivis",
-                      "mestrado",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosCivis.mestrado.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosCivis.especializacao.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Mestrado</TableCell>
+            <TableCell>2,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosCivis.mestrado.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosCivis", 
+                  "mestrado", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">3,00</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosCivis.mestrado.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">Doutorado</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.cursosCivis.doutorado.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "cursosCivis",
-                      "doutorado",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.cursosCivis.doutorado.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosCivis.mestrado.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Doutorado</TableCell>
+            <TableCell>3,0</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                max="1" 
+                value={pontuacao.cursosCivis.doutorado.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "cursosCivis", 
+                  "doutorado", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">4,00</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.cursosCivis.doutorado.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            
-            {/* Medalhas e Condecorações */}
-            <TableRow>
-              <TableCell className="border" rowSpan={3}>
-                <strong>Medalhas e Condecorações</strong>
-              </TableCell>
-              <TableCell className="border">Concedida pelo Governo Federal Reconhecido pelo CBMEPI</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.condecoracoes.governoFederal.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "condecoracoes",
-                      "governoFederal",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.condecoracoes.governoFederal.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.cursosCivis.doutorado.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          
+          {/* Condecorações */}
+          <TableRow className="bg-gray-50 font-medium">
+            <TableCell colSpan={4}>Condecorações</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Governo Federal</TableCell>
+            <TableCell>1,0 por condecoração</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.condecoracoes.governoFederal.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "condecoracoes", 
+                  "governoFederal", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,50</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.condecoracoes.governoFederal.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border" rowSpan={3}>
-                Pontuação máxima 1,0 ponto
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">Concedida pelo Governo Estadual Reconhecido Pelo CBMEPI</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.condecoracoes.governoEstadual.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "condecoracoes",
-                      "governoEstadual",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.condecoracoes.governoEstadual.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.condecoracoes.governoFederal.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Governo Estadual</TableCell>
+            <TableCell>0,5 por condecoração</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.condecoracoes.governoEstadual.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "condecoracoes", 
+                  "governoEstadual", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,30</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.condecoracoes.governoEstadual.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">Concedida Pelo CBMEPI</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.condecoracoes.cbmepi.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "condecoracoes",
-                      "cbmepi",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.condecoracoes.cbmepi.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.condecoracoes.governoEstadual.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>CBMEPI</TableCell>
+            <TableCell>0,2 por condecoração</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.condecoracoes.cbmepi.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "condecoracoes", 
+                  "cbmepi", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,20</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.condecoracoes.cbmepi.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            
-            {/* Elogios */}
-            <TableRow>
-              <TableCell className="border" rowSpan={2}>
-                <strong>Elogios</strong>
-              </TableCell>
-              <TableCell className="border">Individual</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.elogios.individual.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "elogios",
-                      "individual",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.elogios.individual.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.condecoracoes.cbmepi.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          
+          {/* Elogios */}
+          <TableRow className="bg-gray-50 font-medium">
+            <TableCell colSpan={4}>Elogios</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Individual</TableCell>
+            <TableCell>0,2 por elogio</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.elogios.individual.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "elogios", 
+                  "individual", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,15</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.elogios.individual.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border" rowSpan={2}>
-                Pontuação máxima 0,25 pontos
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="border">Coletivo</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.elogios.coletivo.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "elogios",
-                      "coletivo",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.elogios.coletivo.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.elogios.individual.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Coletivo</TableCell>
+            <TableCell>0,1 por elogio</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.elogios.coletivo.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "elogios", 
+                  "coletivo", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,10</TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.elogios.coletivo.pontosPositivos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            
-            {/* Punições */}
-            <TableRow className={getRowClassName("punicoes")}>
-              <TableCell className="border" rowSpan={3}>
-                <strong>Punições</strong>
-              </TableCell>
-              <TableCell className="border">Repreensão</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.punicoes.repreensao.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "punicoes",
-                      "repreensao",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.punicoes.repreensao.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right">{pontuacao.elogios.coletivo.pontosPositivos.toFixed(1)}</TableCell>
+          </TableRow>
+          
+          {/* Punições */}
+          <TableRow className="bg-gray-50 font-medium">
+            <TableCell colSpan={4}>Punições</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Repreensão</TableCell>
+            <TableCell>-0,5 por punição</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.punicoes.repreensao.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "punicoes", 
+                  "repreensao", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">0,50</TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.punicoes.repreensao.pontosNegativos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border" rowSpan={3}></TableCell>
-            </TableRow>
-            <TableRow className={getRowClassName("punicoes")}>
-              <TableCell className="border">Detenção</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.punicoes.detencao.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "punicoes",
-                      "detencao",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.punicoes.detencao.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right text-red-600">-{pontuacao.punicoes.repreensao.pontosNegativos?.toFixed(1) || 0}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Detenção</TableCell>
+            <TableCell>-1,0 por punição</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.punicoes.detencao.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "punicoes", 
+                  "detencao", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">1,00</TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.punicoes.detencao.pontosNegativos.toFixed(2)}
-              </TableCell>
-            </TableRow>
-            <TableRow className={getRowClassName("punicoes")}>
-              <TableCell className="border">Prisão</TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.punicoes.prisao.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "punicoes",
-                      "prisao",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.punicoes.prisao.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right text-red-600">-{pontuacao.punicoes.detencao.pontosNegativos?.toFixed(1) || 0}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Prisão</TableCell>
+            <TableCell>-1,5 por punição</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.punicoes.prisao.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "punicoes", 
+                  "prisao", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">2,00</TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.punicoes.prisao.pontosNegativos.toFixed(2)}
-              </TableCell>
-            </TableRow>
-            
-            {/* Falta de Aproveitamento em Cursos Militares */}
-            <TableRow className={getRowClassName("faltaAproveitamentoCursos")}>
-              <TableCell className="border" colSpan={2}>
-                <strong>Falta de Aproveitamento em Cursos Militares</strong>
-              </TableCell>
-              <TableCell className="border p-0 text-center">
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    value={pontuacao.faltaAproveitamentoCursos.quantidade}
-                    onChange={(e) => handleQuantidadeChange(
-                      "faltaAproveitamentoCursos",
-                      "quantidade",
-                      parseInt(e.target.value) || 0
-                    )}
-                    className="h-10 text-center border-0"
-                  />
-                ) : (
-                  pontuacao.faltaAproveitamentoCursos.quantidade
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right text-red-600">-{pontuacao.punicoes.prisao.pontosNegativos?.toFixed(1) || 0}</TableCell>
+          </TableRow>
+          
+          {/* Falta de Aproveitamento em Cursos */}
+          <TableRow className="bg-gray-50 font-medium">
+            <TableCell colSpan={4}>Falta de Aproveitamento em Cursos</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Reprovação por Desempenho</TableCell>
+            <TableCell>-1,0 por curso</TableCell>
+            <TableCell>
+              <Input 
+                type="number" 
+                min="0" 
+                value={pontuacao.faltaAproveitamentoCursos.quantidade}
+                onChange={(e) => atualizarQuantidade(
+                  "faltaAproveitamentoCursos", 
+                  "", 
+                  parseInt(e.target.value) || 0
                 )}
-              </TableCell>
-              <TableCell className="border text-center">5,00</TableCell>
-              <TableCell className="border"></TableCell>
-              <TableCell className="border text-center">
-                {pontuacao.faltaAproveitamentoCursos.pontosNegativos.toFixed(2)}
-              </TableCell>
-              <TableCell className="border"></TableCell>
-            </TableRow>
-            
-            {/* Soma Total */}
-            <TableRow className="bg-gray-100 font-bold">
-              <TableCell className="border" colSpan={4}>
-                <div className="text-center">SOMA TOTAL DE PONTOS</div>
-              </TableCell>
-              <TableCell className="border" colSpan={3}>
-                <div className="text-center text-xl">{pontuacao.somaTotal.toFixed(2)}</div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+                className="w-20"
+              />
+            </TableCell>
+            <TableCell className="text-right text-red-600">-{pontuacao.faltaAproveitamentoCursos.pontosNegativos?.toFixed(1) || 0}</TableCell>
+          </TableRow>
+          
+          {/* Total */}
+          <TableRow className="border-t-2 border-black font-bold text-lg">
+            <TableCell colSpan={3}>TOTAL DE PONTOS</TableCell>
+            <TableCell className="text-right">{pontuacao.somaTotal.toFixed(1)}</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </div>
   );
-};
+}

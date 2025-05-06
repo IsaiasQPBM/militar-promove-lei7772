@@ -1,3 +1,4 @@
+
 export interface FichaConceito {
   id: string;
   militar_id: string;
@@ -129,7 +130,7 @@ export type QuadroMilitar =
   | "QPBM" 
   | "QPRR";
 
-export type CriterioPromocao = "Antiguidade" | "Merecimento" | "Posto máximo" | "Graduação máxima";
+export type CriterioPromocao = "Antiguidade" | "Merecimento" | "Posto máximo" | "Graduação máxima" | "Post mortem" | "Ressarcimento de preterição";
 
 export type SituacaoMilitar = "ativo" | "inativo";
 
@@ -166,8 +167,8 @@ export interface Promocao {
   criterio: CriterioPromocao;
   dataPromocao: string;
   publicada?: boolean;
-  cargo?: string; // Optional field for UI
-  anexoDocumento?: string; // Optional field for UI
+  cargo?: string; // Posto/graduação promovido
+  anexoDocumento?: string;
 }
 
 // Type for MerecimentoList component

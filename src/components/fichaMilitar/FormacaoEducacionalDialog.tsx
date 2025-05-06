@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,15 +22,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { CursoMilitarTipo, CursoCivilTipo } from "@/types";
+import { obterCriteriosLei5461 } from "@/services/promocaoService";
+import { Plus } from "lucide-react";
 
 // Esquema para validação de curso militar
 const cursoMilitarSchema = z.object({
   nome: z.string().min(2, "Nome do curso é obrigatório"),
-  tipo: z.string().min(1, "Selecione o tipo de curso"),
-  instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
+  tipo: z.string().min(1, "Tipo de curso é obrigatório"),
+  instituicao: z.string().min(2, "Instituição é obrigatória"),
   cargahoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
 });
@@ -38,8 +40,8 @@ const cursoMilitarSchema = z.object({
 // Esquema para validação de curso civil
 const cursoCivilSchema = z.object({
   nome: z.string().min(2, "Nome do curso é obrigatório"),
-  tipo: z.string().min(1, "Selecione o tipo de curso"),
-  instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
+  tipo: z.string().min(1, "Tipo de curso é obrigatório"),
+  instituicao: z.string().min(2, "Instituição é obrigatória"),
   cargahoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
 });
@@ -50,53 +52,122 @@ type FormacaoEducacionalDialogProps = {
   onSuccess: () => void;
 };
 
-const tiposCursoMilitar = [
-  { value: "Formação", label: "Curso de Formação" },
-  { value: "Aperfeiçoamento", label: "Curso de Aperfeiçoamento" },
-  { value: "Especialização", label: "Curso de Especialização" },
-  { value: "Altos Estudos", label: "Curso de Altos Estudos" },
-  { value: "Mestrado", label: "Mestrado" },
-  { value: "Doutorado", label: "Doutorado" },
-  { value: "Outro", label: "Outro" }
-];
-
-const tiposCursoCivil = [
-  { value: "Técnico", label: "Curso Técnico" },
-  { value: "Graduação", label: "Graduação" },
-  { value: "Pós-Graduação", label: "Pós-Graduação" },
-  { value: "MBA", label: "MBA" },
-  { value: "Mestrado", label: "Mestrado" },
-  { value: "Doutorado", label: "Doutorado" },
-  { value: "Curso Livre", label: "Curso Livre" },
-  { value: "Outro", label: "Outro" }
-];
-
 export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: FormacaoEducacionalDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOficial, setIsOficial] = useState(false);
+
+  // Obter os critérios da Lei 5.461 para calcular pontos automaticamente
+  const criteriosLei5461 = obterCriteriosLei5461();
   
-  const schema = tipo === "militar" ? cursoMilitarSchema : cursoCivilSchema;
-  const tiposCurso = tipo === "militar" ? tiposCursoMilitar : tiposCursoCivil;
+  // Verificar se o militar é um oficial
+  useEffect(() => {
+    const verificarQuadroMilitar = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("militares")
+          .select("posto, quadro")
+          .eq("id", militarId)
+          .single();
+          
+        if (error) throw error;
+        
+        // Verificar se é um oficial
+        if (data) {
+          const postosOficial = ["Coronel", "Tenente-Coronel", "Major", "Capitão", "1º Tenente", "2º Tenente"];
+          setIsOficial(postosOficial.includes(data.posto));
+        }
+      } catch (error) {
+        console.error("Erro ao verificar posto do militar:", error);
+      }
+    };
+    
+    if (militarId) {
+      verificarQuadroMilitar();
+    }
+  }, [militarId]);
   
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const formSchema = tipo === "militar" ? cursoMilitarSchema : cursoCivilSchema;
+  
+  // Definir os tipos de curso disponíveis com base no tipo e se é oficial
+  const getTiposCurso = () => {
+    if (tipo === "militar") {
+      if (isOficial) {
+        return [
+          { value: "Especialização", label: "Especialização (0,5 pontos)", pontos: 0.5 },
+          { value: "CSBM", label: "CSBM - Curso Superior de Bombeiro Militar (4,0 pontos)", pontos: 4.0 },
+          { value: "CFSD", label: "CFSD - Curso de Formação de Soldados (3,0 pontos)", pontos: 3.0 },
+          { value: "CHC", label: "CHC - Curso de Habilitação de Cabos (1,0 ponto)", pontos: 1.0 },
+          { value: "CHSGT", label: "CHSGT - Curso de Habilitação de Sargentos (1,5 pontos)", pontos: 1.5 },
+          { value: "CAS", label: "CAS - Curso de Aperfeiçoamento de Sargentos (2,0 pontos)", pontos: 2.0 },
+          { value: "CHO", label: "CHO - Curso de Habilitação de Oficiais (2,5 pontos)", pontos: 2.5 },
+          { value: "CFO", label: "CFO - Curso de Formação de Oficiais (4,0 pontos)", pontos: 4.0 },
+          { value: "CAO", label: "CAO - Curso de Aperfeiçoamento de Oficiais (3,0 pontos)", pontos: 3.0 },
+          { value: "CSBM2", label: "CSBM2 - Curso Superior de Bombeiro Militar II (3,0 pontos)", pontos: 3.0 },
+          { value: "Outro", label: "Outro", pontos: 0 }
+        ];
+      } else {
+        return [
+          { value: "Especialização", label: "Especialização" },
+          { value: "CFSD", label: "CFSD - Curso de Formação de Soldados" },
+          { value: "CHC", label: "CHC - Curso de Habilitação de Cabos" },
+          { value: "CHSGT", label: "CHSGT - Curso de Habilitação de Sargentos" },
+          { value: "CAS", label: "CAS - Curso de Aperfeiçoamento de Sargentos" },
+          { value: "Outro", label: "Outro" }
+        ];
+      }
+    } else {
+      if (isOficial) {
+        return [
+          { value: "Superior", label: "Superior (1,0 ponto)", pontos: 1.0 },
+          { value: "Especialização", label: "Especialização (1,0 ponto)", pontos: 1.0 },
+          { value: "Mestrado", label: "Mestrado (2,0 pontos)", pontos: 2.0 },
+          { value: "Doutorado", label: "Doutorado (3,0 pontos)", pontos: 3.0 },
+          { value: "Outro", label: "Outro", pontos: 0 }
+        ];
+      } else {
+        return [
+          { value: "Superior", label: "Superior" },
+          { value: "Especialização", label: "Especialização" },
+          { value: "Mestrado", label: "Mestrado" },
+          { value: "Doutorado", label: "Doutorado" },
+          { value: "Outro", label: "Outro" }
+        ];
+      }
+    }
+  };
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       nome: "",
-      tipo: tipo === "militar" ? "Especialização" : "Graduação",
+      tipo: "",
       instituicao: "",
       cargahoraria: 0,
       pontos: 0
     }
   });
   
-  const onSubmit = async (values: z.infer<typeof schema>) => {
+  // Função para preencher automaticamente os pontos de acordo com a Lei 5.461
+  const atualizarPontos = (tipoCurso: string) => {
+    if (!isOficial) return;
+    
+    const tiposCurso = getTiposCurso();
+    const cursoSelecionado = tiposCurso.find(curso => curso.value === tipoCurso);
+    
+    if (cursoSelecionado) {
+      form.setValue("pontos", cursoSelecionado.pontos || 0);
+    }
+  };
+  
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsSubmitting(true);
       
-      const table = tipo === "militar" ? "cursos_militares" : "cursos_civis";
+      const tabela = tipo === "militar" ? "cursos_militares" : "cursos_civis";
       
       const { error } = await supabase
-        .from(table)
+        .from(tabela)
         .insert({
           militar_id: militarId,
           nome: values.nome,
@@ -119,8 +190,8 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
     } catch (error: any) {
       console.error(`Erro ao adicionar curso ${tipo}:`, error);
       toast({
-        title: "Erro ao adicionar curso",
-        description: error.message || "Ocorreu um erro ao adicionar o curso.",
+        title: `Erro ao adicionar curso ${tipo}`,
+        description: error.message || `Ocorreu um erro ao adicionar o curso ${tipo}.`,
         variant: "destructive"
       });
     } finally {
@@ -128,24 +199,16 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
     }
   };
   
-  const buttonLabel = tipo === "militar" 
-    ? "Adicionar Curso Militar" 
-    : "Adicionar Curso Civil";
-    
-  const dialogTitle = tipo === "militar"
-    ? "Novo Curso Militar"
-    : "Novo Curso Civil";
-  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-2">
-          {buttonLabel}
-        </Button>
+        <div className="flex items-center gap-1">
+          <Plus size={16} /> {tipo === "militar" ? "Adicionar Curso Militar" : "Adicionar Curso Civil"}
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogTitle>{tipo === "militar" ? "Novo Curso Militar" : "Novo Curso Civil"}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -157,7 +220,7 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
                 <FormItem>
                   <FormLabel>Nome do Curso</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome do curso" {...field} />
+                    <Input placeholder="Digite o nome do curso" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -170,16 +233,22 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tipo de Curso</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      atualizarPontos(value);
+                    }} 
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o tipo de curso" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {tiposCurso.map((tipo) => (
-                        <SelectItem key={tipo.value} value={tipo.value}>
-                          {tipo.label}
+                      {getTiposCurso().map(opcao => (
+                        <SelectItem key={opcao.value} value={opcao.value}>
+                          {opcao.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -196,7 +265,7 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
                 <FormItem>
                   <FormLabel>Instituição</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome da instituição" {...field} />
+                    <Input placeholder="Digite a instituição" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -209,7 +278,7 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
                 name="cargahoraria"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Carga Horária (h)</FormLabel>
+                    <FormLabel>Carga Horária</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -225,7 +294,12 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
                   <FormItem>
                     <FormLabel>Pontos</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input 
+                        type="number" 
+                        step="0.1" 
+                        {...field} 
+                        disabled={isOficial && form.getValues("tipo") !== "Outro"}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

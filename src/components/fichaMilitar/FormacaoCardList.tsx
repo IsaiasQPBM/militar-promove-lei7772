@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, FileText } from "lucide-react";
+import { Pencil, Trash2, FileText, Plus } from "lucide-react";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
 import { FormacaoEducacionalDialog } from "./FormacaoEducacionalDialog";
 import { CondecoracaoElogioDialog } from "./CondecoracaoElogioDialog";
@@ -121,11 +121,34 @@ export const FormacaoCardList: React.FC<FormacaoCardListProps> = ({
     return items.reduce((sum, item) => sum + (item.pontos || 0), 0);
   };
   
+  // Obter o texto do botão baseado no tipo
+  const getBotaoTexto = () => {
+    switch (tipo) {
+      case "cursos_militares": return "Adicionar Curso Militar";
+      case "cursos_civis": return "Adicionar Curso Civil";
+      case "condecoracoes": return "Adicionar Condecoração";
+      case "elogios": return "Adicionar Elogio";
+      case "punicoes": return "Adicionar Punição";
+      default: return "Adicionar Item";
+    }
+  };
+  
   return (
     <Card>
       <CardHeader className="bg-cbmepi-purple text-white flex flex-row items-center justify-between py-3">
         <CardTitle className="text-lg">{getTitulo()}</CardTitle>
-        {renderDialogButton()}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-white hover:bg-gray-100 text-cbmepi-purple"
+          asChild
+        >
+          {renderDialogButton() || (
+            <div className="flex items-center gap-1">
+              <Plus size={16} /> {getBotaoTexto()}
+            </div>
+          )}
+        </Button>
       </CardHeader>
       <CardContent className="p-4">
         {items.length === 0 ? (

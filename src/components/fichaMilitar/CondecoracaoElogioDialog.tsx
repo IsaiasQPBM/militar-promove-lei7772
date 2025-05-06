@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,20 +25,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { obterCriteriosLei5461 } from "@/services/promocaoService";
+import { Plus } from "lucide-react";
 
-// Esquema para validação de condecoração
-const condecoracaoSchema = z.object({
-  tipo: z.string().min(2, "Tipo é obrigatório"),
-  descricao: z.string().min(2, "Descrição é obrigatória"),
-  datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
-    message: "Data inválida. Use o formato DD/MM/AAAA"
-  }),
-  pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
-});
-
-// Esquema para validação de elogio
-const elogioSchema = z.object({
-  tipo: z.enum(["Individual", "Coletivo"]),
+// Esquema para validação de condecoração/elogio
+const condecoracaoElogioSchema = z.object({
+  tipo: z.string().min(1, "Tipo é obrigatório"),
   descricao: z.string().min(2, "Descrição é obrigatória"),
   datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
     message: "Data inválida. Use o formato DD/MM/AAAA"
@@ -52,32 +44,97 @@ type CondecoracaoElogioDialogProps = {
   onSuccess: () => void;
 };
 
-const tiposCondecoracao = [
-  { value: "Medalha de Bravura", label: "Medalha de Bravura" },
-  { value: "Medalha de Mérito", label: "Medalha de Mérito" },
-  { value: "Medalha de Tempo de Serviço", label: "Medalha de Tempo de Serviço" },
-  { value: "Medalha de Honra ao Mérito", label: "Medalha de Honra ao Mérito" },
-  { value: "Comenda", label: "Comenda" },
-  { value: "Outro", label: "Outro" }
-];
-
 export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: CondecoracaoElogioDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOficial, setIsOficial] = useState(false);
   
-  const schema = tipo === "condecoracao" ? condecoracaoSchema : elogioSchema;
+  // Verificar se o militar é um oficial
+  useEffect(() => {
+    const verificarQuadroMilitar = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("militares")
+          .select("posto, quadro")
+          .eq("id", militarId)
+          .single();
+          
+        if (error) throw error;
+        
+        // Verificar se é um oficial
+        if (data) {
+          const postosOficial = ["Coronel", "Tenente-Coronel", "Major", "Capitão", "1º Tenente", "2º Tenente"];
+          setIsOficial(postosOficial.includes(data.posto));
+        }
+      } catch (error) {
+        console.error("Erro ao verificar posto do militar:", error);
+      }
+    };
+    
+    if (militarId) {
+      verificarQuadroMilitar();
+    }
+  }, [militarId]);
   
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<z.infer<typeof condecoracaoElogioSchema>>({
+    resolver: zodResolver(condecoracaoElogioSchema),
     defaultValues: {
-      tipo: tipo === "condecoracao" ? "Medalha de Mérito" : "Individual",
+      tipo: "",
       descricao: "",
       datarecebimento: "",
       pontos: 0
     }
   });
   
-  const onSubmit = async (values: z.infer<typeof schema>) => {
+  // Funções para obter os tipos disponíveis baseado na categoria
+  const getTiposDisponiveis = () => {
+    if (tipo === "condecoracao") {
+      if (isOficial) {
+        return [
+          { value: "Governo Federal", label: "Governo Federal (1,0 ponto)", pontos: 1.0 },
+          { value: "Governo Estadual", label: "Governo Estadual (0,5 pontos)", pontos: 0.5 },
+          { value: "CBMEPI", label: "CBMEPI (0,2 pontos)", pontos: 0.2 },
+          { value: "Outro", label: "Outro", pontos: 0 }
+        ];
+      } else {
+        return [
+          { value: "Governo Federal", label: "Governo Federal" },
+          { value: "Governo Estadual", label: "Governo Estadual" },
+          { value: "CBMEPI", label: "CBMEPI" },
+          { value: "Outro", label: "Outro" }
+        ];
+      }
+    } else {
+      // Elogios
+      if (isOficial) {
+        return [
+          { value: "Individual", label: "Individual (0,2 pontos)", pontos: 0.2 },
+          { value: "Coletivo", label: "Coletivo (0,1 pontos)", pontos: 0.1 },
+          { value: "Outro", label: "Outro", pontos: 0 }
+        ];
+      } else {
+        return [
+          { value: "Individual", label: "Individual" },
+          { value: "Coletivo", label: "Coletivo" },
+          { value: "Outro", label: "Outro" }
+        ];
+      }
+    }
+  };
+  
+  // Função para atualizar pontos automaticamente com base no tipo selecionado
+  const atualizarPontos = (tipoSelecionado: string) => {
+    if (!isOficial) return;
+    
+    const tipos = getTiposDisponiveis();
+    const tipo = tipos.find(t => t.value === tipoSelecionado);
+    
+    if (tipo) {
+      form.setValue("pontos", tipo.pontos || 0);
+    }
+  };
+  
+  const onSubmit = async (values: z.infer<typeof condecoracaoElogioSchema>) => {
     try {
       setIsSubmitting(true);
       
@@ -85,10 +142,10 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
       const dataParts = values.datarecebimento.split('/');
       const dataFormatada = `${dataParts[2]}-${dataParts[1]}-${dataParts[0]}`;
       
-      const table = tipo === "condecoracao" ? "condecoracoes" : "elogios";
+      const tabela = tipo === "condecoracao" ? "condecoracoes" : "elogios";
       
       const { error } = await supabase
-        .from(table)
+        .from(tabela)
         .insert({
           militar_id: militarId,
           tipo: values.tipo,
@@ -100,7 +157,7 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
       if (error) throw error;
       
       toast({
-        title: tipo === "condecoracao" ? "Condecoração adicionada com sucesso!" : "Elogio adicionado com sucesso!",
+        title: `${tipo === "condecoracao" ? "Condecoração" : "Elogio"} adicionado com sucesso!`,
         description: `O registro foi adicionado à ficha do militar.`
       });
       
@@ -111,7 +168,7 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
       console.error(`Erro ao adicionar ${tipo}:`, error);
       toast({
         title: `Erro ao adicionar ${tipo === "condecoracao" ? "condecoração" : "elogio"}`,
-        description: error.message || "Ocorreu um erro ao adicionar o registro.",
+        description: error.message || `Ocorreu um erro ao adicionar o registro.`,
         variant: "destructive"
       });
     } finally {
@@ -119,24 +176,16 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
     }
   };
   
-  const buttonLabel = tipo === "condecoracao" 
-    ? "Adicionar Condecoração" 
-    : "Adicionar Elogio";
-    
-  const dialogTitle = tipo === "condecoracao"
-    ? "Nova Condecoração"
-    : "Novo Elogio";
-  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-2">
-          {buttonLabel}
-        </Button>
+        <div className="flex items-center gap-1">
+          <Plus size={16} /> {tipo === "condecoracao" ? "Adicionar Condecoração" : "Adicionar Elogio"}
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogTitle>{tipo === "condecoracao" ? "Nova Condecoração" : "Novo Elogio"}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -147,34 +196,26 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tipo</FormLabel>
-                  {tipo === "condecoracao" ? (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {tiposCondecoracao.map((tipo) => (
-                          <SelectItem key={tipo.value} value={tipo.value}>
-                            {tipo.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Individual">Individual</SelectItem>
-                        <SelectItem value="Coletivo">Coletivo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      atualizarPontos(value);
+                    }} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {getTiposDisponiveis().map(opcao => (
+                        <SelectItem key={opcao.value} value={opcao.value}>
+                          {opcao.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -188,7 +229,7 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={`Descrição ${tipo === "condecoracao" ? "da condecoração" : "do elogio"}`} 
+                      placeholder={`Descreva a ${tipo === "condecoracao" ? "condecoração" : "elogio"}`} 
                       {...field} 
                     />
                   </FormControl>
@@ -219,7 +260,12 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
                   <FormItem>
                     <FormLabel>Pontos</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input 
+                        type="number" 
+                        step="0.1" 
+                        {...field} 
+                        disabled={isOficial && form.getValues("tipo") !== "Outro"}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
