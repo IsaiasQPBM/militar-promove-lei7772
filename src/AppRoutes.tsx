@@ -29,100 +29,45 @@ import ProtectedRoute from './components/ProtectedRoute';
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={
-        <MainLayout>
-          <IndexPage />
-        </MainLayout>
-      } />
+      <Route path="/" element={<MainLayout><IndexPage /></MainLayout>} />
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <MainLayout>
-            <DashboardPage />
-          </MainLayout>
-        </ProtectedRoute>
-      } />
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <MainLayout><DashboardPage /></MainLayout>
+          </ProtectedRoute>
+        } 
+      />
 
-      <Route path="/quadro-fixacao-vagas" element={
-        <MainLayout>
-          <QuadroFixacaoVagasPage />
-        </MainLayout>
-      } />
+      <Route path="/quadro-fixacao-vagas" element={<MainLayout><QuadroFixacaoVagasPage /></MainLayout>} />
 
-      <Route path="/fixacao-vagas" element={
-        <MainLayout>
-          <FixacaoVagasPage />
-        </MainLayout>
-      } />
+      <Route path="/fixacao-vagas" element={<MainLayout><FixacaoVagasPage /></MainLayout>} />
 
-      <Route path="/cadastro-militar" element={
-        <MainLayout>
-          <CadastroMilitarPage />
-        </MainLayout>
-      } />
+      <Route path="/cadastro-militar" element={<MainLayout><CadastroMilitarPage /></MainLayout>} />
 
-      <Route path="/editar-militar/:id" element={
-        <MainLayout>
-          <EditarMilitarPage />
-        </MainLayout>
-      } />
+      <Route path="/editar-militar/:id" element={<MainLayout><EditarMilitarPage /></MainLayout>} />
 
-      <Route path="/merecimento" element={
-        <MainLayout>
-          <MerecimentoPage />
-        </MainLayout>
-      } />
+      <Route path="/merecimento" element={<MainLayout><MerecimentoPage /></MainLayout>} />
 
-      <Route path="/antiguidade" element={
-        <MainLayout>
-          <AntiguidadePage />
-        </MainLayout>
-      } />
+      <Route path="/antiguidade" element={<MainLayout><AntiguidadePage /></MainLayout>} />
 
-      <Route path="/legislacao" element={
-        <MainLayout>
-          <LegislacaoPage />
-        </MainLayout>
-      } />
+      <Route path="/legislacao" element={<MainLayout><LegislacaoPage /></MainLayout>} />
 
-      <Route path="/gestao-promocoes" element={
-        <MainLayout>
-          <GestaoPromocoesPage />
-        </MainLayout>
-      } />
+      <Route path="/gestao-promocoes" element={<MainLayout><GestaoPromocoesPage /></MainLayout>} />
 
-      <Route path="/historico-promocoes" element={
-        <MainLayout>
-          <HistoricoPromocoesPage />
-        </MainLayout>
-      } />
+      <Route path="/historico-promocoes" element={<MainLayout><HistoricoPromocoesPage /></MainLayout>} />
 
-      <Route path="/modelos-documentos" element={
-        <MainLayout>
-          <ModeloDocumentosPage />
-        </MainLayout>
-      } />
+      <Route path="/modelos-documentos" element={<MainLayout><ModeloDocumentosPage /></MainLayout>} />
 
-      <Route path="/importar-militares" element={
-        <MainLayout>
-          <ImportarMilitaresPage />
-        </MainLayout>
-      } />
+      <Route path="/importar-militares" element={<MainLayout><ImportarMilitaresPage /></MainLayout>} />
 
-      <Route path="/ficha-militar/:id" element={
-        <MainLayout>
-          <FichaMilitarPage />
-        </MainLayout>
-      } />
+      <Route path="/ficha-militar/:id" element={<MainLayout><FichaMilitarPage /></MainLayout>} />
       
-      <Route path="/ficha-conceito/:id" element={
-        <MainLayout>
-          <FichaConceitoPage />
-        </MainLayout>
-      } />
+      <Route path="/ficha-conceito/:id" element={<MainLayout><FichaConceitoPage /></MainLayout>} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
