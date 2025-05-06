@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Promocao } from "@/types";
 import { format, addDays, isAfter, isBefore } from "date-fns";
