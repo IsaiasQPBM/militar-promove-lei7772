@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 
 // Views
@@ -25,17 +25,6 @@ import FichaConceitoPage from './pages/FichaConceito';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
-
-// Create a wrapper component that renders the page within MainLayout
-// This avoids passing children directly to MainLayout
-const PageWithLayout = ({ Page }: { Page: React.ComponentType }) => (
-  <MainLayout>
-    <Outlet />
-  </MainLayout>
-);
-
-// A component to render the specific page content
-const PageContent = ({ Page }: { Page: React.ComponentType }) => <Page />;
 
 const AppRoutes = () => {
   return (
