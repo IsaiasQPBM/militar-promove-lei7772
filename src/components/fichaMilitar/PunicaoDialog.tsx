@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Plus } from "lucide-react";
 
 // Esquema para validação de punição
 const punicaoSchema = z.object({
@@ -98,8 +99,8 @@ export function PunicaoDialog({ militarId, onSuccess }: PunicaoDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-2">
-          Adicionar Punição
+        <Button variant="default" size="sm" className="w-full">
+          <Plus size={16} className="mr-1" /> Adicionar Punição
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -171,7 +172,7 @@ export function PunicaoDialog({ militarId, onSuccess }: PunicaoDialogProps) {
                   <FormItem>
                     <FormLabel>Pontos</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" step="0.1" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -46,6 +45,13 @@ const cursoCivilSchema = z.object({
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
 });
 
+// Define interface for curso options
+interface CursoOption {
+  value: string;
+  label: string;
+  pontos?: number;
+}
+
 type FormacaoEducacionalDialogProps = {
   militarId: string;
   tipo: "militar" | "civil";
@@ -90,7 +96,7 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
   const formSchema = tipo === "militar" ? cursoMilitarSchema : cursoCivilSchema;
   
   // Definir os tipos de curso disponíveis com base no tipo e se é oficial
-  const getTiposCurso = () => {
+  const getTiposCurso = (): CursoOption[] => {
     if (tipo === "militar") {
       if (isOficial) {
         return [
@@ -155,8 +161,8 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
     const tiposCurso = getTiposCurso();
     const cursoSelecionado = tiposCurso.find(curso => curso.value === tipoCurso);
     
-    if (cursoSelecionado) {
-      form.setValue("pontos", cursoSelecionado.pontos || 0);
+    if (cursoSelecionado && cursoSelecionado.pontos !== undefined) {
+      form.setValue("pontos", cursoSelecionado.pontos);
     }
   };
   
@@ -202,9 +208,9 @@ export function FormacaoEducacionalDialog({ militarId, tipo, onSuccess }: Formac
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <div className="flex items-center gap-1">
-          <Plus size={16} /> {tipo === "militar" ? "Adicionar Curso Militar" : "Adicionar Curso Civil"}
-        </div>
+        <Button variant="default" size="sm" className="w-full">
+          <Plus size={16} className="mr-1" /> {tipo === "militar" ? "Adicionar Curso Militar" : "Adicionar Curso Civil"}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>

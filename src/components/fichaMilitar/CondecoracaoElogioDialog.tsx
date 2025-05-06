@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -37,6 +36,13 @@ const condecoracaoElogioSchema = z.object({
   }),
   pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
 });
+
+// Add new interface for tipo options
+interface TipoOption {
+  value: string;
+  label: string;
+  pontos?: number;
+}
 
 type CondecoracaoElogioDialogProps = {
   militarId: string;
@@ -87,7 +93,7 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
   });
   
   // Funções para obter os tipos disponíveis baseado na categoria
-  const getTiposDisponiveis = () => {
+  const getTiposDisponiveis = (): TipoOption[] => {
     if (tipo === "condecoracao") {
       if (isOficial) {
         return [
@@ -127,10 +133,10 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
     if (!isOficial) return;
     
     const tipos = getTiposDisponiveis();
-    const tipo = tipos.find(t => t.value === tipoSelecionado);
+    const tipoOpcao = tipos.find(t => t.value === tipoSelecionado);
     
-    if (tipo) {
-      form.setValue("pontos", tipo.pontos || 0);
+    if (tipoOpcao && tipoOpcao.pontos !== undefined) {
+      form.setValue("pontos", tipoOpcao.pontos);
     }
   };
   
@@ -179,9 +185,10 @@ export function CondecoracaoElogioDialog({ militarId, tipo, onSuccess }: Condeco
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <div className="flex items-center gap-1">
-          <Plus size={16} /> {tipo === "condecoracao" ? "Adicionar Condecoração" : "Adicionar Elogio"}
-        </div>
+        <Button variant="default" size="sm" className="w-full">
+          <Plus size={16} className="mr-1" /> 
+          {tipo === "condecoracao" ? "Adicionar Condecoração" : "Adicionar Elogio"}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>

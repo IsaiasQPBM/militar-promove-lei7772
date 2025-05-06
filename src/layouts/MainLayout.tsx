@@ -2,7 +2,7 @@
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sidebar } from "@/components/sidebar";
+import { SidebarMenu } from "@/components/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const MainLayout = () => {
@@ -36,7 +36,7 @@ const MainLayout = () => {
       
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden w-full">
-        <Sidebar />
+        <SidebarMenu />
         <main className="flex-1 overflow-y-auto bg-slate-100 p-2 md:p-4 w-full">
           <Outlet />
         </main>

@@ -56,11 +56,19 @@ export const FormacaoCardList: React.FC<FormacaoCardListProps> = ({
           onSuccess={onRefresh} 
         />
       );
-    } else if (tipo === "condecoracoes" || tipo === "elogios") {
+    } else if (tipo === "condecoracoes") {
       return (
         <CondecoracaoElogioDialog 
           militarId={militarId} 
-          tipo={tipo === "condecoracoes" ? "condecoracao" : "elogio"} 
+          tipo="condecoracao" 
+          onSuccess={onRefresh} 
+        />
+      );
+    } else if (tipo === "elogios") {
+      return (
+        <CondecoracaoElogioDialog 
+          militarId={militarId} 
+          tipo="elogio" 
           onSuccess={onRefresh} 
         />
       );
@@ -137,18 +145,9 @@ export const FormacaoCardList: React.FC<FormacaoCardListProps> = ({
     <Card>
       <CardHeader className="bg-cbmepi-purple text-white flex flex-row items-center justify-between py-3">
         <CardTitle className="text-lg">{getTitulo()}</CardTitle>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="bg-white hover:bg-gray-100 text-cbmepi-purple"
-          asChild
-        >
-          {renderDialogButton() || (
-            <div className="flex items-center gap-1">
-              <Plus size={16} /> {getBotaoTexto()}
-            </div>
-          )}
-        </Button>
+        <div className="w-auto">
+          {renderDialogButton()}
+        </div>
       </CardHeader>
       <CardContent className="p-4">
         {items.length === 0 ? (
@@ -164,14 +163,14 @@ export const FormacaoCardList: React.FC<FormacaoCardListProps> = ({
               >
                 {renderCardContent(item)}
                 
-                {(onEdit || onDelete || item.anexo) && (
+                {(onEdit || onDelete || ('anexo' in item && item.anexo)) && (
                   <div className="flex justify-end mt-2 gap-2">
-                    {item.anexo && (
+                    {'anexo' in item && item.anexo && (
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         className="h-8 px-2 text-blue-600"
-                        onClick={() => window.open(item.anexo, '_blank')}
+                        onClick={() => window.open(item.anexo as string, '_blank')}
                       >
                         <FileText className="h-3.5 w-3.5 mr-1" /> Anexo
                       </Button>

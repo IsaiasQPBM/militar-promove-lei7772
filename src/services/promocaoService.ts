@@ -18,8 +18,8 @@ export const getPromocoesByMilitar = async (militarId: string) => {
     criterio: item.tipo_promocao || "Antiguidade",
     dataPromocao: item.data_promocao,
     publicada: item.publicada,
-    cargo: item.cargo,
-    anexoDocumento: item.anexo_documento
+    cargo: item.cargo || "",
+    anexoDocumento: item.anexo_documento || ""
   }));
 };
 
