@@ -26,15 +26,10 @@ import FichaConceitoPage from './pages/FichaConceito';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Use a function component pattern to render a page within the layout
-function PageWithLayout({ Page }: { Page: React.ComponentType }) {
-  // Render the provided Page component inside the MainLayout
-  return (
-    <MainLayout>
-      <Page />
-    </MainLayout>
-  );
-}
+// Use a function that returns JSX directly instead of using children prop
+const PageWithLayout = ({ Page }: { Page: React.ComponentType }) => {
+  return <MainLayout><Page /></MainLayout>;
+};
 
 const AppRoutes = () => {
   return (
