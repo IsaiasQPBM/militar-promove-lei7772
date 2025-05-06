@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 
 // Views
@@ -31,9 +31,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <IndexPage />
-          </React.Suspense>
+          <IndexPage />
         </MainLayout>
       } />
 
@@ -43,114 +41,86 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <MainLayout>
-            <React.Suspense fallback={<div>Carregando...</div>}>
-              <DashboardPage />
-            </React.Suspense>
+            <DashboardPage />
           </MainLayout>
         </ProtectedRoute>
       } />
 
       <Route path="/quadro-fixacao-vagas" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <QuadroFixacaoVagasPage />
-          </React.Suspense>
+          <QuadroFixacaoVagasPage />
         </MainLayout>
       } />
 
       <Route path="/fixacao-vagas" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <FixacaoVagasPage />
-          </React.Suspense>
+          <FixacaoVagasPage />
         </MainLayout>
       } />
 
       <Route path="/cadastro-militar" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <CadastroMilitarPage />
-          </React.Suspense>
+          <CadastroMilitarPage />
         </MainLayout>
       } />
 
       <Route path="/editar-militar/:id" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <EditarMilitarPage />
-          </React.Suspense>
+          <EditarMilitarPage />
         </MainLayout>
       } />
 
       <Route path="/merecimento" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <MerecimentoPage />
-          </React.Suspense>
+          <MerecimentoPage />
         </MainLayout>
       } />
 
       <Route path="/antiguidade" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <AntiguidadePage />
-          </React.Suspense>
+          <AntiguidadePage />
         </MainLayout>
       } />
 
       <Route path="/legislacao" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <LegislacaoPage />
-          </React.Suspense>
+          <LegislacaoPage />
         </MainLayout>
       } />
 
       <Route path="/gestao-promocoes" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <GestaoPromocoesPage />
-          </React.Suspense>
+          <GestaoPromocoesPage />
         </MainLayout>
       } />
 
       <Route path="/historico-promocoes" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <HistoricoPromocoesPage />
-          </React.Suspense>
+          <HistoricoPromocoesPage />
         </MainLayout>
       } />
 
       <Route path="/modelos-documentos" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <ModeloDocumentosPage />
-          </React.Suspense>
+          <ModeloDocumentosPage />
         </MainLayout>
       } />
 
       <Route path="/importar-militares" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <ImportarMilitaresPage />
-          </React.Suspense>
+          <ImportarMilitaresPage />
         </MainLayout>
       } />
 
       <Route path="/ficha-militar/:id" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <FichaMilitarPage />
-          </React.Suspense>
+          <FichaMilitarPage />
         </MainLayout>
       } />
       
       <Route path="/ficha-conceito/:id" element={
         <MainLayout>
-          <React.Suspense fallback={<div>Carregando...</div>}>
-            <FichaConceitoPage />
-          </React.Suspense>
+          <FichaConceitoPage />
         </MainLayout>
       } />
 
