@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,8 +25,8 @@ const GestaoPromocoesComponent = () => {
   const [loading, setLoading] = useState(true);
   const [proximaDataQuadroAcesso, setProximaDataQuadroAcesso] = useState<Date | null>(null);
   const [isPeriodoQuadroAcesso, setIsPeriodoQuadroAcesso] = useState(false);
-  const [filtroQuadro, setFiltroQuadro] = useState<string>("");
-  const [filtroPosto, setFiltroPosto] = useState<string>("");
+  const [filtroQuadro, setFiltroQuadro] = useState<string>("todos");
+  const [filtroPosto, setFiltroPosto] = useState<string>("todos");
   
   useEffect(() => {
     const carregarDados = async () => {
@@ -143,12 +142,12 @@ const GestaoPromocoesComponent = () => {
       }
       
       // Aplicar filtro de quadro
-      if (filtroQuadro) {
+      if (filtroQuadro !== "todos") {
         resultado = resultado.filter(militar => militar.quadro === filtroQuadro);
       }
       
       // Aplicar filtro de posto
-      if (filtroPosto) {
+      if (filtroPosto !== "todos") {
         resultado = resultado.filter(militar => militar.posto === filtroPosto);
       }
       
@@ -166,12 +165,12 @@ const GestaoPromocoesComponent = () => {
       }
       
       // Aplicar filtro de quadro
-      if (filtroQuadro) {
+      if (filtroQuadro !== "todos") {
         resultado = resultado.filter(militar => militar.quadro === filtroQuadro);
       }
       
       // Aplicar filtro de posto
-      if (filtroPosto) {
+      if (filtroPosto !== "todos") {
         resultado = resultado.filter(militar => militar.posto === filtroPosto);
       }
       
@@ -348,7 +347,7 @@ const GestaoPromocoesComponent = () => {
                     <SelectValue placeholder="Filtrar por Quadro" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os Quadros</SelectItem>
+                    <SelectItem value="todos">Todos os Quadros</SelectItem>
                     <SelectItem value="QOEM">QOEM</SelectItem>
                     <SelectItem value="QOE">QOE</SelectItem>
                     <SelectItem value="QOBM-S">QOBM-S</SelectItem>
@@ -363,7 +362,7 @@ const GestaoPromocoesComponent = () => {
                     <SelectValue placeholder="Filtrar por Posto" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os Postos</SelectItem>
+                    <SelectItem value="todos">Todos os Postos</SelectItem>
                     <SelectItem value="Coronel">Coronel</SelectItem>
                     <SelectItem value="Tenente-Coronel">Tenente-Coronel</SelectItem>
                     <SelectItem value="Major">Major</SelectItem>
