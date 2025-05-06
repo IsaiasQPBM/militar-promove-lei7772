@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Promocao } from "@/types";
 import { format, addDays, isAfter, isBefore } from "date-fns";
@@ -18,10 +17,9 @@ export const getPromocoesByMilitar = async (militarId: string) => {
     criterio: item.tipo_promocao || "Antiguidade",
     dataPromocao: item.data_promocao,
     publicada: item.publicada,
-    // Map to the correct field names in our Promocao type
-    // Use empty string as default value for optional fields
-    cargo: item.posto || "", // Using posto if available or empty string
-    anexoDocumento: item.anexo || "" // Using anexo if available or empty string
+    // Since the database doesn't have posto or anexo fields, set defaults for our client model
+    cargo: "", // No corresponding field in database, set empty default
+    anexoDocumento: "" // No corresponding field in database, set empty default
   }));
 };
 
