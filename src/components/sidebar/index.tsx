@@ -4,9 +4,9 @@ import { NavLink } from "react-router-dom";
 import { 
   Sidebar,
   SidebarProvider,
-  SidebarContent, 
-  ScrollArea 
+  SidebarContent
 } from "@/components/ui/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarSection } from "./SidebarSection";
 import { SidebarLink } from "./SidebarLink";
 import {
