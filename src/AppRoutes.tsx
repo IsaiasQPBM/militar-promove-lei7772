@@ -26,42 +26,44 @@ import FichaConceitoPage from './pages/FichaConceito';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Use a function that returns JSX directly instead of using children prop
-const PageWithLayout = ({ Page }: { Page: React.ComponentType }) => {
-  return <MainLayout><Page /></MainLayout>;
-};
+// Create a wrapper component that renders the page within MainLayout
+// This avoids passing children directly to MainLayout
+const PageWithLayout = ({ Page }: { Page: React.ComponentType }) => (
+  <MainLayout>
+    <Outlet />
+  </MainLayout>
+);
+
+// A component to render the specific page content
+const PageContent = ({ Page }: { Page: React.ComponentType }) => <Page />;
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<PageWithLayout Page={IndexPage} />} />
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<IndexPage />} />
+        <Route path="dashboard" element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="quadro-fixacao-vagas" element={<QuadroFixacaoVagasPage />} />
+        <Route path="fixacao-vagas" element={<FixacaoVagasPage />} />
+        <Route path="cadastro-militar" element={<CadastroMilitarPage />} />
+        <Route path="editar-militar/:id" element={<EditarMilitarPage />} />
+        <Route path="merecimento" element={<MerecimentoPage />} />
+        <Route path="antiguidade" element={<AntiguidadePage />} />
+        <Route path="legislacao" element={<LegislacaoPage />} />
+        <Route path="gestao-promocoes" element={<GestaoPromocoesPage />} />
+        <Route path="historico-promocoes" element={<HistoricoPromocoesPage />} />
+        <Route path="modelos-documentos" element={<ModeloDocumentosPage />} />
+        <Route path="importar-militares" element={<ImportarMilitaresPage />} />
+        <Route path="ficha-militar/:id" element={<FichaMilitarPage />} />
+        <Route path="ficha-conceito/:id" element={<FichaConceitoPage />} />
+      </Route>
 
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <PageWithLayout Page={DashboardPage} />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route path="/quadro-fixacao-vagas" element={<PageWithLayout Page={QuadroFixacaoVagasPage} />} />
-      <Route path="/fixacao-vagas" element={<PageWithLayout Page={FixacaoVagasPage} />} />
-      <Route path="/cadastro-militar" element={<PageWithLayout Page={CadastroMilitarPage} />} />
-      <Route path="/editar-militar/:id" element={<PageWithLayout Page={EditarMilitarPage} />} />
-      <Route path="/merecimento" element={<PageWithLayout Page={MerecimentoPage} />} />
-      <Route path="/antiguidade" element={<PageWithLayout Page={AntiguidadePage} />} />
-      <Route path="/legislacao" element={<PageWithLayout Page={LegislacaoPage} />} />
-      <Route path="/gestao-promocoes" element={<PageWithLayout Page={GestaoPromocoesPage} />} />
-      <Route path="/historico-promocoes" element={<PageWithLayout Page={HistoricoPromocoesPage} />} />
-      <Route path="/modelos-documentos" element={<PageWithLayout Page={ModeloDocumentosPage} />} />
-      <Route path="/importar-militares" element={<PageWithLayout Page={ImportarMilitaresPage} />} />
-      <Route path="/ficha-militar/:id" element={<PageWithLayout Page={FichaMilitarPage} />} />
-      <Route path="/ficha-conceito/:id" element={<PageWithLayout Page={FichaConceitoPage} />} />
-
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
