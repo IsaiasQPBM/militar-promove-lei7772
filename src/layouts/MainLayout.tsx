@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarMenu } from "@/components/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 const MainLayout = () => {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ const MainLayout = () => {
         <header className="bg-cbmepi-red text-white flex items-center justify-between p-2 md:p-4 w-full z-10">
           <div className="flex items-center space-x-2 md:space-x-3">
             <img src="/cbmepi-logo.svg" alt="CBMEPI Logo" className="h-8 w-8 md:h-12 md:w-12" />
-            <h1 className={`font-bold ${isMobile ? "text-sm" : "text-xl"}`}>
+            <h1 className={cn("font-bold", isMobile ? "text-sm" : "text-xl")}>
               {isMobile ? "SysProm" : "SysProm - Sistema de Promoções do CBMEPI"}
             </h1>
           </div>
@@ -38,7 +39,10 @@ const MainLayout = () => {
         
         {/* Main content */}
         <div className="flex flex-1 overflow-hidden w-full">
+          {/* Sidebar */}
           <SidebarMenu />
+          
+          {/* Content area */}
           <main className="flex-1 overflow-y-auto bg-slate-100 p-2 md:p-4 w-full">
             <Outlet />
           </main>
