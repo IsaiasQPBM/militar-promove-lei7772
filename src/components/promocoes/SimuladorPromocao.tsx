@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { CalendarPlus, FileText, Calculator, FileChart } from "lucide-react";
+import { CalendarPlus, FileText, Calculator, FileHeart } from "lucide-react";
 import { format, addYears, parseISO, differenceInDays, differenceInMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Militar, PostoPatente } from "@/types";

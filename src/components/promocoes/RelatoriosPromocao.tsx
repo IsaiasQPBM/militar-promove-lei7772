@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { FileText, FileSpreadsheet, FilePlus, FileExport, Download } from "lucide-react";
+import { FileText, FileSpreadsheet, FilePlus, FileHeart, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Militar } from "@/types";
@@ -156,7 +156,7 @@ export const RelatoriosPromocao: React.FC<RelatoriosPromocaoProps> = ({
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="quadro-acesso" id="quadro-acesso" />
                   <Label htmlFor="quadro-acesso" className="flex items-center gap-2">
-                    <FileExport className="h-4 w-4 text-cbmepi-purple" /> Quadro de Acesso
+                    <FileHeart className="h-4 w-4 text-cbmepi-purple" /> Quadro de Acesso
                   </Label>
                 </div>
               </RadioGroup>
