@@ -25,7 +25,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
-import { obterCriteriosLei5461 } from "@/services/promocaoService";
 
 // Esquema para validação de curso
 const cursoSchema = z.object({
@@ -38,14 +37,20 @@ const cursoSchema = z.object({
 
 type FormacaoEducacionalDialogProps = {
   militarId: string;
-  formacaoTipo: "cursos_militares" | "cursos_civis";
+  tipo?: string;
+  formacaoTipo?: "cursos_militares" | "cursos_civis";
   onSuccess: () => void;
 };
 
-export function FormacaoEducacionalDialog({ militarId, formacaoTipo, onSuccess }: FormacaoEducacionalDialogProps) {
+export function FormacaoEducacionalDialog({ militarId, tipo, formacaoTipo, onSuccess }: FormacaoEducacionalDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOficial, setIsOficial] = useState(false);
+  
+  // Determine the actual formacao type to use
+  const actualFormacaoTipo = formacaoTipo || 
+    (tipo === "militar" ? "cursos_militares" : 
+     tipo === "civil" ? "cursos_civis" : "cursos_militares");
   
   // Verificar se o militar é um oficial
   React.useEffect(() => {
@@ -85,9 +90,16 @@ export function FormacaoEducacionalDialog({ militarId, formacaoTipo, onSuccess }
     }
   });
   
-  // Opções para o tipo de curso baseado no formacaoTipo
-  const getTipoOptions = () => {
-    if (formacaoTipo === "cursos_militares") {
+  // Type definition for option items
+  type OptionItem = {
+    value: string;
+    label: string;
+    pontos?: number;
+  };
+  
+  // Opções para o tipo de curso baseado no tipo de formação
+  const getTipoOptions = (): OptionItem[] => {
+    if (actualFormacaoTipo === "cursos_militares") {
       if (isOficial) {
         return [
           { value: "Especialização", label: "Especialização (0,5 pontos)", pontos: 0.5 },
@@ -155,7 +167,7 @@ export function FormacaoEducacionalDialog({ militarId, formacaoTipo, onSuccess }
     try {
       setIsSubmitting(true);
       
-      const tabela = formacaoTipo === "cursos_militares" ? "cursos_militares" : "cursos_civis";
+      const tabela = actualFormacaoTipo;
       
       const { error } = await supabase
         .from(tabela)
@@ -190,18 +202,23 @@ export function FormacaoEducacionalDialog({ militarId, formacaoTipo, onSuccess }
     }
   };
   
+  // Get button label based on formacao type
+  const getButtonLabel = () => {
+    return `Adicionar ${actualFormacaoTipo === "cursos_militares" ? "Curso Militar" : "Curso Civil"}`;
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm" className="w-full">
           <Plus size={16} className="mr-1" /> 
-          Adicionar {formacaoTipo === "cursos_militares" ? "Curso Militar" : "Curso Civil"}
+          {getButtonLabel()}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            Novo {formacaoTipo === "cursos_militares" ? "Curso Militar" : "Curso Civil"}
+            Novo {actualFormacaoTipo === "cursos_militares" ? "Curso Militar" : "Curso Civil"}
           </DialogTitle>
         </DialogHeader>
 

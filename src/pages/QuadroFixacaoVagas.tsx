@@ -1,18 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { QFVHeader } from "@/components/qfv/QFVHeader";
-import { QFVContent } from "@/components/qfv/QFVContent";
-import { QFVResumo } from "@/components/qfv/QFVResumo";
-import { QFVExport } from "@/components/qfv/QFVExport";
+import QFVHeader from "@/components/qfv/QFVHeader";
+import QFVContent from "@/components/qfv/QFVContent";
+import QFVResumo from "@/components/qfv/QFVResumo";
+import QFVExport from "@/components/qfv/QFVExport";
+import { useQFVData } from "@/hooks/useQFVData";
 
 const QuadroFixacaoVagas = () => {
+  const { qfvData, loading } = useQFVData();
+  const [activeTab, setActiveTab] = useState("QOEM");
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Quadro de Fixação de Vagas (QFV)</h1>
-        <QFVExport />
-      </div>
+      <QFVHeader qfvData={qfvData} />
       
       <Card>
         <CardHeader className="bg-cbmepi-purple text-white">
@@ -20,9 +21,13 @@ const QuadroFixacaoVagas = () => {
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-6">
-            <QFVHeader />
-            <QFVContent />
-            <QFVResumo />
+            <QFVContent 
+              qfvData={qfvData} 
+              activeTab={activeTab} 
+              setActiveTab={setActiveTab}
+              loading={loading} 
+            />
+            <QFVResumo qfvData={qfvData} loading={loading} />
           </div>
         </CardContent>
       </Card>

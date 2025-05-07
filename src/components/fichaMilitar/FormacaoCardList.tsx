@@ -1,4 +1,3 @@
-
 import React from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -44,7 +43,7 @@ export const FormacaoCardList: React.FC<FormacaoCardListProps> = ({
       return (
         <FormacaoEducacionalDialog 
           militarId={militarId} 
-          tipo="militar" 
+          formacaoTipo="cursos_militares" 
           onSuccess={onRefresh} 
         />
       );
@@ -52,7 +51,7 @@ export const FormacaoCardList: React.FC<FormacaoCardListProps> = ({
       return (
         <FormacaoEducacionalDialog 
           militarId={militarId} 
-          tipo="civil" 
+          formacaoTipo="cursos_civis" 
           onSuccess={onRefresh} 
         />
       );
