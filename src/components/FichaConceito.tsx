@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { 
   Card, 
@@ -42,8 +43,41 @@ interface FichaConceitoProps {
   militarId: string;
 }
 
-// Schemas and other constant declarations remain the same
-// ... keep existing code (schema definitions)
+// Schema definitions for each form
+const cursoMilitarSchema = z.object({
+  nome: z.string().min(3, { message: "Nome deve ter pelo menos 3 caracteres" }),
+  instituicao: z.string().min(2, { message: "Instituição deve ter pelo menos 2 caracteres" }),
+  cargahoraria: z.coerce.number().min(1, { message: "Carga horária deve ser maior que zero" }),
+  pontos: z.coerce.number().min(0, { message: "Pontos não podem ser negativos" }),
+});
+
+const cursoCivilSchema = z.object({
+  nome: z.string().min(3, { message: "Nome deve ter pelo menos 3 caracteres" }),
+  instituicao: z.string().min(2, { message: "Instituição deve ter pelo menos 2 caracteres" }),
+  cargahoraria: z.coerce.number().min(1, { message: "Carga horária deve ser maior que zero" }),
+  pontos: z.coerce.number().min(0, { message: "Pontos não podem ser negativos" }),
+});
+
+const condecoracaoSchema = z.object({
+  tipo: z.string().min(3, { message: "Tipo deve ter pelo menos 3 caracteres" }),
+  descricao: z.string().min(3, { message: "Descrição deve ter pelo menos 3 caracteres" }),
+  datarecebimento: z.string().min(8, { message: "Data deve estar no formato DD/MM/AAAA" }),
+  pontos: z.coerce.number().min(0, { message: "Pontos não podem ser negativos" }),
+});
+
+const elogioSchema = z.object({
+  tipo: z.string().min(1, { message: "Selecione um tipo de elogio" }),
+  descricao: z.string().min(3, { message: "Descrição deve ter pelo menos 3 caracteres" }),
+  datarecebimento: z.string().min(8, { message: "Data deve estar no formato DD/MM/AAAA" }),
+  pontos: z.coerce.number().min(0, { message: "Pontos não podem ser negativos" }),
+});
+
+const punicaoSchema = z.object({
+  tipo: z.string().min(1, { message: "Selecione um tipo de punição" }),
+  descricao: z.string().min(3, { message: "Descrição deve ter pelo menos 3 caracteres" }),
+  datarecebimento: z.string().min(8, { message: "Data deve estar no formato DD/MM/AAAA" }),
+  pontos: z.coerce.number().min(0, { message: "Pontos não podem ser negativos" }),
+});
 
 const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   const [cursosMilitares, setCursosMilitares] = useState<CursoMilitar[]>([]);
@@ -59,7 +93,55 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   const [openDialogPunicao, setOpenDialogPunicao] = useState(false);
   
   // Form setup for each dialog
-  // ... keep existing code (form setup)
+  const formCursoMilitar = useForm<z.infer<typeof cursoMilitarSchema>>({
+    resolver: zodResolver(cursoMilitarSchema),
+    defaultValues: {
+      nome: "",
+      instituicao: "",
+      cargahoraria: 0,
+      pontos: 0
+    }
+  });
+  
+  const formCursoCivil = useForm<z.infer<typeof cursoCivilSchema>>({
+    resolver: zodResolver(cursoCivilSchema),
+    defaultValues: {
+      nome: "",
+      instituicao: "",
+      cargahoraria: 0,
+      pontos: 0
+    }
+  });
+  
+  const formCondecoracao = useForm<z.infer<typeof condecoracaoSchema>>({
+    resolver: zodResolver(condecoracaoSchema),
+    defaultValues: {
+      tipo: "",
+      descricao: "",
+      datarecebimento: "",
+      pontos: 0
+    }
+  });
+  
+  const formElogio = useForm<z.infer<typeof elogioSchema>>({
+    resolver: zodResolver(elogioSchema),
+    defaultValues: {
+      tipo: "",
+      descricao: "",
+      datarecebimento: "",
+      pontos: 0
+    }
+  });
+  
+  const formPunicao = useForm<z.infer<typeof punicaoSchema>>({
+    resolver: zodResolver(punicaoSchema),
+    defaultValues: {
+      tipo: "",
+      descricao: "",
+      datarecebimento: "",
+      pontos: 0
+    }
+  });
   
   // Funções para adicionar itens (usando mock data em vez de chamadas ao Supabase)
   const adicionarCursoMilitar = async (data: z.infer<typeof cursoMilitarSchema>) => {
