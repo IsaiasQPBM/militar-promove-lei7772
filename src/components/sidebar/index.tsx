@@ -1,109 +1,65 @@
 
-import React from "react";
-import { 
-  Users, 
-  BarChart2, 
-  FileText, 
-  ShieldCheck, 
-  Award, 
-  Grid3X3, 
-  ClipboardList,
-  UserPlus,
-  Database,
-  FileUp,
-  Settings,
-  Gavel
-} from "lucide-react";
-import { Sidebar } from "@/components/ui/sidebar";
-import { SidebarSection } from "./SidebarSection";
+import React, { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { SidebarLink } from "./SidebarLink";
+import { SidebarSection } from "./SidebarSection";
+import { Sidebar } from "./Sidebar";
+import {
+  Home,
+  Users,
+  BookOpen,
+  FileText,
+  Award,
+  BarChart2,
+  LogOut,
+  Upload,
+  FileSearch
+} from "lucide-react";
 
-export function SidebarMenu() {
+export const SidebarMenu: React.FC = () => {
+  const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+
+  const isActive = (path: string) => location.pathname === path;
+  
+  const handleLogout = () => {
+    console.log("Logout clicked");
+  };
+
   return (
-    <Sidebar className="border-r bg-cbmepi-darkPurple text-white">
-      <div className="flex flex-col h-full pt-4">
-        <div className="space-y-1 px-3">
-          <SidebarLink 
-            href="/" 
-            icon={<BarChart2 className="h-5 w-5" />}
-            label="Dashboard" 
-          />
-        </div>
-        
+    <Sidebar collapsed={collapsed} setCollapsed={setCollapsed}>
+      <div className="space-y-4 py-4">
+        <SidebarSection title="Menu Principal">
+          <SidebarLink to="/dashboard" icon={<Home />} text="Dashboard" active={isActive("/") || isActive("/dashboard")} />
+        </SidebarSection>
+
+        <SidebarSection title="Militares">
+          <SidebarLink to="/quadros/oficiais" icon={<Users />} text="Quadro de Oficiais" active={isActive("/quadros/oficiais")} />
+          <SidebarLink to="/quadros/pracas" icon={<Users />} text="Quadro de Praças" active={isActive("/quadros/pracas")} />
+        </SidebarSection>
+
         <SidebarSection title="Gerenciamento">
-          <SidebarLink 
-            href="/cadastro-militar"
-            icon={<UserPlus className="h-5 w-5" />} 
-            label="Cadastrar Militar" 
-          />
-          <SidebarLink 
-            href="/quadros/oficiais" 
-            icon={<Users className="h-5 w-5" />} 
-            label="Quadro Oficiais" 
-          />
-          <SidebarLink 
-            href="/quadros/pracas" 
-            icon={<Users className="h-5 w-5" />} 
-            label="Quadro Praças" 
-          />
-          <SidebarLink 
-            href="/importar-militares" 
-            icon={<FileUp className="h-5 w-5" />} 
-            label="Importar Militares" 
-          />
+          <SidebarLink to="/qfv" icon={<FileText />} text="Quadro de Fixação de Vagas" active={isActive("/qfv")} />
+          <SidebarLink to="/gestao-promocoes" icon={<Award />} text="Gestão de Promoções" active={isActive("/gestao-promocoes")} />
+          <SidebarLink to="/legislacao" icon={<BookOpen />} text="Legislação" active={isActive("/legislacao")} />
+          <SidebarLink to="/relatorios" icon={<BarChart2 />} text="Relatórios" active={isActive("/relatorios")} />
         </SidebarSection>
-        
-        <SidebarSection title="Promoções">
-          <SidebarLink 
-            href="/gestao-promocoes" 
-            icon={<ShieldCheck className="h-5 w-5" />} 
-            label="Gestão de Promoções" 
-          />
-          <SidebarLink 
-            href="/antiguidade" 
-            icon={<ClipboardList className="h-5 w-5" />} 
-            label="Critério Antiguidade" 
-          />
-          <SidebarLink 
-            href="/merecimento" 
-            icon={<Award className="h-5 w-5" />} 
-            label="Critério Merecimento" 
-          />
-          <SidebarLink 
-            href="/fixacao-vagas" 
-            icon={<Grid3X3 className="h-5 w-5" />} 
-            label="Quadro Fixação de Vagas" 
-          />
-          <SidebarLink 
-            href="/historico-promocoes" 
-            icon={<FileText className="h-5 w-5" />} 
-            label="Histórico de Promoções" 
-          />
+
+        <SidebarSection title="Importação">
+          <SidebarLink to="/importacao-ai" icon={<Upload />} text="Importar com IA" active={isActive("/importacao-ai")} />
+          <SidebarLink to="/pdf-scanner" icon={<FileSearch />} text="Extrair de PDF" active={isActive("/pdf-scanner")} />
         </SidebarSection>
-        
-        <SidebarSection title="Sistema">
-          <SidebarLink 
-            href="/legislacao" 
-            icon={<Gavel className="h-5 w-5" />} 
-            label="Legislação" 
-          />
-          <SidebarLink 
-            href="/importar-militares-ai" 
-            icon={<Database className="h-5 w-5" />} 
-            label="Importação AI" 
-          />
-          <SidebarLink 
-            href="/settings" 
-            icon={<Settings className="h-5 w-5" />} 
-            label="Configurações" 
-          />
-        </SidebarSection>
-        
-        <div className="mt-auto p-4 text-center text-sm text-white/60">
-          SysProm - v1.0.0
-          <div className="text-xs mt-1">CBMEPI © 2025</div>
+
+        <div className="px-3 py-2">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full p-2 text-gray-600 rounded-md hover:bg-gray-100 transition-all"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            <span>Sair</span>
+          </button>
         </div>
       </div>
     </Sidebar>
   );
-}
+};

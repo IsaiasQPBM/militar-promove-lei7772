@@ -1,379 +1,434 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { calcularProximaDataQuadroAcesso, verificarPeriodoQuadroAcesso } from "@/services/promocaoService";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { 
-  Calendar,
-  Users, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  CalendarRange, 
-  Award,
-  ListChecks,
-  FileBarChart
-} from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { BarChart, LineChart, PieChart } from '@/components/ui/chart';
+import { Loader2, BarChart4, BarChart2, UserCheck, Users, Medal, Award, Calendar, RefreshCcw } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { QuadroMilitar, PostoPatente } from '@/types';
+import { verificarPeriodoQuadroAcesso } from '@/services/promocaoService';
 
-const Dashboard = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-  const [resumoData, setResumoData] = useState({
-    totalMilitares: 0,
-    militaresElegiveis: 0,
-    proximaDataQuadroAcesso: null as Date | null,
-    isPeriodoQuadroAcesso: false,
-    vagasTotais: 0,
-    vagasPreenchidas: 0,
-    alertasPendentes: 0
-  });
-  
+const Dashboard: React.FC = () => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [totalMilitares, setTotalMilitares] = useState(0);
+  const [militaresAtivos, setMilitaresAtivos] = useState(0);
+  const [militaresPorQuadro, setMilitaresPorQuadro] = useState<Record<string, number>>({});
+  const [militaresPorPosto, setMilitaresPorPosto] = useState<Record<string, number>>({});
+  const [quadroAcessoAberto, setQuadroAcessoAberto] = useState(false);
+  const [proximosPromoviveis, setProximosPromoviveis] = useState<any[]>([]);
+  const [ultimasPromocoes, setUltimasPromocoes] = useState<any[]>([]);
+  const [vagasDisponiveisPorQuadro, setVagasDisponiveisPorQuadro] = useState<Record<string, number>>({});
+
   useEffect(() => {
-    const carregarDados = async () => {
-      setIsLoading(true);
-      try {
-        // Obter dados de militares
-        const { data: militaresData, error: militaresError } = await supabase
-          .from("militares")
-          .select("id, posto, quadro, dataultimapromocao, situacao");
-        
-        if (militaresError) throw militaresError;
-
-        // Calcular total de militares ativos
-        const militaresAtivos = militaresData.filter(m => m.situacao === "ativo");
-        const totalMilitares = militaresAtivos.length;
-        
-        // Calcular militares elegíveis para promoção
-        const hoje = new Date();
-        const elegiveis = militaresAtivos.filter(militar => {
-          if (!militar.dataultimapromocao) return false;
-          
-          const dataUltimaPromocao = new Date(militar.dataultimapromocao);
-          const diferencaMeses = (hoje.getFullYear() - dataUltimaPromocao.getFullYear()) * 12 + 
-                                hoje.getMonth() - dataUltimaPromocao.getMonth();
-          
-          // Verificar tempo mínimo de acordo com o posto
-          const temposMinimos: Record<string, number> = {
-            "Coronel": 0, 
-            "Tenente-Coronel": 36,
-            "Major": 48,
-            "Capitão": 48,
-            "1º Tenente": 48,
-            "2º Tenente": 36,
-            "Subtenente": 0,
-            "1º Sargento": 36,
-            "2º Sargento": 48,
-            "3º Sargento": 48,
-            "Cabo": 36,
-            "Soldado": 24,
-          };
-          
-          if (temposMinimos[militar.posto] !== undefined && 
-              diferencaMeses >= temposMinimos[militar.posto] && 
-              militar.posto !== "Coronel" && 
-              militar.posto !== "Subtenente") {
-            return true;
-          }
-          
-          return false;
-        });
-        
-        // Calcular vagas
-        let vagasTotais = 0;
-        let vagasPreenchidas = 0;
-        
-        // Simplificação: estimar vagas com base nos dados existentes
-        // Na implementação real, isso viria da tabela de quadro de fixação de vagas
-        const quadrosPrincipais = ["QOEM", "QPBM"];
-        
-        quadrosPrincipais.forEach(quadro => {
-          // Estimar vagas totais e preenchidas por quadro
-          const militaresNoQuadro = militaresAtivos.filter(m => m.quadro === quadro);
-          const vagasEstimadasQuadro = quadro === "QOEM" ? 50 : 150; // Valores ilustrativos
-          
-          vagasTotais += vagasEstimadasQuadro;
-          vagasPreenchidas += militaresNoQuadro.length;
-        });
-        
-        // Calcular próxima data de inserção no quadro de acesso
-        const proximaData = calcularProximaDataQuadroAcesso();
-        
-        // Verificar se estamos no período de inserção no quadro de acesso
-        const emPeriodo = verificarPeriodoQuadroAcesso();
-        
-        // Alertas pendentes (simulação)
-        const alertasPendentes = Math.min(elegiveis.length, 5);
-        
-        // Atualizar estado com todos os dados coletados
-        setResumoData({
-          totalMilitares,
-          militaresElegiveis: elegiveis.length,
-          proximaDataQuadroAcesso: proximaData,
-          isPeriodoQuadroAcesso: emPeriodo,
-          vagasTotais,
-          vagasPreenchidas,
-          alertasPendentes
-        });
-        
-      } catch (error) {
-        console.error("Erro ao carregar dados do dashboard:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     carregarDados();
+    const periodoAtivo = verificarPeriodoQuadroAcesso();
+    setQuadroAcessoAberto(periodoAtivo);
   }, []);
 
-  return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold">Painel de Controle</h1>
-        <p className="text-sm md:text-base text-muted-foreground">
-          Bem-vindo ao Sistema de Promoções do Corpo de Bombeiros Militar do Estado do Piauí (SysProm)
-        </p>
-      </div>
-      
-      {/* Status Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className={`border-t-4 ${resumoData.isPeriodoQuadroAcesso ? "border-t-green-500" : "border-t-amber-500"}`}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Status do Quadro de Acesso</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {resumoData.isPeriodoQuadroAcesso ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="font-medium">Período de inclusão ativo</p>
-                  <p className="text-xs text-gray-500">Quadro aberto para inclusões</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-amber-500" />
-                <div>
-                  <p className="font-medium">Próxima abertura</p>
-                  <p className="text-xs text-gray-500">
-                    {resumoData.proximaDataQuadroAcesso && 
-                      format(resumoData.proximaDataQuadroAcesso, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                  </p>
-                </div>
-              </div>
-            )}
-            
-            <div className="mt-3 pt-2 border-t border-gray-100">
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-sm text-cbmepi-purple"
-                onClick={() => navigate("/gestao-promocoes")}
-              >
-                Ver quadro de acesso
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+  const carregarDados = async () => {
+    setLoading(true);
+    
+    try {
+      // Carregar contagem total de militares
+      const { count: totalCount, error: totalError } = await supabase
+        .from('militares')
+        .select('*', { count: 'exact', head: true });
         
-        <Card className="border-t-4 border-t-blue-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Militares Elegíveis</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="font-medium">{resumoData.militaresElegiveis} militares</p>
-                <p className="text-xs text-gray-500">Prontos para promoção</p>
-              </div>
-            </div>
-            
-            <div className="mt-3 pt-2 border-t border-gray-100">
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-sm text-cbmepi-purple"
-                onClick={() => navigate("/gestao-promocoes")}
-              >
-                Ver militares elegíveis
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-t-4 border-t-purple-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Próximas Promoções</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-purple-500" />
-              <div>
-                <p className="font-medium">Datas importantes</p>
-                <div className="text-xs space-y-1 mt-1">
-                  <p className="text-gray-500 flex items-center gap-1">
-                    <span className="h-2 w-2 bg-green-500 rounded-full"></span>
-                    18 de Julho - Promoções Semestrais
-                  </p>
-                  <p className="text-gray-500 flex items-center gap-1">
-                    <span className="h-2 w-2 bg-blue-500 rounded-full"></span>
-                    23 de Dezembro - Promoções Anuais
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-3 pt-2 border-t border-gray-100">
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-sm text-cbmepi-purple"
-                onClick={() => navigate("/legislacao")}
-              >
-                Ver mais informações
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      if (totalError) throw totalError;
+      setTotalMilitares(totalCount || 0);
       
-      {/* Resumo do Efetivo e Vagas */}
-      <Card>
-        <CardHeader className="bg-cbmepi-purple text-white py-2 md:py-4">
-          <CardTitle className="text-base md:text-lg">RESUMO DO EFETIVO</CardTitle>
-          <CardDescription className="text-xs md:text-sm text-zinc-200">
-            Status de vagas e promoções
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 p-3 rounded-md">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-sm font-medium text-gray-700">Total de Militares</h3>
-                <Badge variant="outline">{resumoData.totalMilitares}</Badge>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Users className="h-4 w-4" />
-                <span>Efetivo ativo do CBMEPI</span>
-              </div>
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-xs text-cbmepi-purple mt-2" 
-                onClick={() => navigate("/oficiais/estado-maior")}
-              >
-                Ver detalhes
-              </Button>
-            </div>
-            
-            <div className="bg-gray-50 p-3 rounded-md">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-sm font-medium text-gray-700">Vagas Disponíveis</h3>
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                  {resumoData.vagasTotais - resumoData.vagasPreenchidas} vagas
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <CalendarRange className="h-4 w-4" />
-                <span>
-                  {Math.round((resumoData.vagasPreenchidas / resumoData.vagasTotais) * 100)}% de ocupação
-                </span>
-              </div>
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-xs text-cbmepi-purple mt-2" 
-                onClick={() => navigate("/fixacao-vagas")}
-              >
-                Ver quadro de vagas
-              </Button>
-            </div>
-            
-            <div className="bg-gray-50 p-3 rounded-md">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-sm font-medium text-gray-700">Alertas do Sistema</h3>
-                <Badge variant={resumoData.alertasPendentes > 0 ? "default" : "outline"}>
-                  {resumoData.alertasPendentes}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <AlertCircle className="h-4 w-4" />
-                <span>
-                  {resumoData.alertasPendentes > 0 ? 
-                    `${resumoData.alertasPendentes} ${resumoData.alertasPendentes === 1 ? 'alerta' : 'alertas'} pendente${resumoData.alertasPendentes === 1 ? '' : 's'}` : 
-                    "Nenhum alerta pendente"}
-                </span>
-              </div>
-              <Button 
-                variant="link" 
-                className="p-0 h-auto text-xs text-cbmepi-purple mt-2" 
-                onClick={() => {}}
-              >
-                Ver todos
-              </Button>
-            </div>
+      // Carregar contagem de militares ativos
+      const { count: ativosCount, error: ativosError } = await supabase
+        .from('militares')
+        .select('*', { count: 'exact', head: true })
+        .eq('situacao', 'ativo');
+        
+      if (ativosError) throw ativosError;
+      setMilitaresAtivos(ativosCount || 0);
+      
+      // Carregar militares por quadro
+      const { data: quadroData, error: quadroError } = await supabase
+        .from('militares')
+        .select('quadro')
+        .eq('situacao', 'ativo');
+        
+      if (quadroError) throw quadroError;
+      
+      const quadroCounts: Record<string, number> = {};
+      quadroData.forEach(item => {
+        quadroCounts[item.quadro] = (quadroCounts[item.quadro] || 0) + 1;
+      });
+      setMilitaresPorQuadro(quadroCounts);
+      
+      // Carregar militares por posto
+      const { data: postoData, error: postoError } = await supabase
+        .from('militares')
+        .select('posto')
+        .eq('situacao', 'ativo');
+        
+      if (postoError) throw postoError;
+      
+      const postoCounts: Record<string, number> = {};
+      postoData.forEach(item => {
+        postoCounts[item.posto] = (postoCounts[item.posto] || 0) + 1;
+      });
+      setMilitaresPorPosto(postoCounts);
+      
+      // Carregar próximos promovíveis
+      const { data: promoviveisData, error: promoviveisError } = await supabase
+        .from('militares')
+        .select(`
+          id, 
+          nome, 
+          posto, 
+          quadro, 
+          dataultimapromocao,
+          fichas_conceito(temposervicoquadro)
+        `)
+        .eq('situacao', 'ativo')
+        .order('dataultimapromocao', { ascending: true })
+        .limit(5);
+        
+      if (promoviveisError) throw promoviveisError;
+      setProximosPromoviveis(promoviveisData);
+      
+      // Carregar últimas promoções
+      const { data: promocoesData, error: promocoesError } = await supabase
+        .from('promocoes')
+        .select(`
+          id,
+          data_promocao,
+          tipo_promocao,
+          militares(id, nome, posto, quadro)
+        `)
+        .order('data_promocao', { ascending: false })
+        .limit(5);
+        
+      if (promocoesError) throw promocoesError;
+      setUltimasPromocoes(promocoesData);
+      
+      // Simular vagas disponíveis por quadro (em uma implementação real, isso viria do qfvService)
+      setVagasDisponiveisPorQuadro({
+        'QOEM': 3,
+        'QOE': 2,
+        'QOBM-S': 1,
+        'QOBM-E': 2,
+        'QOBM-C': 1,
+        'QPBM': 5
+      });
+      
+    } catch (error) {
+      console.error('Erro ao carregar dados para o dashboard:', error);
+      toast({
+        title: 'Erro ao carregar dados',
+        description: 'Não foi possível carregar as informações do dashboard.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await carregarDados();
+    setRefreshing(false);
+    
+    toast({
+      title: 'Dados atualizados',
+      description: 'As informações do dashboard foram atualizadas.'
+    });
+  };
+
+  // Preparar dados para os gráficos
+  const dadosGraficoQuadro = {
+    labels: Object.keys(militaresPorQuadro),
+    datasets: [
+      {
+        label: 'Militares por Quadro',
+        data: Object.values(militaresPorQuadro),
+        backgroundColor: [
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 159, 64, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // Dados para o gráfico de postos, ordenados por hierarquia
+  const ordenarPostos = () => {
+    const ordemPostos = [
+      "Coronel", "Tenente-Coronel", "Major", "Capitão", "1º Tenente", "2º Tenente",
+      "Subtenente", "1º Sargento", "2º Sargento", "3º Sargento", "Cabo", "Soldado"
+    ];
+    
+    const labels: string[] = [];
+    const data: number[] = [];
+    
+    ordemPostos.forEach(posto => {
+      if (militaresPorPosto[posto] !== undefined) {
+        labels.push(posto);
+        data.push(militaresPorPosto[posto]);
+      }
+    });
+    
+    return { labels, data };
+  };
+
+  const dadosOrdenados = ordenarPostos();
+  
+  const dadosGraficoPosto = {
+    labels: dadosOrdenados.labels,
+    datasets: [
+      {
+        label: 'Militares por Posto',
+        data: dadosOrdenados.data,
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const renderProximosPromoviveis = () => {
+    if (proximosPromoviveis.length === 0) {
+      return (
+        <div className="text-center py-4 text-gray-500">
+          Nenhum militar elegível para promoção no momento.
+        </div>
+      );
+    }
+    
+    return proximosPromoviveis.map(militar => {
+      // Cálculo do tempo desde a última promoção
+      const dataUltimaPromocao = militar.dataultimapromocao 
+        ? new Date(militar.dataultimapromocao)
+        : null;
+        
+      const tempoServico = militar.fichas_conceito?.[0]?.temposervicoquadro || 0;
+      
+      return (
+        <div key={militar.id} className="flex justify-between items-center py-2 border-b last:border-0">
+          <div>
+            <p className="font-medium">{militar.nome}</p>
+            <p className="text-sm text-gray-600">{militar.posto} - {militar.quadro}</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="text-right">
+            <p className="text-sm">
+              <span className="font-medium">{tempoServico}</span> meses no posto
+            </p>
+            {dataUltimaPromocao && (
+              <p className="text-xs text-gray-500">
+                Última promoção: {format(dataUltimaPromocao, 'dd/MM/yyyy')}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    });
+  };
+
+  const renderUltimasPromocoes = () => {
+    if (ultimasPromocoes.length === 0) {
+      return (
+        <div className="text-center py-4 text-gray-500">
+          Nenhuma promoção registrada.
+        </div>
+      );
+    }
+    
+    return ultimasPromocoes.map(promocao => {
+      const dataPromocao = promocao.data_promocao 
+        ? new Date(promocao.data_promocao)
+        : null;
+        
+      return (
+        <div key={promocao.id} className="flex justify-between items-center py-2 border-b last:border-0">
+          <div>
+            <p className="font-medium">{promocao.militares?.nome || "Militar não encontrado"}</p>
+            <p className="text-sm text-gray-600">
+              {promocao.militares?.posto || "-"} - {promocao.militares?.quadro || "-"}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm">
+              <span className="font-medium">{promocao.tipo_promocao || "Não especificado"}</span>
+            </p>
+            {dataPromocao && (
+              <p className="text-xs text-gray-500">
+                {format(dataPromocao, 'dd/MM/yyyy')}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+          <p className="mt-2 text-gray-500">Carregando dados do dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <Button 
+          variant="outline" 
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          <RefreshCcw className="mr-2 h-4 w-4" />
+          {refreshing ? 'Atualizando...' : 'Atualizar Dados'}
+        </Button>
+      </div>
       
-      {/* Acesso Rápido */}
-      <Card>
-        <CardHeader className="bg-cbmepi-purple text-white py-2 md:py-4">
-          <CardTitle className="text-base md:text-lg">ACESSO RÁPIDO</CardTitle>
-          <CardDescription className="text-xs md:text-sm text-zinc-200">Funcionalidades do Sistema</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-4">
-          <Button
-            variant="outline"
-            className="h-auto p-4 flex flex-col items-center gap-2 text-center"
-            onClick={() => navigate("/gestao-promocoes")}
-          >
-            <Award className="h-5 w-5 text-cbmepi-purple" />
-            <div>
-              <p className="text-sm font-medium">Gestão de Promoções</p>
-              <p className="text-xs text-gray-500">Acompanhar elegibilidade</p>
+      {/* Cards de métricas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">Total de Militares</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <Users className="h-5 w-5 text-gray-500 mr-2" />
+              <span className="text-2xl font-bold">{totalMilitares}</span>
             </div>
-          </Button>
-          
-          <Button
-            variant="outline"
-            className="h-auto p-4 flex flex-col items-center gap-2 text-center"
-            onClick={() => navigate("/fixacao-vagas")}
-          >
-            <ListChecks className="h-5 w-5 text-cbmepi-purple" />
-            <div>
-              <p className="text-sm font-medium">Quadro de Fixação</p>
-              <p className="text-xs text-gray-500">Gerenciar vagas</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">Militares Ativos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <UserCheck className="h-5 w-5 text-green-500 mr-2" />
+              <span className="text-2xl font-bold">{militaresAtivos}</span>
+              <span className="text-sm text-gray-500 ml-2">
+                ({Math.round((militaresAtivos / totalMilitares) * 100)}%)
+              </span>
             </div>
-          </Button>
-          
-          <Button
-            variant="outline"
-            className="h-auto p-4 flex flex-col items-center gap-2 text-center"
-            onClick={() => navigate("/cadastro-militar")}
-          >
-            <Users className="h-5 w-5 text-cbmepi-purple" />
-            <div>
-              <p className="text-sm font-medium">Cadastrar Militar</p>
-              <p className="text-xs text-gray-500">Adicionar novo militar</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">Vagas Disponíveis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <Award className="h-5 w-5 text-blue-500 mr-2" />
+              <span className="text-2xl font-bold">
+                {Object.values(vagasDisponiveisPorQuadro).reduce((a, b) => a + b, 0)}
+              </span>
             </div>
-          </Button>
-          
-          <Button
-            variant="outline"
-            className="h-auto p-4 flex flex-col items-center gap-2 text-center"
-            onClick={() => navigate("/merecimento")}
-          >
-            <FileBarChart className="h-5 w-5 text-cbmepi-purple" />
-            <div>
-              <p className="text-sm font-medium">Quadro de Merecimento</p>
-              <p className="text-xs text-gray-500">Análise de pontuação</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">Status Quadro de Acesso</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <Calendar className="h-5 w-5 text-purple-500 mr-2" />
+              <span className={`font-medium ${quadroAcessoAberto ? 'text-green-600' : 'text-gray-600'}`}>
+                {quadroAcessoAberto ? 'Aberto' : 'Fechado'}
+              </span>
             </div>
-          </Button>
-        </CardContent>
-      </Card>
+            <p className="text-xs text-gray-500 mt-1">
+              Próxima data: {format(new Date(2024, 6, 18), 'dd/MM/yyyy')}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart4 className="h-5 w-5 mr-2" />
+              Distribuição por Quadro
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="h-80">
+              {Object.keys(militaresPorQuadro).length > 0 ? (
+                <PieChart data={dadosGraficoQuadro} />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500">Sem dados disponíveis</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart2 className="h-5 w-5 mr-2" />
+              Distribuição por Posto/Graduação
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="h-80">
+              {Object.keys(militaresPorPosto).length > 0 ? (
+                <BarChart data={dadosGraficoPosto} />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500">Sem dados disponíveis</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Cards de informações */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Próximos Militares Elegíveis para Promoção</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-1">
+              {renderProximosPromoviveis()}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Últimas Promoções</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-1">
+              {renderUltimasPromocoes()}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

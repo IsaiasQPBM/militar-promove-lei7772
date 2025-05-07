@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao, PontuacaoLei5461 } from "@/types";
-import { obterCriteriosLei5461 } from "@/services/promocaoService";
 
 interface UseFichaConceitoPontuacaoProps {
   cursosMilitares: CursoMilitar[];
@@ -11,63 +10,60 @@ interface UseFichaConceitoPontuacaoProps {
   punicoes: Punicao[];
 }
 
-const useFichaConceitoPontuacao = ({ 
-  cursosMilitares, 
-  cursosCivis, 
-  condecoracoes, 
-  elogios, 
-  punicoes 
+const useFichaConceitoPontuacao = ({
+  cursosMilitares,
+  cursosCivis,
+  condecoracoes,
+  elogios,
+  punicoes
 }: UseFichaConceitoPontuacaoProps) => {
   const [pontuacao, setPontuacao] = useState<PontuacaoLei5461 | null>(null);
   
-  // Efeito para calcular pontuação sempre que os dados mudarem
-  useEffect(() => {
-    // Obter critérios da Lei 5461
-    const criterios = obterCriteriosLei5461();
-    
-    // Inicializar estrutura de pontuação
-    const novaPontuacao: PontuacaoLei5461 = {
+  // Função para calcular a pontuação com base na Lei 5.461
+  const calcularPontuacao = useCallback(() => {
+    // Criar estrutura base da pontuação
+    const pontuacaoBase: PontuacaoLei5461 = {
       tempoServicoQuadro: {
         quantidade: 0,
-        valor: criterios.tempoDeServico.pontuacao,
+        valor: 0.1,
         pontosPositivos: 0,
         pontosNegativos: 0
       },
       cursosMilitares: {
-        especializacao: { quantidade: 0, valor: criterios.cursosMilitares.especializacao.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        csbm: { quantidade: 0, valor: criterios.cursosMilitares.csbm.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        cfsd: { quantidade: 0, valor: criterios.cursosMilitares.cfsd.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        chc: { quantidade: 0, valor: criterios.cursosMilitares.chc.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        chsgt: { quantidade: 0, valor: criterios.cursosMilitares.chsgt.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        cas: { quantidade: 0, valor: criterios.cursosMilitares.cas.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        cho: { quantidade: 0, valor: criterios.cursosMilitares.cho.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        cfo: { quantidade: 0, valor: criterios.cursosMilitares.cfo.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        cao: { quantidade: 0, valor: criterios.cursosMilitares.cao.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        csbm2: { quantidade: 0, valor: criterios.cursosMilitares.csbm2.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
+        especializacao: { quantidade: 0, valor: 0.5, pontosPositivos: 0, pontosNegativos: 0 },
+        csbm: { quantidade: 0, valor: 4.0, pontosPositivos: 0, pontosNegativos: 0 },
+        cfsd: { quantidade: 0, valor: 3.0, pontosPositivos: 0, pontosNegativos: 0 },
+        chc: { quantidade: 0, valor: 1.0, pontosPositivos: 0, pontosNegativos: 0 },
+        chsgt: { quantidade: 0, valor: 1.5, pontosPositivos: 0, pontosNegativos: 0 },
+        cas: { quantidade: 0, valor: 2.0, pontosPositivos: 0, pontosNegativos: 0 },
+        cho: { quantidade: 0, valor: 2.5, pontosPositivos: 0, pontosNegativos: 0 },
+        cfo: { quantidade: 0, valor: 4.0, pontosPositivos: 0, pontosNegativos: 0 },
+        cao: { quantidade: 0, valor: 3.0, pontosPositivos: 0, pontosNegativos: 0 },
+        csbm2: { quantidade: 0, valor: 3.0, pontosPositivos: 0, pontosNegativos: 0 }
       },
       cursosCivis: {
-        superior: { quantidade: 0, valor: criterios.cursosCivis.superior.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        especializacao: { quantidade: 0, valor: criterios.cursosCivis.especializacao.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        mestrado: { quantidade: 0, valor: criterios.cursosCivis.mestrado.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        doutorado: { quantidade: 0, valor: criterios.cursosCivis.doutorado.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
+        superior: { quantidade: 0, valor: 1.0, pontosPositivos: 0, pontosNegativos: 0 },
+        especializacao: { quantidade: 0, valor: 1.0, pontosPositivos: 0, pontosNegativos: 0 },
+        mestrado: { quantidade: 0, valor: 2.0, pontosPositivos: 0, pontosNegativos: 0 },
+        doutorado: { quantidade: 0, valor: 3.0, pontosPositivos: 0, pontosNegativos: 0 }
       },
       condecoracoes: {
-        governoFederal: { quantidade: 0, valor: criterios.condecoracoes.governoFederal.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        governoEstadual: { quantidade: 0, valor: criterios.condecoracoes.governoEstadual.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        cbmepi: { quantidade: 0, valor: criterios.condecoracoes.cbmepi.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
+        governoFederal: { quantidade: 0, valor: 1.0, pontosPositivos: 0, pontosNegativos: 0 },
+        governoEstadual: { quantidade: 0, valor: 0.5, pontosPositivos: 0, pontosNegativos: 0 },
+        cbmepi: { quantidade: 0, valor: 0.2, pontosPositivos: 0, pontosNegativos: 0 }
       },
       elogios: {
-        individual: { quantidade: 0, valor: criterios.elogios.individual.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        coletivo: { quantidade: 0, valor: criterios.elogios.coletivo.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
+        individual: { quantidade: 0, valor: 0.2, pontosPositivos: 0, pontosNegativos: 0 },
+        coletivo: { quantidade: 0, valor: 0.1, pontosPositivos: 0, pontosNegativos: 0 }
       },
       punicoes: {
-        repreensao: { quantidade: 0, valor: criterios.punicoes.repreensao.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        detencao: { quantidade: 0, valor: criterios.punicoes.detencao.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
-        prisao: { quantidade: 0, valor: criterios.punicoes.prisao.pontuacao, pontosPositivos: 0, pontosNegativos: 0 },
+        repreensao: { quantidade: 0, valor: 0.5, pontosPositivos: 0, pontosNegativos: 0 },
+        detencao: { quantidade: 0, valor: 1.0, pontosPositivos: 0, pontosNegativos: 0 },
+        prisao: { quantidade: 0, valor: 1.5, pontosPositivos: 0, pontosNegativos: 0 }
       },
       faltaAproveitamentoCursos: {
         quantidade: 0,
-        valor: criterios.faltaAproveitamentoCursos.pontuacao,
+        valor: 1.0,
         pontosPositivos: 0,
         pontosNegativos: 0
       },
@@ -75,161 +71,196 @@ const useFichaConceitoPontuacao = ({
     };
     
     // Processar cursos militares
-    if (cursosMilitares && cursosMilitares.length > 0) {
-      cursosMilitares.forEach(curso => {
-        // Definir tipo padrão se não estiver presente
-        const tipo = curso.tipo?.toLowerCase() || "especializacao";
-        
-        // Converter tipo para a chave correspondente no objeto de pontuação
-        let tipoPontuacao = "especializacao";
-        
-        if (tipo.includes("csbm") && !tipo.includes("csbm2")) tipoPontuacao = "csbm";
-        else if (tipo.includes("cfsd")) tipoPontuacao = "cfsd";
-        else if (tipo.includes("chc")) tipoPontuacao = "chc";
-        else if (tipo.includes("chsgt")) tipoPontuacao = "chsgt";
-        else if (tipo.includes("cas")) tipoPontuacao = "cas";
-        else if (tipo.includes("cho")) tipoPontuacao = "cho";
-        else if (tipo.includes("cfo")) tipoPontuacao = "cfo";
-        else if (tipo.includes("cao")) tipoPontuacao = "cao";
-        else if (tipo.includes("csbm2")) tipoPontuacao = "csbm2";
-        
-        // Incrementar quantidade e pontos
-        if (novaPontuacao.cursosMilitares[tipoPontuacao]) {
-          novaPontuacao.cursosMilitares[tipoPontuacao].quantidade += 1;
-          novaPontuacao.cursosMilitares[tipoPontuacao].pontosPositivos += curso.pontos || 0;
-        }
-      });
-    }
+    cursosMilitares.forEach(curso => {
+      const tipo = curso.tipo.toLowerCase();
+      
+      // Mapear o tipo do curso para a propriedade correspondente
+      let tipoPontuacao: string = 'especializacao';
+      
+      if (tipo.includes('csbm') && !tipo.includes('csbm2')) {
+        tipoPontuacao = 'csbm';
+      } else if (tipo.includes('csbm2')) {
+        tipoPontuacao = 'csbm2';
+      } else if (tipo.includes('cfsd')) {
+        tipoPontuacao = 'cfsd';
+      } else if (tipo.includes('chc')) {
+        tipoPontuacao = 'chc';
+      } else if (tipo.includes('chsgt')) {
+        tipoPontuacao = 'chsgt';
+      } else if (tipo.includes('cas')) {
+        tipoPontuacao = 'cas';
+      } else if (tipo.includes('cho')) {
+        tipoPontuacao = 'cho';
+      } else if (tipo.includes('cfo')) {
+        tipoPontuacao = 'cfo';
+      } else if (tipo.includes('cao')) {
+        tipoPontuacao = 'cao';
+      }
+      
+      // Incrementar quantidade e pontos
+      if (pontuacaoBase.cursosMilitares[tipoPontuacao]) {
+        pontuacaoBase.cursosMilitares[tipoPontuacao].quantidade += 1;
+        pontuacaoBase.cursosMilitares[tipoPontuacao].pontosPositivos += curso.pontos;
+      } else {
+        // Se o tipo não existir, criar novo
+        pontuacaoBase.cursosMilitares[tipoPontuacao] = {
+          quantidade: 1,
+          valor: curso.pontos,
+          pontosPositivos: curso.pontos,
+          pontosNegativos: 0
+        };
+      }
+    });
     
     // Processar cursos civis
-    if (cursosCivis && cursosCivis.length > 0) {
-      cursosCivis.forEach(curso => {
-        // Definir tipo padrão se não estiver presente
-        const tipo = curso.tipo?.toLowerCase() || "superior";
-        
-        // Converter tipo para a chave correspondente no objeto de pontuação
-        let tipoPontuacao = "superior";
-        
-        if (tipo.includes("espec")) tipoPontuacao = "especializacao";
-        else if (tipo.includes("mestr")) tipoPontuacao = "mestrado";
-        else if (tipo.includes("doutor")) tipoPontuacao = "doutorado";
-        
-        // Incrementar quantidade e pontos
-        if (novaPontuacao.cursosCivis[tipoPontuacao]) {
-          novaPontuacao.cursosCivis[tipoPontuacao].quantidade += 1;
-          novaPontuacao.cursosCivis[tipoPontuacao].pontosPositivos += curso.pontos || 0;
-        }
-      });
-    }
+    cursosCivis.forEach(curso => {
+      const tipo = curso.tipo.toLowerCase();
+      
+      // Mapear o tipo do curso para a propriedade correspondente
+      let tipoPontuacao: string = 'superior';
+      
+      if (tipo.includes('especial')) {
+        tipoPontuacao = 'especializacao';
+      } else if (tipo.includes('mestrado')) {
+        tipoPontuacao = 'mestrado';
+      } else if (tipo.includes('doutorado')) {
+        tipoPontuacao = 'doutorado';
+      }
+      
+      // Incrementar quantidade e pontos
+      if (pontuacaoBase.cursosCivis[tipoPontuacao]) {
+        pontuacaoBase.cursosCivis[tipoPontuacao].quantidade += 1;
+        pontuacaoBase.cursosCivis[tipoPontuacao].pontosPositivos += curso.pontos;
+      } else {
+        // Se o tipo não existir, criar novo
+        pontuacaoBase.cursosCivis[tipoPontuacao] = {
+          quantidade: 1,
+          valor: curso.pontos,
+          pontosPositivos: curso.pontos,
+          pontosNegativos: 0
+        };
+      }
+    });
     
     // Processar condecorações
-    if (condecoracoes && condecoracoes.length > 0) {
-      condecoracoes.forEach(condecoracao => {
-        // Definir tipo padrão se não estiver presente
-        const tipo = condecoracao.tipo?.toLowerCase() || "";
-        
-        // Converter tipo para a chave correspondente no objeto de pontuação
-        let tipoPontuacao = "cbmepi"; // Default
-        
-        if (tipo.includes("federal") || tipo.includes("união") || tipo.includes("uniao")) {
-          tipoPontuacao = "governoFederal";
-        } else if (tipo.includes("estadual") || tipo.includes("estado")) {
-          tipoPontuacao = "governoEstadual";
-        }
-        
-        // Incrementar quantidade e pontos
-        if (novaPontuacao.condecoracoes[tipoPontuacao]) {
-          novaPontuacao.condecoracoes[tipoPontuacao].quantidade += 1;
-          novaPontuacao.condecoracoes[tipoPontuacao].pontosPositivos += condecoracao.pontos || 0;
-        }
-      });
-    }
+    condecoracoes.forEach(condecoracao => {
+      const tipo = condecoracao.tipo.toLowerCase();
+      
+      let tipoPontuacao: string = 'cbmepi';
+      
+      if (tipo.includes('federal')) {
+        tipoPontuacao = 'governoFederal';
+      } else if (tipo.includes('estadual')) {
+        tipoPontuacao = 'governoEstadual';
+      }
+      
+      // Incrementar quantidade e pontos
+      if (pontuacaoBase.condecoracoes[tipoPontuacao]) {
+        pontuacaoBase.condecoracoes[tipoPontuacao].quantidade += 1;
+        pontuacaoBase.condecoracoes[tipoPontuacao].pontosPositivos += condecoracao.pontos;
+      } else {
+        // Se o tipo não existir, criar novo
+        pontuacaoBase.condecoracoes[tipoPontuacao] = {
+          quantidade: 1,
+          valor: condecoracao.pontos,
+          pontosPositivos: condecoracao.pontos,
+          pontosNegativos: 0
+        };
+      }
+    });
     
     // Processar elogios
-    if (elogios && elogios.length > 0) {
-      elogios.forEach(elogio => {
-        // Definir tipo padrão se não estiver presente
-        const tipo = elogio.tipo?.toLowerCase() || "";
-        
-        // Converter tipo para a chave correspondente no objeto de pontuação
-        let tipoPontuacao = "individual"; // Default
-        
-        if (tipo.includes("colet")) {
-          tipoPontuacao = "coletivo";
-        }
-        
-        // Incrementar quantidade e pontos
-        if (novaPontuacao.elogios[tipoPontuacao]) {
-          novaPontuacao.elogios[tipoPontuacao].quantidade += 1;
-          novaPontuacao.elogios[tipoPontuacao].pontosPositivos += elogio.pontos || 0;
-        }
-      });
-    }
+    elogios.forEach(elogio => {
+      const tipo = elogio.tipo.toLowerCase();
+      
+      let tipoPontuacao: string = 'individual';
+      
+      if (tipo.includes('coletivo')) {
+        tipoPontuacao = 'coletivo';
+      }
+      
+      // Incrementar quantidade e pontos
+      if (pontuacaoBase.elogios[tipoPontuacao]) {
+        pontuacaoBase.elogios[tipoPontuacao].quantidade += 1;
+        pontuacaoBase.elogios[tipoPontuacao].pontosPositivos += elogio.pontos;
+      } else {
+        // Se o tipo não existir, criar novo
+        pontuacaoBase.elogios[tipoPontuacao] = {
+          quantidade: 1,
+          valor: elogio.pontos,
+          pontosPositivos: elogio.pontos,
+          pontosNegativos: 0
+        };
+      }
+    });
     
     // Processar punições
-    if (punicoes && punicoes.length > 0) {
-      punicoes.forEach(punicao => {
-        // Definir tipo padrão se não estiver presente
-        const tipo = punicao.tipo?.toLowerCase() || "";
-        
-        // Converter tipo para a chave correspondente no objeto de pontuação
-        let tipoPontuacao = "repreensao"; // Default
-        
-        if (tipo.includes("deten")) {
-          tipoPontuacao = "detencao";
-        } else if (tipo.includes("pris")) {
-          tipoPontuacao = "prisao";
-        }
-        
-        // Incrementar quantidade e pontos negativos
-        if (novaPontuacao.punicoes[tipoPontuacao]) {
-          novaPontuacao.punicoes[tipoPontuacao].quantidade += 1;
-          novaPontuacao.punicoes[tipoPontuacao].pontosNegativos += punicao.pontos || 0;
-        }
-      });
-    }
+    punicoes.forEach(punicao => {
+      const tipo = punicao.tipo.toLowerCase();
+      
+      let tipoPontuacao: string = 'repreensao';
+      
+      if (tipo.includes('detencao')) {
+        tipoPontuacao = 'detencao';
+      } else if (tipo.includes('prisao')) {
+        tipoPontuacao = 'prisao';
+      }
+      
+      // Incrementar quantidade e pontos negativos
+      if (pontuacaoBase.punicoes[tipoPontuacao]) {
+        pontuacaoBase.punicoes[tipoPontuacao].quantidade += 1;
+        pontuacaoBase.punicoes[tipoPontuacao].pontosNegativos += punicao.pontos;
+      } else {
+        // Se o tipo não existir, criar novo
+        pontuacaoBase.punicoes[tipoPontuacao] = {
+          quantidade: 1,
+          valor: punicao.pontos,
+          pontosPositivos: 0,
+          pontosNegativos: punicao.pontos
+        };
+      }
+    });
     
-    // Calcular soma total
+    // Calcular soma total de pontos
     let somaTotal = 0;
     
-    // Adicionar pontos de cursos militares
-    Object.values(novaPontuacao.cursosMilitares).forEach(item => {
+    // Pontos positivos
+    Object.values(pontuacaoBase.cursosMilitares).forEach(item => {
       somaTotal += item.pontosPositivos;
     });
     
-    // Adicionar pontos de cursos civis
-    Object.values(novaPontuacao.cursosCivis).forEach(item => {
+    Object.values(pontuacaoBase.cursosCivis).forEach(item => {
       somaTotal += item.pontosPositivos;
     });
     
-    // Adicionar pontos de condecorações
-    Object.values(novaPontuacao.condecoracoes).forEach(item => {
+    Object.values(pontuacaoBase.condecoracoes).forEach(item => {
       somaTotal += item.pontosPositivos;
     });
     
-    // Adicionar pontos de elogios
-    Object.values(novaPontuacao.elogios).forEach(item => {
+    Object.values(pontuacaoBase.elogios).forEach(item => {
       somaTotal += item.pontosPositivos;
     });
     
-    // Subtrair pontos de punições
-    Object.values(novaPontuacao.punicoes).forEach(item => {
+    // Tempo de serviço (assumindo que está em meses)
+    somaTotal += pontuacaoBase.tempoServicoQuadro.pontosPositivos;
+    
+    // Pontos negativos
+    Object.values(pontuacaoBase.punicoes).forEach(item => {
       somaTotal -= item.pontosNegativos;
     });
     
-    // Subtrair pontos de falta de aproveitamento em cursos
-    somaTotal -= novaPontuacao.faltaAproveitamentoCursos.pontosNegativos;
+    somaTotal -= pontuacaoBase.faltaAproveitamentoCursos.pontosNegativos;
     
-    // Adicionar pontos por tempo de serviço
-    somaTotal += novaPontuacao.tempoServicoQuadro.pontosPositivos;
+    pontuacaoBase.somaTotal = somaTotal;
     
-    // Atualizar soma total
-    novaPontuacao.somaTotal = somaTotal;
-    
-    // Atualizar estado
-    setPontuacao(novaPontuacao);
+    return pontuacaoBase;
   }, [cursosMilitares, cursosCivis, condecoracoes, elogios, punicoes]);
-  
+
+  useEffect(() => {
+    const novaPontuacao = calcularPontuacao();
+    setPontuacao(novaPontuacao);
+  }, [calcularPontuacao]);
+
   return { pontuacao, setPontuacao };
 };
 

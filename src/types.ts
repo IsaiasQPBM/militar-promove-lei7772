@@ -71,7 +71,9 @@ export type QuadroMilitar =
   | "QOBM-S"
   | "QOBM-E"
   | "QOBM-C"
-  | "QPBM";
+  | "QPBM"
+  | "QORR"  // Added reserve officer quadro
+  | "QPRR"; // Added reserve praça quadro
 
 export type SituacaoMilitar =
   | "ativo"
@@ -91,7 +93,11 @@ export type TipoSanguineo =
 
 export type Sexo =
   | "M"
-  | "F";
+  | "F"
+  | "Masculino"  // Added display values
+  | "Feminino";
+
+export type SexoDisplay = "Masculino" | "Feminino";
 
 export interface Militar {
   id: string;
@@ -167,7 +173,9 @@ export type CriterioPromocao =
   | "Antiguidade" 
   | "Merecimento" 
   | "Posto máximo" 
-  | "Graduação máxima";
+  | "Graduação máxima"
+  | "Post mortem"
+  | "Ressarcimento de preterição";
 
 export interface Promocao {
   id: string;
@@ -178,3 +186,6 @@ export interface Promocao {
   cargo?: string;
   anexoDocumento?: string;
 }
+
+// Type for MerecimentoList component
+export type MilitarComPontuacao = Militar & { pontuacao: number };

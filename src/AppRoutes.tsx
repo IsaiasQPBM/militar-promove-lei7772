@@ -1,76 +1,110 @@
 
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
+import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Views
-import DashboardPage from './pages/Dashboard';
-import LoginPage from './pages/Login';
-import RegisterPage from './pages/Register';
-import NotFoundPage from './pages/NotFound';
-import QuadroFixacaoVagasPage from './pages/QuadroFixacaoVagas';
-import CadastroMilitarPage from './pages/CadastroMilitar';
-import EditarMilitarPage from './pages/EditarMilitar';
-import IndexPage from './pages/Index';
-import MerecimentoPage from './pages/Merecimento';
-import AntiguidadePage from './pages/Antiguidade';
-import LegislacaoPage from './pages/Legislacao';
-import GestaoPromocoesPage from './pages/GestaoPromocoes';
-import FixacaoVagasPage from './pages/FixacaoVagas';
-import HistoricoPromocoesPage from './pages/HistoricoPromocoes';
-import FichaMilitarPage from './pages/FichaMilitar';
-import FichaConceitoPage from './pages/FichaConceito';
+// Import pages
+import QuadroFixacaoVagas from "@/pages/QuadroFixacaoVagas";
+import GestaoPromocoesPage from "@/pages/GestaoPromocoes";
+import ImportarMilitaresAI from "@/pages/ImportarMilitaresAI";
+import Dashboard from "@/pages/Dashboard";
 
-// Páginas para os quadros de oficiais
-import QuadroOficiais from './pages/quadros/QuadroOficiais';
-
-// Páginas para os quadros de praças
-import QuadroPracas from './pages/quadros/QuadroPracas';
-
-const AppRoutes = () => {
+function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<IndexPage />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="quadro-fixacao-vagas" element={<QuadroFixacaoVagasPage />} />
-        <Route path="fixacao-vagas" element={<FixacaoVagasPage />} />
-        <Route path="cadastro-militar" element={<CadastroMilitarPage />} />
-        <Route path="editar-militar/:id" element={<EditarMilitarPage />} />
-        <Route path="merecimento" element={<MerecimentoPage />} />
-        <Route path="antiguidade" element={<AntiguidadePage />} />
-        <Route path="legislacao" element={<LegislacaoPage />} />
-        <Route path="gestao-promocoes" element={<GestaoPromocoesPage />} />
-        <Route path="historico-promocoes" element={<HistoricoPromocoesPage />} />
-        <Route path="historico-promocoes/:id" element={<HistoricoPromocoesPage />} />
-        <Route path="ficha-militar/:id" element={<FichaMilitarPage />} />
-        <Route path="ficha-conceito/:id" element={<FichaConceitoPage />} />
-        
-        {/* Rotas para Oficiais */}
-        <Route path="oficiais">
-          <Route path="estado-maior" element={<QuadroOficiais quadro="QOEM" titulo="Quadro de Oficiais do Estado-Maior" />} />
-          <Route path="especialistas" element={<QuadroOficiais quadro="QOE" titulo="Quadro de Oficiais Especialistas" />} />
-          <Route path="reserva" element={<QuadroOficiais quadro="QORR" titulo="Quadro de Oficiais da Reserva Remunerada" />} />
-          <Route path="saude" element={<QuadroOficiais quadro="QOBM-S" titulo="Quadro de Oficiais de Saúde" />} />
-          <Route path="engenheiros" element={<QuadroOficiais quadro="QOBM-E" titulo="Quadro de Oficiais Engenheiros" />} />
-          <Route path="complementares" element={<QuadroOficiais quadro="QOBM-C" titulo="Quadro de Oficiais Complementares" />} />
-        </Route>
-        
-        {/* Rotas para Praças */}
-        <Route path="pracas">
-          <Route path="ativos" element={<QuadroPracas quadro="QPBM" titulo="Quadro de Praças Bombeiros Militares" />} />
-          <Route path="reserva" element={<QuadroPracas quadro="QPRR" titulo="Quadro de Praças da Reserva Remunerada" />} />
-        </Route>
-        
-        {/* Rota alternativa para editar militar */}
-        <Route path="militar/:id/editar" element={<EditarMilitarPage />} />
-      </Route>
-
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="*" element={<NotFoundPage />} />
+      {/* Auth Routes */}
+      <Route path="/login" element={<div>Login Page</div>} />
+      <Route path="/register" element={<div>Register Page</div>} />
+      
+      {/* Protected Routes */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Dashboard */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Militares Routes */}
+      <Route
+        path="/militares"
+        element={
+          <ProtectedRoute>
+            <div>Lista de Militares</div>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/militares/:id"
+        element={
+          <ProtectedRoute>
+            <div>Detalhes do Militar</div>
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Quadros Routes */}
+      <Route
+        path="/quadros/oficiais"
+        element={
+          <ProtectedRoute>
+            <div>Quadro de Oficiais</div>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/quadros/pracas"
+        element={
+          <ProtectedRoute>
+            <div>Quadro de Praças</div>
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* QFV Route */}
+      <Route
+        path="/qfv"
+        element={
+          <ProtectedRoute>
+            <QuadroFixacaoVagas />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Promoção Route */}
+      <Route
+        path="/gestao-promocoes"
+        element={
+          <ProtectedRoute>
+            <GestaoPromocoesPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* Importação AI */}
+      <Route
+        path="/importacao-ai"
+        element={
+          <ProtectedRoute>
+            <ImportarMilitaresAI />
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* 404 Not Found */}
+      <Route path="*" element={<div>Página não encontrada</div>} />
     </Routes>
   );
-};
+}
 
 export default AppRoutes;
