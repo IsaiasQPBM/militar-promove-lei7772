@@ -2,7 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
-import Sidebar from "./components/sidebar";
+import { SidebarMenu } from "./components/sidebar/index";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -11,7 +11,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="flex min-h-screen">
-          <Sidebar />
+          <SidebarMenu />
           <div className="flex-1 p-8 bg-gray-50">
             <AppRoutes />
           </div>
