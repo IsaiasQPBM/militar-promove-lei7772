@@ -48,8 +48,34 @@ export const FichaConceitoOficial = ({
     if (pontuacao) {
       const total = pontuacao.somaTotal;
       setTotalPontos(total);
+      
+      // Auto-save pontuação when data changes
+      handleSavePontuacaoAutomaticamente();
     }
   }, [pontuacao]);
+  
+  // Função para salvar automaticamente a pontuação quando mudanças ocorrerem
+  const handleSavePontuacaoAutomaticamente = async () => {
+    if (!pontuacao) return;
+    
+    try {
+      // Salvar tempo de serviço e total de pontos
+      const tempoServicoQuadro = pontuacao.tempoServicoQuadro.pontosPositivos;
+      
+      await salvarFichaConceito({
+        militarId,
+        tempoServicoQuadro,
+        totalPontos: pontuacao.somaTotal
+      });
+      
+      // Atualizar dados se callback fornecido
+      if (onDataImported) {
+        onDataImported();
+      }
+    } catch (error) {
+      console.error("Erro ao salvar pontuação automática:", error);
+    }
+  };
   
   const handleSalvarPontuacao = async () => {
     if (!pontuacao) return;
