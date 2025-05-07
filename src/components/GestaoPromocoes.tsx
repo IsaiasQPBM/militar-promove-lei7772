@@ -13,7 +13,8 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Militar, CriterioPromocao, PostoPatente } from "@/types";
 import { calcularProximaDataQuadroAcesso, verificarPeriodoQuadroAcesso } from "@/services/promocaoService";
-import { FileText, AlertCircle, CheckCircle2, Clock, Search, CalendarDays, List, UserCheck, UserPlus } from "lucide-react";
+import { FileText, AlertCircle, CheckCircle2, Clock, Search, CalendarDays, List, UserCheck, UserPlus, Info } from "lucide-react";
+import { DetalhesElegibilidadeModal } from "./promocoes/DetalhesElegibilidadeModal";
 
 const GestaoPromocoesComponent = () => {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ const GestaoPromocoesComponent = () => {
   const [isPeriodoQuadroAcesso, setIsPeriodoQuadroAcesso] = useState(false);
   const [filtroQuadro, setFiltroQuadro] = useState<string>("todos");
   const [filtroPosto, setFiltroPosto] = useState<string>("todos");
+  const [selectedMilitarId, setSelectedMilitarId] = useState<string | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   
   useEffect(() => {
     const carregarDados = async () => {
@@ -269,9 +272,15 @@ const GestaoPromocoesComponent = () => {
     }
   };
   
+  const handleShowDetails = (militarId: string) => {
+    setSelectedMilitarId(militarId);
+    setDetailsModalOpen(true);
+  };
+  
   // Renderizar a página de gestão de promoções
   return (
     <div className="space-y-6">
+      {/* Status card */}
       <Card className="bg-gray-50 border-blue-500 border-t-4">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -457,6 +466,14 @@ const GestaoPromocoesComponent = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
+                                  onClick={() => handleShowDetails(militar.id)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Info className="h-4 w-4" /> Detalhes
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => navigate(`/ficha-militar/${militar.id}`)}
                                 >
                                   Ver Ficha
@@ -548,6 +565,14 @@ const GestaoPromocoesComponent = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => handleShowDetails(militar.id)}
+                                className="flex items-center gap-1"
+                              >
+                                <Info className="h-4 w-4" /> Detalhes
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => navigate(`/ficha-militar/${militar.id}`)}
                               >
                                 Ver Ficha
@@ -580,6 +605,13 @@ const GestaoPromocoesComponent = () => {
           </CardContent>
         </Card>
       </Tabs>
+
+      {/* Modal de Detalhes de Elegibilidade */}
+      <DetalhesElegibilidadeModal
+        militarId={selectedMilitarId || ""}
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+      />
     </div>
   );
 };
