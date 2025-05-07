@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,8 @@ import { Militar, CriterioPromocao, PostoPatente } from "@/types";
 import { calcularProximaDataQuadroAcesso, verificarPeriodoQuadroAcesso } from "@/services/promocaoService";
 import { FileText, AlertCircle, CheckCircle2, Clock, Search, CalendarDays, List, UserCheck, UserPlus, Info } from "lucide-react";
 import { DetalhesElegibilidadeModal } from "./promocoes/DetalhesElegibilidadeModal";
+import { SimuladorPromocao } from "./promocoes/SimuladorPromocao";
+import { RelatoriosPromocao } from "./promocoes/RelatoriosPromocao";
 
 const GestaoPromocoesComponent = () => {
   const navigate = useNavigate();
@@ -29,6 +32,7 @@ const GestaoPromocoesComponent = () => {
   const [filtroQuadro, setFiltroQuadro] = useState<string>("todos");
   const [filtroPosto, setFiltroPosto] = useState<string>("todos");
   const [selectedMilitarId, setSelectedMilitarId] = useState<string | null>(null);
+  const [selectedMilitar, setSelectedMilitar] = useState<Militar | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   
   useEffect(() => {
@@ -273,6 +277,10 @@ const GestaoPromocoesComponent = () => {
   };
   
   const handleShowDetails = (militarId: string) => {
+    const militar = [...militares, ...militaresElegiveis].find(m => m.id === militarId);
+    if (militar) {
+      setSelectedMilitar(militar);
+    }
     setSelectedMilitarId(militarId);
     setDetailsModalOpen(true);
   };
@@ -306,13 +314,15 @@ const GestaoPromocoesComponent = () => {
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              {selectedMilitar && <SimuladorPromocao militar={selectedMilitar} pontuacaoAtual={8.5} />}
+              <RelatoriosPromocao militaresElegiveis={militaresElegiveis} todosMilitares={militares} />
               <Button
                 variant="outline"
                 className="flex items-center gap-2"
                 onClick={() => navigate("/historico-promocoes")}
               >
-                <FileText className="h-4 w-4" /> Histórico de Promoções
+                <FileText className="h-4 w-4" /> Histórico
               </Button>
               <Button
                 variant="outline"

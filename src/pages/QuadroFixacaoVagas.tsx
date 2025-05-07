@@ -4,7 +4,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import QFVHeader from "@/components/qfv/QFVHeader";
 import QFVContent from "@/components/qfv/QFVContent";
 import QFVResumo from "@/components/qfv/QFVResumo";
-import QFVExport from "@/components/qfv/QFVExport";
 import { useQFVData } from "@/hooks/useQFVData";
 
 const QuadroFixacaoVagas = () => {

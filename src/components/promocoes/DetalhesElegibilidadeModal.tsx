@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { CheckCircle2, XCircle, AlertCircle, Clock, CalendarDays } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, Clock, CalendarDays, FileText } from "lucide-react";
 import { format, parseISO, differenceInMonths, addYears } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,7 +42,7 @@ export const DetalhesElegibilidadeModal: React.FC<DetalhesElegibilidadeModalProp
   const [statusCriterios, setStatusCriterios] = useState<Record<string, "cumprido" | "pendente" | "nao-aplicavel">>({});
   const [observacoesCriterios, setObservacoesCriterios] = useState<Record<string, string>>({});
   const [previsao, setPrevisao] = useState<any>(null);
-
+  
   useEffect(() => {
     const fetchData = async () => {
       if (!open || !militarId) return;
@@ -372,7 +372,7 @@ export const DetalhesElegibilidadeModal: React.FC<DetalhesElegibilidadeModalProp
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-64">
-            <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
+            <XCircle className="h-12 w-12 text-red-500 mb-2" />
             <h3 className="font-semibold text-lg">Militar não encontrado</h3>
             <p className="text-gray-500 text-center mt-1">
               Não foi possível encontrar os dados do militar solicitado.
