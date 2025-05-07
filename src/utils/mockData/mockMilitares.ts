@@ -6,7 +6,7 @@ export const mockMilitares: Militar[] = [
   {
     id: "1",
     nomeCompleto: "José Erisman de Sousa",
-    nome: "José Erisman de Sousa", // Added this field
+    nome: "José Erisman de Sousa",
     nomeGuerra: "Erisman",
     quadro: "QOE",
     posto: "Major",
@@ -17,12 +17,13 @@ export const mockMilitares: Militar[] = [
     situacao: "ativo",
     email: "erisman@cbmepi.gov.br",
     tipoSanguineo: "A+",
-    sexo: "Masculino"
+    sexo: "Masculino",
+    unidade: "Quartel Central"
   },
   {
     id: "2",
     nomeCompleto: "Flaubert Rocha Vieira",
-    nome: "Flaubert Rocha Vieira", // Added this field
+    nome: "Flaubert Rocha Vieira",
     nomeGuerra: "Flaubert",
     quadro: "QOE",
     posto: "Major",
@@ -33,12 +34,13 @@ export const mockMilitares: Militar[] = [
     situacao: "ativo",
     email: "flaubert@cbmepi.gov.br",
     tipoSanguineo: "O+",
-    sexo: "Masculino"
+    sexo: "Masculino",
+    unidade: "Quartel Central"
   },
   {
     id: "3",
     nomeCompleto: "Roberto Carlos Sousa",
-    nome: "Roberto Carlos Sousa", // Added this field
+    nome: "Roberto Carlos Sousa",
     nomeGuerra: "Roberto",
     quadro: "QOEM",
     posto: "Coronel",
@@ -49,12 +51,13 @@ export const mockMilitares: Militar[] = [
     situacao: "ativo",
     email: "roberto@cbmepi.gov.br",
     tipoSanguineo: "B+",
-    sexo: "Masculino"
+    sexo: "Masculino",
+    unidade: "Comando Geral"
   },
   {
     id: "4",
     nomeCompleto: "Carlos Alberto Pereira",
-    nome: "Carlos Alberto Pereira", // Added this field
+    nome: "Carlos Alberto Pereira",
     nomeGuerra: "Alberto",
     quadro: "QORR",
     posto: "Tenente-Coronel",
@@ -65,12 +68,13 @@ export const mockMilitares: Militar[] = [
     situacao: "inativo",
     email: "alberto@cbmepi.gov.br",
     tipoSanguineo: "AB+",
-    sexo: "Masculino"
+    sexo: "Masculino",
+    unidade: "Reserva"
   },
   {
     id: "5",
     nomeCompleto: "Ana Maria da Silva",
-    nome: "Ana Maria da Silva", // Added this field
+    nome: "Ana Maria da Silva",
     nomeGuerra: "Ana",
     quadro: "QPBM",
     posto: "1º Sargento",
@@ -81,12 +85,13 @@ export const mockMilitares: Militar[] = [
     situacao: "ativo",
     email: "ana@cbmepi.gov.br",
     tipoSanguineo: "A-",
-    sexo: "Feminino"
+    sexo: "Feminino",
+    unidade: "1º BBM"
   },
   {
     id: "6",
     nomeCompleto: "João Paulo Ferreira",
-    nome: "João Paulo Ferreira", // Added this field
+    nome: "João Paulo Ferreira",
     nomeGuerra: "João",
     quadro: "QPRR",
     posto: "Subtenente",
@@ -97,6 +102,7 @@ export const mockMilitares: Militar[] = [
     situacao: "inativo",
     email: "joao@cbmepi.gov.br",
     tipoSanguineo: "O-",
-    sexo: "Masculino"
+    sexo: "Masculino",
+    unidade: "Reserva"
   }
 ];

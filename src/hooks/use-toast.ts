@@ -1,8 +1,21 @@
 
 // src/hooks/use-toast.ts
-import { toast } from "@/components/ui/use-toast";
+import {
+  Toast,
+  ToastActionElement,
+  ToastProps,
+} from "@/components/ui/toast"
 
-export { toast };
+import {
+  useToast as useToastPrimitive,
+} from "@/components/ui/toast"
 
-// Re-export useToast hook from @/components/ui/use-toast
-export { useToast } from "@/components/ui/use-toast";
+export type {
+  Toast,
+  ToastActionElement,
+  ToastProps,
+}
+
+export const useToast = useToastPrimitive
+
+export const toast = useToastPrimitive().toast

@@ -1,5 +1,5 @@
 
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export const handleFeatureRemoved = (featureName: string) => {
   toast({

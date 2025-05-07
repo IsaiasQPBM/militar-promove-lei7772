@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { getMilitarById } from "@/services/militarService";
 import { format } from "date-fns";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { FormValues } from "@/utils/militarValidation";
 import { Sexo, SexoDisplay } from "@/types";
 
