@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import {
   Toast,
   ToastActionElement,
@@ -120,7 +121,34 @@ function dispatch(action: Action) {
   });
 }
 
-function useToast() {
+// Helper function to create toast
+const createToast = (props: ToastType) => {
+  const id = genId();
+
+  const update = (props: ToastType) =>
+    dispatch({
+      type: actionTypes.UPDATE_TOAST,
+      toast: { ...props, id },
+    });
+  
+  const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
+
+  dispatch({
+    type: actionTypes.ADD_TOAST,
+    toast: {
+      ...props,
+      id,
+    },
+  });
+
+  return {
+    id,
+    dismiss,
+    update,
+  };
+};
+
+export function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
 
   React.useEffect(() => {
@@ -135,40 +163,20 @@ function useToast() {
 
   return {
     ...state,
-    toast: (props: ToastType) => {
-      const id = genId();
-
-      const update = (props: ToastType) =>
-        dispatch({
-          type: actionTypes.UPDATE_TOAST,
-          toast: { ...props, id },
-        });
-      
-      const dismiss = () => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
-
-      dispatch({
-        type: actionTypes.ADD_TOAST,
-        toast: {
-          ...props,
-          id,
-        },
-      });
-
-      return {
-        id,
-        dismiss,
-        update,
-      };
-    },
+    toast: createToast,
     dismiss: (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
   };
 }
 
-export { useToast };
+// Export a singleton instance of the toast function for direct use
+export const toast = (props: ToastType) => {
+  return createToast(props);
+};
 
-// Export a singleton instance of the toast utility for direct use
-export const toast = {
-  ...useToast().toast({} as any),
-  // Expose the toast function directly
-  toast: (props: ToastType) => useToast().toast(props),
+// Export types
+export type { 
+  ToastProps,
+  ToasterToast,
+  ToastActionElement,
+  ToastType
 };

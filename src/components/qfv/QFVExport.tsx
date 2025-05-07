@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { QFVDataByQuadro } from "@/types/qfv";
 
 interface QFVExportProps {

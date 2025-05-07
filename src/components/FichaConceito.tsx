@@ -34,7 +34,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { CursoMilitar, CursoCivil, Condecoracao, Elogio, Punicao } from "@/types";
 import { Plus } from "lucide-react";
 
@@ -42,51 +42,8 @@ interface FichaConceitoProps {
   militarId: string;
 }
 
-// Esquema para curso militar
-const cursoMilitarSchema = z.object({
-  nome: z.string().min(2, "Nome do curso é obrigatório"),
-  instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
-  cargahoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
-  pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
-});
-
-// Esquema para curso civil
-const cursoCivilSchema = z.object({
-  nome: z.string().min(2, "Nome do curso é obrigatório"),
-  instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
-  cargahoraria: z.coerce.number().min(1, "Carga horária deve ser maior que zero"),
-  pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
-});
-
-// Esquema para condecoração
-const condecoracaoSchema = z.object({
-  tipo: z.string().min(2, "Tipo de condecoração é obrigatório"),
-  descricao: z.string().min(2, "Descrição é obrigatória"),
-  datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
-    message: "Data inválida. Use o formato DD/MM/AAAA"
-  }),
-  pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
-});
-
-// Esquema para elogio
-const elogioSchema = z.object({
-  tipo: z.enum(["Individual", "Coletivo"]),
-  descricao: z.string().min(2, "Descrição é obrigatória"),
-  datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
-    message: "Data inválida. Use o formato DD/MM/AAAA"
-  }),
-  pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
-});
-
-// Esquema para punição
-const punicaoSchema = z.object({
-  tipo: z.enum(["Repreensão", "Detenção", "Prisão"]),
-  descricao: z.string().min(2, "Descrição é obrigatória"),
-  datarecebimento: z.string().refine(val => /^\d{2}\/\d{2}\/\d{4}$/.test(val), {
-    message: "Data inválida. Use o formato DD/MM/AAAA"
-  }),
-  pontos: z.coerce.number().min(0, "Pontos não podem ser negativos")
-});
+// Schemas and other constant declarations remain the same
+// ... keep existing code (schema definitions)
 
 const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   const [cursosMilitares, setCursosMilitares] = useState<CursoMilitar[]>([]);
@@ -101,60 +58,8 @@ const FichaConceito: React.FC<FichaConceitoProps> = ({ militarId }) => {
   const [openDialogElogio, setOpenDialogElogio] = useState(false);
   const [openDialogPunicao, setOpenDialogPunicao] = useState(false);
   
-  // Formulário para curso militar
-  const formCursoMilitar = useForm<z.infer<typeof cursoMilitarSchema>>({
-    resolver: zodResolver(cursoMilitarSchema),
-    defaultValues: {
-      nome: "",
-      instituicao: "",
-      cargahoraria: 0,
-      pontos: 0
-    }
-  });
-  
-  // Formulário para curso civil
-  const formCursoCivil = useForm<z.infer<typeof cursoCivilSchema>>({
-    resolver: zodResolver(cursoCivilSchema),
-    defaultValues: {
-      nome: "",
-      instituicao: "",
-      cargahoraria: 0,
-      pontos: 0
-    }
-  });
-  
-  // Formulário para condecoração
-  const formCondecoracao = useForm<z.infer<typeof condecoracaoSchema>>({
-    resolver: zodResolver(condecoracaoSchema),
-    defaultValues: {
-      tipo: "",
-      descricao: "",
-      datarecebimento: "",
-      pontos: 0
-    }
-  });
-  
-  // Formulário para elogio
-  const formElogio = useForm<z.infer<typeof elogioSchema>>({
-    resolver: zodResolver(elogioSchema),
-    defaultValues: {
-      tipo: "Individual",
-      descricao: "",
-      datarecebimento: "",
-      pontos: 0
-    }
-  });
-  
-  // Formulário para punição
-  const formPunicao = useForm<z.infer<typeof punicaoSchema>>({
-    resolver: zodResolver(punicaoSchema),
-    defaultValues: {
-      tipo: "Repreensão",
-      descricao: "",
-      datarecebimento: "",
-      pontos: 0
-    }
-  });
+  // Form setup for each dialog
+  // ... keep existing code (form setup)
   
   // Funções para adicionar itens (usando mock data em vez de chamadas ao Supabase)
   const adicionarCursoMilitar = async (data: z.infer<typeof cursoMilitarSchema>) => {

@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { FormValues } from "@/utils/militarValidation";
 import { updateMilitar } from "@/services/militarService";
 import { verificarDisponibilidadeVaga } from "@/services/qfvService";
