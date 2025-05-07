@@ -122,7 +122,7 @@ function dispatch(action: Action) {
 }
 
 // Helper function to create toast
-const createToast = (props: ToastType) => {
+function toast(props: ToastType) {
   const id = genId();
 
   const update = (props: ToastType) =>
@@ -146,7 +146,7 @@ const createToast = (props: ToastType) => {
     dismiss,
     update,
   };
-};
+}
 
 export function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
@@ -163,15 +163,13 @@ export function useToast() {
 
   return {
     ...state,
-    toast: createToast,
+    toast,
     dismiss: (toastId?: string) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
   };
 }
 
 // Export a singleton instance of the toast function for direct use
-export const toast = (props: ToastType) => {
-  return createToast(props);
-};
+export { toast };
 
 // Export types
 export type { 

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { SidebarLink } from "./SidebarLink";
 import { SidebarSection } from "./SidebarSection";
 import {
@@ -14,15 +14,33 @@ import {
   Upload,
   FileSearch
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 export const SidebarMenu: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const { signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
   
-  const handleLogout = () => {
-    console.log("Logout clicked");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logout realizado com sucesso",
+        description: "Você será redirecionado para a tela de login."
+      });
+      navigate('/login');
+    } catch (error: any) {
+      console.error("Erro ao fazer logout:", error);
+      toast({
+        title: "Erro ao fazer logout",
+        description: error.message || "Ocorreu um erro ao tentar fazer logout.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

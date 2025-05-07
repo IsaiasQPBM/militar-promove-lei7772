@@ -1,18 +1,20 @@
 
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import LoginPage from "@/pages/Login";
 
 // Import pages
 import QuadroFixacaoVagas from "@/pages/QuadroFixacaoVagas";
 import GestaoPromocoesPage from "@/pages/GestaoPromocoes";
 import ImportarMilitaresAI from "@/pages/ImportarMilitaresAI";
 import Dashboard from "@/pages/Dashboard";
+import NotFound from "@/pages/NotFound";
 
 function AppRoutes() {
   return (
     <Routes>
       {/* Auth Routes */}
-      <Route path="/login" element={<div>Login Page</div>} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<div>Register Page</div>} />
       
       {/* Protected Routes */}
@@ -102,7 +104,7 @@ function AppRoutes() {
       />
       
       {/* 404 Not Found */}
-      <Route path="*" element={<div>Página não encontrada</div>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
