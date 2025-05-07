@@ -4,12 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { PostoPatente, QuadroMilitar, SituacaoMilitar, TipoSanguineo, Sexo } from "@/types";
 import { createMilitar } from "@/services/militarService";
-import { DatePicker } from "@/components/ui/date-picker";
 
 interface FormData {
   nomeCompleto: string;
@@ -63,22 +62,7 @@ const ImportarMilitares = () => {
     setIsLoading(true);
 
     try {
-      // Extract form data
-      const {
-        nomeCompleto,
-        nomeGuerra,
-        posto,
-        quadro,
-        dataNascimento,
-        dataInclusao,
-        dataUltimaPromocao,
-        situacao,
-        email,
-        tipoSanguineo,
-        sexo
-      } = formData;
-
-      // Create the militar object with the required 'unidade' property
+      // Create the militar object with the required properties
       const militar = {
         nome: formData.nomeCompleto,
         nomeCompleto: formData.nomeCompleto,
@@ -92,8 +76,8 @@ const ImportarMilitares = () => {
         email: formData.email,
         foto: null,
         tipoSanguineo: formData.tipoSanguineo,
-        sexo: formData.sexo === "Masculino" ? "M" : "F",
-        unidade: "" // Add the required unidade property with empty string as default
+        sexo: formData.sexo, // Use typed Sexo directly
+        unidade: "" // Add the required unidade property
       };
 
       // Create the militar

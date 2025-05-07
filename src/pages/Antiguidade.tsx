@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Militar, MilitarComPontuacao } from "@/types";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -74,13 +75,18 @@ const AntiguidadePage: React.FC = () => {
     }));
   };
 
+  // Use a type-safe handler for the RadioGroup
+  const handleTipoChange = (value: "oficiais" | "pracas") => {
+    setTipo(value);
+  };
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Quadro de Acesso por Antiguidade</h1>
       
       <div className="mb-6">
         <Label>Tipo de Quadro</Label>
-        <RadioGroup value={tipo} onValueChange={setTipo} className="flex space-x-4 mt-2">
+        <RadioGroup value={tipo} onValueChange={handleTipoChange} className="flex space-x-4 mt-2">
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="oficiais" id="oficiais" />
             <Label htmlFor="oficiais">Oficiais</Label>

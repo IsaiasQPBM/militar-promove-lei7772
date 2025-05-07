@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +50,8 @@ const RegisterPage = () => {
     setIsLoading(true);
     
     try {
-      await signUp(formData.email, formData.password, formData.name);
+      // Fix signUp function call to use only email and password
+      await signUp(formData.email, formData.password);
       toast({
         title: "Cadastro realizado",
         description: "Sua conta foi criada com sucesso!"

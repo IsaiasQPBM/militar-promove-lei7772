@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MerecimentoList } from "@/components/merecimento/MerecimentoList";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MilitarComPontuacao } from "@/types";
 import { toPostoPatente, toQuadroMilitar, toSituacaoMilitar, toTipoSanguineo, toSexo } from "@/utils/typeConverters";
@@ -65,6 +66,11 @@ const Merecimento = () => {
     }
   };
 
+  // Type-safe handler for RadioGroup
+  const handleTipoChange = (value: "oficiais" | "pracas") => {
+    setTipo(value);
+  };
+
   // Efeito para carregar militares quando o tipo mudar
   useEffect(() => {
     const quadro = tipo === "oficiais" ? "QOEM" : "QPBM";
@@ -85,7 +91,7 @@ const Merecimento = () => {
       
       <div className="mb-6">
         <Label>Tipo de Quadro</Label>
-        <RadioGroup value={tipo} onValueChange={setTipo} className="flex space-x-4 mt-2">
+        <RadioGroup value={tipo} onValueChange={handleTipoChange} className="flex space-x-4 mt-2">
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="oficiais" id="oficiais" />
             <Label htmlFor="oficiais">Oficiais</Label>

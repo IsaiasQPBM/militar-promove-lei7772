@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -210,7 +209,8 @@ const reducer = (state: State, action: Action): State => {
           ...state,
           toasts: state.toasts.map((t) => ({
             ...t,
-            open: false,
+            // Remove 'open' property since it doesn't exist in ToasterToast type
+            // open: false,
           })),
         };
       }
@@ -218,7 +218,13 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         toasts: state.toasts.map((t) =>
-          t.id === toastId ? { ...t, open: false } : t
+          t.id === toastId
+            ? {
+                ...t,
+                // Remove 'open' property since it doesn't exist in ToasterToast type
+                // open: false,
+              }
+            : t
         ),
       };
     }

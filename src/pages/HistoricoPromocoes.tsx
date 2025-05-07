@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Militar, Promocao, CriterioPromocao } from "@/types";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMilitarById } from "@/services/militarService";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import LoaderComponent from "@/components/editarMilitar/LoaderComponent";
 
 const HistoricoPromocoes = () => {
@@ -45,11 +46,11 @@ const HistoricoPromocoes = () => {
           const promocoesFormatadas: Promocao[] = data.map((item) => ({
             id: item.id,
             militarId: item.militar_id,
-            cargo: item.cargo || militar?.posto || "Soldado",  // Use cargo from database or fallback to militar's posto
+            cargo: item.tipo_promocao || militarData.posto, // Use tipo_promocao as cargo
             dataPromocao: item.data_promocao,
             criterio: item.tipo_promocao as CriterioPromocao,
-            anexoDocumento: item.anexo_documento,
-            publicada: item.publicada || false // Add the missing 'publicada' property with a default value
+            anexoDocumento: null, // Set anexo_documento to null
+            publicada: item.publicada || false
           }));
           
           setPromocoes(promocoesFormatadas);

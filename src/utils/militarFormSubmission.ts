@@ -4,7 +4,7 @@ import { FormValues } from "./militarValidation";
 import { createMilitar } from "@/services/militarService";
 import { QuadroMilitar, PostoPatente, SituacaoMilitar } from "@/types";
 import { verificarDisponibilidadeVaga } from "@/services/qfvService";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export const submitMilitarForm = async (
   values: FormValues & { foto?: string | null },
@@ -41,7 +41,7 @@ export const submitMilitarForm = async (
   try {
     // Create militar in the database
     const militar = await createMilitar({
-      nome: values.nomeCompleto, // Add this field
+      nome: values.nomeCompleto,
       nomeCompleto: values.nomeCompleto,
       nomeGuerra: values.nomeGuerra,
       posto: values.posto as PostoPatente,
@@ -53,7 +53,8 @@ export const submitMilitarForm = async (
       email: values.email,
       foto: values.foto || "",
       tipoSanguineo: values.tipoSanguineo,
-      sexo: values.sexo
+      sexo: values.sexo,
+      unidade: "" // Add required unidade property
     });
 
     // Determine which page to redirect to
