@@ -39,6 +39,11 @@ export const useMilitarData = (id: string | undefined) => {
             sexoDisplay = "Feminino";
           }
 
+          // Garantir que a situação seja compatível com o tipo esperado
+          const situacao = militar.situacao === "afastado" || militar.situacao === "reforma" 
+            ? "inativo" 
+            : militar.situacao;
+
           // Preencher o formulário com os dados do militar
           setFormData({
             quadro: militar.quadro,
@@ -48,7 +53,7 @@ export const useMilitarData = (id: string | undefined) => {
             dataNascimento: formatDate(militar.dataNascimento),
             dataInclusao: formatDate(militar.dataInclusao),
             dataUltimaPromocao: formatDate(militar.dataUltimaPromocao),
-            situacao: militar.situacao,
+            situacao: situacao as "ativo" | "inativo",
             email: militar.email || "",
             tipoSanguineo: militar.tipoSanguineo,
             sexo: sexoDisplay

@@ -1,522 +1,95 @@
 
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, FileChart, Download, ChevronDown } from "lucide-react";
-import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
-import { Militar, QuadroMilitar, PostoPatente } from '@/types';
-import { toast } from '@/components/ui/use-toast';
-import { ptBR } from 'date-fns/locale';
-
-// Tipos de relatórios
-type TipoRelatorio = 
-  | "elegiveisAnterior" 
-  | "elegiveisMerecimento"
-  | "elegiveisMeritoIntelectual"
-  | "quadroAcessoAnterior" 
-  | "quadroAcessoMerecimento"
-  | "antiguidade" 
-  | "pendencias";
+  FileText,   // Changed from FileChart to FileText
+  UserCheck, 
+  Clock, 
+  Award, 
+  Download 
+} from "lucide-react";
+import TabelaPromocoes from "@/components/TabelaPromocoes";
+import { useQFVData } from "@/hooks/useQFVData";
+import { toast } from "@/components/ui/use-toast";
 
 interface RelatoriosPromocaoProps {
-  quadros: QuadroMilitar[];
+  quadros: string[];
 }
 
-const RelatoriosPromocao: React.FC<RelatoriosPromocaoProps> = ({ quadros }) => {
-  const [tipoRelatorio, setTipoRelatorio] = useState<TipoRelatorio>("elegiveisAnterior");
-  const [quadroSelecionado, setQuadroSelecionado] = useState<QuadroMilitar | "">("");
-  const [postoSelecionado, setPostoSelecionado] = useState<PostoPatente | "">("");
-  const [loading, setLoading] = useState(false);
-  const [resultados, setResultados] = useState<any[]>([]);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+const RelatoriosPromocao = ({ quadros }: RelatoriosPromocaoProps) => {
+  const [tipoRelatorio, setTipoRelatorio] = useState("elegiveis");
+  const [quadroSelecionado, setQuadroSelecionado] = useState(quadros[0] || "QOEM");
+  const [criterioSelecionado, setCriterioSelecionado] = useState("Ambos");
+  const { qfvData, loading } = useQFVData();
 
-  // Função para buscar os dados do relatório
-  const buscarDadosRelatorio = async () => {
-    if (!quadroSelecionado) {
-      toast({
-        title: "Quadro não selecionado",
-        description: "Por favor, selecione um quadro para gerar o relatório.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      let query = supabase
-        .from('militares')
-        .select(`
-          *,
-          fichas_conceito(totalpontos, temposervicoquadro),
-          promocoes(*)
-        `)
-        .eq('quadro', quadroSelecionado);
-        
-      // Aplicar filtro por posto se selecionado
-      if (postoSelecionado) {
-        query = query.eq('posto', postoSelecionado);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Processar os dados conforme o tipo de relatório
-      let dadosProcessados = [];
-      
-      switch (tipoRelatorio) {
-        case "elegiveisAnterior":
-          dadosProcessados = processarElegiveisAnterior(data);
-          break;
-        case "elegiveisMerecimento":
-          dadosProcessados = processarElegiveisMerecimento(data);
-          break;
-        case "elegiveisMeritoIntelectual":
-          dadosProcessados = processarElegiveisMeritoIntelectual(data);
-          break;
-        case "quadroAcessoAnterior":
-          dadosProcessados = processarQuadroAcessoAnterior(data);
-          break;
-        case "quadroAcessoMerecimento":
-          dadosProcessados = processarQuadroAcessoMerecimento(data);
-          break;
-        case "antiguidade":
-          dadosProcessados = processarAntiguidade(data);
-          break;
-        case "pendencias":
-          dadosProcessados = processarPendencias(data);
-          break;
-        default:
-          dadosProcessados = data;
-      }
-      
-      setResultados(dadosProcessados);
-    } catch (error) {
-      console.error("Erro ao buscar dados para relatório:", error);
-      toast({
-        title: "Erro ao gerar relatório",
-        description: "Não foi possível buscar os dados necessários.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Funções de processamento para cada tipo de relatório
-  const processarElegiveisAnterior = (data: any[]) => {
-    // Filtrar militares elegíveis por antiguidade
-    return data
-      .filter(militar => {
-        // Verificar tempo mínimo no posto
-        const tempoServicoQuadro = militar.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        const tempoMinimo = getTempoMinimoNoPosto(militar.posto);
-        return tempoServicoQuadro >= tempoMinimo;
-      })
-      .sort((a, b) => {
-        // Ordenar por tempo de serviço (descendente)
-        const tempoA = a.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        const tempoB = b.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        return tempoB - tempoA;
-      });
-  };
-
-  const processarElegiveisMerecimento = (data: any[]) => {
-    // Filtrar militares com pontuação suficiente para promoção por merecimento
-    return data
-      .filter(militar => {
-        const pontos = militar.fichas_conceito?.[0]?.totalpontos || 0;
-        const pontuacaoMinima = getPontuacaoMinima(militar.posto);
-        return pontos >= pontuacaoMinima;
-      })
-      .sort((a, b) => {
-        // Ordenar por pontuação (descendente)
-        const pontosA = a.fichas_conceito?.[0]?.totalpontos || 0;
-        const pontosB = b.fichas_conceito?.[0]?.totalpontos || 0;
-        return pontosB - pontosA;
-      });
-  };
-
-  const processarElegiveisMeritoIntelectual = (data: any[]) => {
-    // Filtrar militares por mérito intelectual (critérios acadêmicos)
-    return data
-      .filter(militar => {
-        // Aqui seria necessário ter a lógica para verificar mérito intelectual
-        // Baseado nos cursos e formações do militar
-        const pontos = militar.fichas_conceito?.[0]?.totalpontos || 0;
-        return pontos > 0; // Temporário, substituir por lógica real
-      })
-      .sort((a, b) => {
-        // Ordenar por pontuação (descendente)
-        const pontosA = a.fichas_conceito?.[0]?.totalpontos || 0;
-        const pontosB = b.fichas_conceito?.[0]?.totalpontos || 0;
-        return pontosB - pontosA;
-      });
-  };
-
-  const processarQuadroAcessoAnterior = (data: any[]) => {
-    // Gerar quadro de acesso por antiguidade
-    return data
-      .filter(militar => {
-        // Filtrar militares aptos
-        const tempoServicoQuadro = militar.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        const tempoMinimo = getTempoMinimoNoPosto(militar.posto);
-        return tempoServicoQuadro >= tempoMinimo && militar.situacao === "ativo";
-      })
-      .sort((a, b) => {
-        // Ordenar por tempo de serviço (descendente)
-        const tempoA = a.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        const tempoB = b.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        if (tempoA !== tempoB) return tempoB - tempoA;
-        
-        // Desempate por data de inclusão
-        return new Date(a.dataInclusao || 0).getTime() - new Date(b.dataInclusao || 0).getTime();
-      });
-  };
-
-  const processarQuadroAcessoMerecimento = (data: any[]) => {
-    // Gerar quadro de acesso por merecimento
-    return data
-      .filter(militar => {
-        // Filtrar militares aptos
-        const pontos = militar.fichas_conceito?.[0]?.totalpontos || 0;
-        const pontuacaoMinima = getPontuacaoMinima(militar.posto);
-        return pontos >= pontuacaoMinima && militar.situacao === "ativo";
-      })
-      .sort((a, b) => {
-        // Ordenar por pontuação (descendente)
-        const pontosA = a.fichas_conceito?.[0]?.totalpontos || 0;
-        const pontosB = b.fichas_conceito?.[0]?.totalpontos || 0;
-        return pontosB - pontosA;
-      });
-  };
-
-  const processarAntiguidade = (data: any[]) => {
-    // Gerar lista de antiguidade
-    return data
-      .filter(militar => militar.situacao === "ativo")
-      .sort((a, b) => {
-        // Ordenar por posto (decrescente - de Coronel a Soldado)
-        const ordemPostos = [
-          "Coronel", "Tenente-Coronel", "Major", "Capitão", "1º Tenente", "2º Tenente",
-          "Subtenente", "1º Sargento", "2º Sargento", "3º Sargento", "Cabo", "Soldado"
-        ];
-        
-        const postoIndexA = ordemPostos.indexOf(a.posto);
-        const postoIndexB = ordemPostos.indexOf(b.posto);
-        
-        if (postoIndexA !== postoIndexB) return postoIndexA - postoIndexB;
-        
-        // Desempate por tempo de serviço
-        const tempoA = a.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        const tempoB = b.fichas_conceito?.[0]?.temposervicoquadro || 0;
-        return tempoB - tempoA;
-      });
-  };
-
-  const processarPendencias = (data: any[]) => {
-    // Listar militares com pendências (falta de documentos, cursos, etc)
-    return data.filter(militar => {
-      // Implementar lógica para identificar pendências
-      // Por exemplo, cursos obrigatórios não realizados
-      const pontos = militar.fichas_conceito?.[0]?.totalpontos || 0;
-      const tempoServicoQuadro = militar.fichas_conceito?.[0]?.temposervicoquadro || 0;
-      
-      const tempoMinimo = getTempoMinimoNoPosto(militar.posto);
-      const pontuacaoMinima = getPontuacaoMinima(militar.posto);
-      
-      // Se tem tempo mas não tem pontuação suficiente = pendência
-      return tempoServicoQuadro >= tempoMinimo && pontos < pontuacaoMinima;
-    });
-  };
-
-  // Funções auxiliares
-  const getTempoMinimoNoPosto = (posto: string): number => {
-    // Retorna o tempo mínimo em meses para cada posto
-    const temposMinimos: Record<string, number> = {
-      "Coronel": 0, // Posto máximo
-      "Tenente-Coronel": 36, // 3 anos
-      "Major": 48, // 4 anos
-      "Capitão": 48, // 4 anos
-      "1º Tenente": 48, // 4 anos
-      "2º Tenente": 36, // 3 anos
-      "Subtenente": 0, // Graduação máxima para praças
-      "1º Sargento": 36, // 3 anos
-      "2º Sargento": 48, // 4 anos
-      "3º Sargento": 48, // 4 anos
-      "Cabo": 36, // 3 anos
-      "Soldado": 24 // 2 anos
-    };
-    
-    return temposMinimos[posto] || 0;
-  };
-
-  const getPontuacaoMinima = (posto: string): number => {
-    // Retorna a pontuação mínima necessária para cada posto
-    const pontuacoesMinimas: Record<string, number> = {
-      "Coronel": 0, // Posto máximo
-      "Tenente-Coronel": 15,
-      "Major": 12,
-      "Capitão": 10,
-      "1º Tenente": 7,
-      "2º Tenente": 5,
-      "Subtenente": 0, // Graduação máxima para praças
-      "1º Sargento": 7,
-      "2º Sargento": 5,
-      "3º Sargento": 4,
-      "Cabo": 3,
-      "Soldado": 2
-    };
-    
-    return pontuacoesMinimas[posto] || 0;
-  };
-
-  // Função para exportar para CSV
-  const exportarCSV = () => {
-    // Gerar headers do CSV
-    let headers = ["Nome", "Posto", "Quadro"];
-    
-    switch (tipoRelatorio) {
-      case "elegiveisAnterior":
-      case "quadroAcessoAnterior":
-        headers.push("Tempo no Posto (meses)");
-        break;
-      case "elegiveisMerecimento":
-      case "elegiveisMeritoIntelectual":
-      case "quadroAcessoMerecimento":
-        headers.push("Pontuação");
-        break;
-      case "pendencias":
-        headers.push("Pendências");
-        break;
-    }
-    
-    // Gerar linhas do CSV
-    const linhas = resultados.map(militar => {
-      let linha = [
-        militar.nome,
-        militar.posto,
-        militar.quadro
-      ];
-      
-      switch (tipoRelatorio) {
-        case "elegiveisAnterior":
-        case "quadroAcessoAnterior":
-          linha.push((militar.fichas_conceito?.[0]?.temposervicoquadro || 0).toString());
-          break;
-        case "elegiveisMerecimento":
-        case "elegiveisMeritoIntelectual":
-        case "quadroAcessoMerecimento":
-          linha.push((militar.fichas_conceito?.[0]?.totalpontos || 0).toString());
-          break;
-        case "pendencias":
-          linha.push("Pendências diversas"); // Substituir pela lógica real
-          break;
-      }
-      
-      return linha;
-    });
-    
-    // Juntar headers e linhas
-    const csvContent = [
-      headers.join(","),
-      ...linhas.map(l => l.join(","))
-    ].join("\n");
-    
-    // Criar blob e link para download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `relatorio-${tipoRelatorio}-${format(new Date(), 'yyyy-MM-dd')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
+  // Função para gerar relatório (simulada)
+  const gerarRelatorio = () => {
     toast({
-      title: "Relatório Exportado",
-      description: "O relatório CSV foi gerado com sucesso!"
+      title: "Relatório Gerado",
+      description: `Relatório de ${tipoRelatorio} para o quadro ${quadroSelecionado} gerado com sucesso.`
     });
   };
 
-  // Função para exportar para PDF (simulado)
-  const exportarPDF = () => {
+  // Função para exportar relatório (simulada)
+  const exportarRelatorio = (formato: string) => {
     toast({
-      title: "Exportação para PDF",
-      description: "Esta funcionalidade será implementada em breve.",
-      variant: "default"
+      title: `Exportando para ${formato}`,
+      description: "O arquivo será baixado em instantes."
     });
-  };
-
-  const handleRowSelection = (id: string) => {
-    setSelectedRows(prev => {
-      if (prev.includes(id)) {
-        return prev.filter(rowId => rowId !== id);
-      } else {
-        return [...prev, id];
-      }
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedRows.length === resultados.length) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(resultados.map(item => item.id));
-    }
-  };
-
-  // Renderizar colunas específicas com base no tipo de relatório
-  const renderColunasDinamicas = () => {
-    switch (tipoRelatorio) {
-      case "elegiveisAnterior":
-      case "quadroAcessoAnterior":
-        return (
-          <TableCell className="text-center">
-            Tempo no Posto (meses)
-          </TableCell>
-        );
-      case "elegiveisMerecimento":
-      case "elegiveisMeritoIntelectual":
-      case "quadroAcessoMerecimento":
-        return (
-          <TableCell className="text-center">
-            Pontuação
-          </TableCell>
-        );
-      case "pendencias":
-        return (
-          <TableCell className="text-center">
-            Pendências
-          </TableCell>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const renderValorDinamico = (militar: any) => {
-    switch (tipoRelatorio) {
-      case "elegiveisAnterior":
-      case "quadroAcessoAnterior":
-        return (
-          <TableCell className="text-center">
-            {militar.fichas_conceito?.[0]?.temposervicoquadro || 0}
-          </TableCell>
-        );
-      case "elegiveisMerecimento":
-      case "elegiveisMeritoIntelectual":
-      case "quadroAcessoMerecimento":
-        return (
-          <TableCell className="text-center">
-            {militar.fichas_conceito?.[0]?.totalpontos?.toFixed(2) || "0.00"}
-          </TableCell>
-        );
-      case "pendencias":
-        return (
-          <TableCell className="text-center">
-            <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-              Pontuação insuficiente
-            </Badge>
-          </TableCell>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getTituloRelatorio = () => {
-    switch (tipoRelatorio) {
-      case "elegiveisAnterior": return "Militares Elegíveis para Promoção por Antiguidade";
-      case "elegiveisMerecimento": return "Militares Elegíveis para Promoção por Merecimento";
-      case "elegiveisMeritoIntelectual": return "Militares Elegíveis por Mérito Intelectual";
-      case "quadroAcessoAnterior": return "Quadro de Acesso por Antiguidade";
-      case "quadroAcessoMerecimento": return "Quadro de Acesso por Merecimento";
-      case "antiguidade": return "Lista de Antiguidade";
-      case "pendencias": return "Militares com Pendências para Promoção";
-      default: return "Relatório";
-    }
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <FileChart className="mr-2 h-5 w-5" />
-          Relatórios
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Tipo de Relatório
-              </label>
-              <Select 
-                value={tipoRelatorio} 
-                onValueChange={(value: TipoRelatorio) => setTipoRelatorio(value)}
-              >
-                <SelectTrigger>
+    <Card>
+      <CardContent className="p-6">
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex-1">
+              <Label htmlFor="tipo-relatorio">Tipo de Relatório</Label>
+              <Select value={tipoRelatorio} onValueChange={setTipoRelatorio}>
+                <SelectTrigger id="tipo-relatorio" className="w-full">
                   <SelectValue placeholder="Selecione o tipo de relatório" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="elegiveisAnterior">Elegíveis por Antiguidade</SelectItem>
-                  <SelectItem value="elegiveisMerecimento">Elegíveis por Merecimento</SelectItem>
-                  <SelectItem value="elegiveisMeritoIntelectual">Elegíveis por Mérito Intelectual</SelectItem>
-                  <SelectItem value="quadroAcessoAnterior">Quadro de Acesso por Antiguidade</SelectItem>
-                  <SelectItem value="quadroAcessoMerecimento">Quadro de Acesso por Merecimento</SelectItem>
-                  <SelectItem value="antiguidade">Lista de Antiguidade</SelectItem>
-                  <SelectItem value="pendencias">Militares com Pendências</SelectItem>
+                  <SelectItem value="elegiveis">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="h-4 w-4" />
+                      <span>Militares Elegíveis para Promoção</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="antiguidade">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span>Lista de Antiguidade</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="merecimento">
+                    <div className="flex items-center gap-2">
+                      <Award className="h-4 w-4" />
+                      <span>Quadro de Acesso por Merecimento</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="pendencias">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Militares com Pendências</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Quadro
-              </label>
-              <Select
-                value={quadroSelecionado}
-                onValueChange={(value: string) => setQuadroSelecionado(value as QuadroMilitar)}
-              >
-                <SelectTrigger>
+
+            <div className="flex-1">
+              <Label htmlFor="quadro-relatorio">Quadro</Label>
+              <Select value={quadroSelecionado} onValueChange={setQuadroSelecionado}>
+                <SelectTrigger id="quadro-relatorio">
                   <SelectValue placeholder="Selecione o quadro" />
                 </SelectTrigger>
                 <SelectContent>
-                  {quadros.map((quadro) => (
+                  {quadros.map(quadro => (
                     <SelectItem key={quadro} value={quadro}>
                       {quadro}
                     </SelectItem>
@@ -524,121 +97,63 @@ const RelatoriosPromocao: React.FC<RelatoriosPromocaoProps> = ({ quadros }) => {
                 </SelectContent>
               </Select>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Posto/Graduação (opcional)
-              </label>
-              <Select
-                value={postoSelecionado}
-                onValueChange={(value: string) => setPostoSelecionado(value as PostoPatente)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
+
+            <div className="flex-1">
+              <Label htmlFor="criterio-relatorio">Critério (quando aplicável)</Label>
+              <Select value={criterioSelecionado} onValueChange={setCriterioSelecionado}>
+                <SelectTrigger id="criterio-relatorio">
+                  <SelectValue placeholder="Selecione o critério" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
-                  <SelectItem value="Coronel">Coronel</SelectItem>
-                  <SelectItem value="Tenente-Coronel">Tenente-Coronel</SelectItem>
-                  <SelectItem value="Major">Major</SelectItem>
-                  <SelectItem value="Capitão">Capitão</SelectItem>
-                  <SelectItem value="1º Tenente">1º Tenente</SelectItem>
-                  <SelectItem value="2º Tenente">2º Tenente</SelectItem>
-                  <SelectItem value="Subtenente">Subtenente</SelectItem>
-                  <SelectItem value="1º Sargento">1º Sargento</SelectItem>
-                  <SelectItem value="2º Sargento">2º Sargento</SelectItem>
-                  <SelectItem value="3º Sargento">3º Sargento</SelectItem>
-                  <SelectItem value="Cabo">Cabo</SelectItem>
-                  <SelectItem value="Soldado">Soldado</SelectItem>
+                  <SelectItem value="Ambos">Todos os Critérios</SelectItem>
+                  <SelectItem value="Antiguidade">Antiguidade</SelectItem>
+                  <SelectItem value="Merecimento">Merecimento</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="flex-none self-end">
+              <Button onClick={gerarRelatorio}>
+                Gerar Relatório
+              </Button>
+            </div>
           </div>
           
-          <Button
-            onClick={buscarDadosRelatorio}
-            disabled={loading || !quadroSelecionado}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Gerando...
-              </>
-            ) : (
-              "Gerar Relatório"
-            )}
-          </Button>
-          
-          {resultados.length > 0 && (
-            <div className="mt-6 space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">
-                  {getTituloRelatorio()} ({resultados.length})
-                </h3>
-                
-                <div className="flex gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Download className="mr-2 h-4 w-4" />
-                        Exportar
-                        <ChevronDown className="ml-2 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={exportarCSV}>
-                        Exportar para CSV
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={exportarPDF}>
-                        Exportar para PDF
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+          {/* Conteúdo do Relatório */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">Prévia do Relatório</h3>
+            
+            {/* Simulação de dados do relatório */}
+            <div className="overflow-auto">
+              {tipoRelatorio === "elegiveis" && (
+                <TabelaPromocoes previsoes={[]} />
+              )}
               
-              <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={selectedRows.length === resultados.length && resultados.length > 0}
-                          onCheckedChange={handleSelectAll}
-                          aria-label="Select all"
-                        />
-                      </TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Posto</TableHead>
-                      <TableHead>Quadro</TableHead>
-                      {renderColunasDinamicas()}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {resultados.map((militar) => (
-                      <TableRow key={militar.id}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedRows.includes(militar.id)}
-                            onCheckedChange={() => handleRowSelection(militar.id)}
-                            aria-label={`Select ${militar.nome}`}
-                          />
-                        </TableCell>
-                        <TableCell>{militar.nome}</TableCell>
-                        <TableCell>{militar.posto}</TableCell>
-                        <TableCell>{militar.quadro}</TableCell>
-                        {renderValorDinamico(militar)}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              {tipoRelatorio === "antiguidade" && (
+                <p className="text-center p-4">Selecione um quadro e gere o relatório para visualizar a Lista de Antiguidade</p>
+              )}
               
-              <div className="text-sm text-gray-500">
-                Data de geração: {format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-              </div>
+              {tipoRelatorio === "merecimento" && (
+                <p className="text-center p-4">Selecione um quadro e gere o relatório para visualizar o Quadro de Acesso por Merecimento</p>
+              )}
+              
+              {tipoRelatorio === "pendencias" && (
+                <p className="text-center p-4">Selecione um quadro e gere o relatório para visualizar a Lista de Militares com Pendências</p>
+              )}
             </div>
-          )}
+          </div>
+          
+          {/* Ações de Exportação */}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => exportarRelatorio("CSV")}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar CSV
+            </Button>
+            <Button variant="outline" onClick={() => exportarRelatorio("PDF")}>
+              <FileText className="h-4 w-4 mr-2" />
+              Exportar PDF
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

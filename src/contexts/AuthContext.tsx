@@ -1,141 +1,137 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Session, User } from '@supabase/supabase-js';
 
-interface AuthContextType {
+export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  user: any | null;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => Promise<void>;
+  user: User | null;
+  session: Session | null;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
-const initialContext: AuthContextType = {
+const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   user: null,
-  login: async () => ({ success: false }),
-  logout: async () => {},
-};
+  session: null,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {}
+});
 
-const AuthContext = createContext<AuthContextType>(initialContext);
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-export const useAuth = () => useContext(AuthContext);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any | null>(null);
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // For development, we'll set authenticated to true by default
-    // In a real app, you would check the session from Supabase
-    setIsAuthenticated(true);
-    setIsLoading(false);
-    
-    // Uncomment this for real authentication
-    /*
-    const checkAuth = async () => {
+    const fetchSession = async () => {
       setIsLoading(true);
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
+        const { data, error } = await supabase.auth.getSession();
         if (error) {
           throw error;
         }
-        
-        if (session) {
-          setIsAuthenticated(true);
-          setUser(session.user);
-        } else {
-          setIsAuthenticated(false);
-          setUser(null);
+        if (data) {
+          setSession(data.session);
+          if (data.session) {
+            const { data: userData } = await supabase.auth.getUser();
+            setUser(userData?.user || null);
+          }
         }
       } catch (error) {
-        console.error('Error checking auth:', error);
-        setIsAuthenticated(false);
-        setUser(null);
+        console.error("Error getting authentication session:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    
-    checkAuth();
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          setIsAuthenticated(true);
-          setUser(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          setIsAuthenticated(false);
-          setUser(null);
-        }
+
+    fetchSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+      if (session) {
+        const { data: userData } = await supabase.auth.getUser();
+        setUser(userData?.user || null);
+      } else {
+        setUser(null);
       }
-    );
-    
+      setIsLoading(false);
+    });
+
     return () => {
-      authListener?.subscription.unsubscribe();
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
-    */
   }, []);
 
-  const login = async (email: string, password: string) => {
+  // Sign in with email and password
+  const signIn = async (email: string, password: string): Promise<void> => {
+    setIsLoading(true);
     try {
-      // For development, we'll just return success
-      // In a real app, you would sign in with Supabase
-      return { success: true };
-      
-      /*
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        return { success: false, error: error.message };
-      }
-      
-      setIsAuthenticated(true);
-      setUser(data.user);
-      
-      return { success: true };
-      */
-    } catch (error: any) {
-      console.error('Login error:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const logout = async () => {
-    try {
-      // For development, we'll just set authenticated to false
-      // In a real app, you would sign out with Supabase
-      setIsAuthenticated(false);
-      setUser(null);
-      
-      /*
-      const { error } = await supabase.auth.signOut();
-      
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         throw error;
       }
-      
-      setIsAuthenticated(false);
-      setUser(null);
-      */
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch (error: any) {
+      console.error("Error signing in:", error.message);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const value = {
-    isAuthenticated,
-    isLoading,
-    user,
-    login,
-    logout,
+  // Sign up with email and password
+  const signUp = async (email: string, password: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error("Error signing up:", error.message);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Sign out
+  const signOut = async (): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error("Error signing out:", error.message);
+      throw error;
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{
+      isAuthenticated: !!session,
+      isLoading,
+      user,
+      session,
+      signIn,
+      signUp,
+      signOut
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
+export const useAuth = () => useContext(AuthContext);

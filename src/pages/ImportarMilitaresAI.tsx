@@ -43,7 +43,7 @@ const ImportarMilitaresAI = () => {
   };
 
   // Função para processar o arquivo
-  const processFile = async () => {
+  const processarDados = async () => {
     if (!importarArquivo) {
       toast({
         title: "Nenhum arquivo selecionado",
@@ -142,7 +142,8 @@ const ImportarMilitaresAI = () => {
           email: `${militar.nome.toLowerCase().replace(/\s+/g, '.')}@cbm.pi.gov.br`,
           foto: null,
           tipoSanguineo: "O+" as TipoSanguineo,
-          sexo: "Masculino" as Sexo
+          sexo: "Masculino" as Sexo,
+          unidade: "" // Add the required unidade property with empty string as default
         });
         
         // Atualiza o status para sucesso
@@ -299,7 +300,7 @@ const ImportarMilitaresAI = () => {
               
               <div className="flex justify-end">
                 <Button
-                  onClick={processFile}
+                  onClick={processarDados}
                   disabled={!importarArquivo || isProcessing}
                   className="mt-4"
                 >

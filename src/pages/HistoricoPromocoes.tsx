@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Militar, Promocao, CriterioPromocao } from "@/types";
@@ -42,19 +41,18 @@ const HistoricoPromocoes = () => {
             
           if (error) throw error;
           
-          // Mapear dados para o formato esperado
-          if (data) {
-            const promocoesData: Promocao[] = data.map(item => ({
-              id: item.id,
-              militarId: item.militar_id,
-              cargo: militarData.posto, // Usar o posto atual do militar já que a promoção não tem esse campo
-              dataPromocao: item.data_promocao,
-              criterio: (item.tipo_promocao || "Antiguidade") as CriterioPromocao,
-              anexoDocumento: null
-            }));
-            
-            setPromocoes(promocoesData);
-          }
+          // Convert database response to Promocao objects with all required properties
+          const promocoesFormatadas: Promocao[] = data.map((item) => ({
+            id: item.id,
+            militarId: item.militar_id,
+            cargo: item.cargo || militar?.posto || "Soldado",  // Use cargo from database or fallback to militar's posto
+            dataPromocao: item.data_promocao,
+            criterio: item.tipo_promocao as CriterioPromocao,
+            anexoDocumento: item.anexo_documento,
+            publicada: item.publicada || false // Add the missing 'publicada' property with a default value
+          }));
+          
+          setPromocoes(promocoesFormatadas);
         }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);

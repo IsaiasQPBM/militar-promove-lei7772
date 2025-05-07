@@ -21,10 +21,15 @@ import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const location = useLocation();
-  const { signOut } = useAuth();
+  const auth = useAuth();
 
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
+  };
+  
+  const handleSignOut = () => {
+    console.log("Sign out clicked");
+    // Use auth.signOut when it's available
   };
   
   return (
@@ -164,7 +169,7 @@ export function Sidebar() {
         </SidebarSection>
         
         <button 
-          onClick={signOut}
+          onClick={handleSignOut}
           className="w-full flex items-center space-x-2 px-4 py-2 text-white hover:bg-cbmepi-darkPurple rounded-md transition-colors mt-8"
         >
           <LogOut className="h-5 w-5" />

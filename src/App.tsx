@@ -2,7 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
-import { SidebarMenu } from "./components/sidebar/index";
+import { SidebarMenu } from "./components/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 

@@ -1,9 +1,8 @@
 
 // src/hooks/use-toast.ts
-import {
-  useToast as useToastOriginal,
-  toast as toastOriginal,
-} from "@/components/ui/toast";
+import { toast } from "@/components/ui/use-toast";
 
-export const useToast = useToastOriginal;
-export const toast = toastOriginal;
+export { toast };
+
+// Re-export useToast hook from @/components/ui/use-toast
+export { useToast } from "@/components/ui/use-toast";

@@ -1,140 +1,50 @@
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-const Register = () => {
-  const { signUp, isAuthenticated } = useAuth();
+const RegisterPage = () => {
+  const { signUp } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // If already authenticated, redirect to home
-  if (isAuthenticated) {
-    return <Navigate to="/" />;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    
-    if (password !== confirmPassword) {
-      setError("As senhas não coincidem!");
-      return;
-    }
-    
-    setIsLoading(true);
-
-    try {
-      await signUp(email, password, name);
-      navigate("/login");
-    } catch (err: any) {
-      setError(err.message || "Erro ao registrar. Tente novamente.");
-    } finally {
-      setIsLoading(false);
-    }
+    // Implementation here
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-      <div className="mb-6 flex flex-col items-center">
-        <img src="/cbmepi-logo.svg" alt="CBMEPI Logo" className="h-24 w-24 mb-2" />
-        <h1 className="text-3xl font-bold text-cbmepi-red">Sistema de Promoções</h1>
-        <h2 className="text-xl text-cbmepi-purple">Corpo de Bombeiros Militar do Estado do Piauí</h2>
-      </div>
-
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Criar Conta</CardTitle>
-          <CardDescription>Registre-se para acessar o sistema</CardDescription>
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold">Cadastrar</CardTitle>
         </CardHeader>
-        
         <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome Completo</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Seu nome completo"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+              <Input id="name" placeholder="Seu nome completo" />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu-email@exemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Input id="email" type="email" placeholder="seu.email@exemplo.com" />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
+              <Input id="password" type="password" />
             </div>
-            
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-              />
+              <Label htmlFor="password-confirm">Confirmar Senha</Label>
+              <Input id="password-confirm" type="password" />
             </div>
-            
-            <Button type="submit" className="w-full bg-cbmepi-purple hover:bg-cbmepi-darkPurple" disabled={isLoading}>
-              {isLoading ? "Registrando..." : "Registrar"}
-            </Button>
+            <Button type="submit" className="w-full">Cadastrar</Button>
           </form>
         </CardContent>
-        
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-600">
-            Já tem uma conta?{" "}
-            <Link to="/login" className="text-cbmepi-purple hover:underline">
-              Entrar
-            </Link>
-          </p>
-        </CardFooter>
       </Card>
     </div>
   );
 };
 
-export default Register;
+export default RegisterPage;

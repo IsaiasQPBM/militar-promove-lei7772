@@ -1,118 +1,93 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Link, Navigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+const LoginPage = () => {
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-const Login = () => {
-  const { signIn, isAuthenticated, isLoading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // If already authenticated, redirect to home
-  if (isAuthenticated) {
-    return <Navigate to="/" />;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-
+    
+    if (!email || !password) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
     try {
       await signIn(email, password);
-      // Redirect happens automatically via the isAuthenticated check
+      toast({
+        title: "Login realizado com sucesso",
+        description: "Você será redirecionado para o dashboard."
+      });
+      navigate('/dashboard');
     } catch (error: any) {
-      setError(error.message || "Erro ao fazer login. Verifique suas credenciais.");
+      console.error("Erro no login:", error);
+      toast({
+        title: "Erro no login",
+        description: error.message || "Verifique suas credenciais e tente novamente.",
+        variant: "destructive"
+      });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
-  }
-
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-      <div className="mb-6 flex flex-col items-center">
-        <img src="/cbmepi-logo.svg" alt="CBMEPI Logo" className="h-24 w-24 mb-2" />
-        <h1 className="text-3xl font-bold text-cbmepi-red">Sistema de Promoções</h1>
-        <h2 className="text-xl text-cbmepi-purple">Corpo de Bombeiros Militar do Estado do Piauí</h2>
-      </div>
-
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>Entre com suas credenciais para acessar o sistema</CardDescription>
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold">Login</CardTitle>
         </CardHeader>
-        
         <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu-email@exemplo.com"
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="seu.email@exemplo.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                disabled={isLoading}
               />
             </div>
-            
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
-                <Link to="/forgot-password" className="text-sm text-cbmepi-purple hover:underline">
-                  Esqueceu a senha?
-                </Link>
-              </div>
-              <Input
-                id="password"
+              <Label htmlFor="password">Senha</Label>
+              <Input 
+                id="password" 
                 type="password"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                disabled={isLoading}
               />
             </div>
-            
             <Button 
               type="submit" 
-              className="w-full bg-cbmepi-purple hover:bg-cbmepi-darkPurple" 
-              disabled={isSubmitting}
+              className="w-full"
+              disabled={isLoading}
             >
-              {isSubmitting ? "Entrando..." : "Entrar"}
+              {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
         </CardContent>
-        
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-600">
-            Não tem uma conta?{" "}
-            <Link to="/register" className="text-cbmepi-purple hover:underline">
-              Cadastre-se
-            </Link>
-          </p>
-        </CardFooter>
       </Card>
     </div>
   );
 };
 
-export default Login;
+export default LoginPage;
