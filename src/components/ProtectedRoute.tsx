@@ -8,15 +8,16 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  // Temporariamente desabilitando a proteção de autenticação
+  // const { isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+  // }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" />;
+  // }
 
   return <>{children}</>;
 };
